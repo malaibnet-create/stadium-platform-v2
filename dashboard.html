@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>إعدادات الملعب - لوحة التحكم</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root { --primary: #2563eb; --bg: #f1f5f9; }
+        body { font-family: 'Cairo', sans-serif; background: var(--bg); padding: 20px; }
+        .container { max-width: 600px; margin: auto; background: white; padding: 25px; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
+        h2 { color: var(--primary); border-bottom: 2px solid #eee; padding-bottom: 10px; }
+        .section { margin-bottom: 20px; text-align: right; }
+        label { display: block; font-weight: bold; margin-bottom: 8px; font-size: 0.9rem; }
+        input, select { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .btn-save { width: 100%; background: var(--primary); color: white; border: none; padding: 15px; border-radius: 8px; font-size: 1.1rem; cursor: pointer; margin-top: 20px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>⚙️ إعدادات ملعبك</h2>
+    
+    <form id="settingsForm">
+        <div class="section">
+            <label>اسم الملعب التجاري</label>
+            <input type="text" id="stadiumName" placeholder="مثلاً: ملعب نجوم بوعسل">
+        </div>
+
+        <div class="section">
+            <label>الجمعية أو الجهة المشرفة</label>
+            <input type="text" id="organization" placeholder="اسم الجمعية المسؤولة">
+        </div>
+
+        <div class="section">
+            <label>ثمن الحجز بالساعة (للفرد)</label>
+            <div class="grid">
+                <input type="number" id="priceDay" placeholder="نهاراً (درهم)">
+                <input type="number" id="priceNight" placeholder="ليلاً - مع الأضواء (درهم)">
+            </div>
+        </div>
+
+        <div class="section">
+            <label>رقم هاتف المشرف (المكلف بالملعب)</label>
+            <input type="tel" id="managerPhone" placeholder="06xxxxxxxx">
+        </div>
+
+<div class="section">
+    <label style="display: flex; align-items: center; gap: 8px; font-weight: bold;">
+        موقع الملعب (رابط الخريطة)
+        <span onclick="showMapInstructions()" style="cursor: pointer; background: #1e3a8a; color: white; width: 18px; height: 18px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 12px;" title="كيف أحصل على الرابط؟">؟</span>
+    </label>
+    
+    <div style="display: flex; gap: 5px; margin-top: 5px;">
+        <input type="text" id="location" placeholder="ضع رابط Google Maps هنا" style="flex: 1; padding: 10px; border: 1px solid #ddd; border-radius: 8px;">
+        
+        <!-- الزر السحري لجلب الإحداثيات -->
+        <button type="button" onclick="detectCoordinates()" style="background: #10b981; color: white; border: none; border-radius: 8px; padding: 0 15px; cursor: pointer; font-size: 1.1rem; display: flex; align-items: center; justify-content: center;" title="حدد إحداثيات موقعك الحالي">
+            📍
+        </button>
+    </div>
+
+    <!-- حقول مخفية لتخزين أرقام الطول والعرض -->
+    <input type="hidden" id="lat">
+    <input type="hidden" id="lng">
+    
+    <div id="coordSuccess" style="display: none; background: #ecfdf5; color: #065f46; padding: 8px; border-radius: 6px; margin-top: 8px; font-size: 0.8rem; border: 1px solid #a7f3d0;">
+        ✅ تم التقاط إحداثيات الملعب بنجاح لتفعيل خاصية "الملاعب القريبة".
+    </div>
+
+    <small style="display: block; color: #666; margin-top: 5px; font-size: 0.85rem;">
+        💡 <strong>هام:</strong> ضع الرابط أولاً، ثم اضغط على 📍 وأنت <b>داخل الملعب</b> ليتمكن اللاعبون من العثور عليك عبر خاصية المسافة.
+    </small>
+</div>
+           <div class="section">
+    <label style="display: block; font-weight: bold; margin-bottom: 8px;">روابط التواصل الاجتماعي</label>
+    <div class="grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+        <div>
+            <input type="text" id="fbLink" placeholder="مثال: facebook.com/stadium.name" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px;">
+            <small style="color: #666; font-size: 0.75rem; display: block; margin-top: 4px;">رابط صفحة الفيسبوك</small>
+        </div>
+        <div>
+            <input type="text" id="instaLink" placeholder="مثال: instagram.com/stadium.name" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px;">
+            <small style="color: #666; font-size: 0.75rem; display: block; margin-top: 4px;">رابط حساب الإنستغرام</small>
+        </div>
+    </div>
+    <p style="background: #fdfaf1; color: #856404; padding: 8px; border-radius: 6px; font-size: 0.8rem; margin-top: 10px; border: 1px dashed #e5e7eb;">
+        💡 <strong>نصيحة:</strong> اذهب إلى صفحتك وانسخ الرابط من شريط العنوان في المتصفح لضمان عمله بشكل صحيح.
+    </p>
+</div>
+
+        <button type="button" class="btn-save" onclick="saveSettings()">حفظ التغييرات ونشر الصفحة</button>
+    </form>
+</div>
+
+<script>
+// دالة تعليمات الرابط (القديمة كما هي)
+function showMapInstructions() {
+    alert(
+      "كيفية الحصول على الرابط الصحيح:\n" +
+      "1. افتح تطبيق Google Maps وابحث عن ملعبك.\n" +
+      "2. اضغط على زر 'مشاركة' (Share).\n" +
+      "3. اختر 'نسخ الرابط' (Copy link).\n" +
+      "4. قم بلصق الرابط هنا.\n\n" +
+      "شكل الرابط يجب أن يبدأ بـ https://maps.app.goo.gl/... أو https://goo.gl/maps/..."
+    );
+}
+
+
+  // 1. إعداد المتغيرات الأساسية
+    const scriptURL = 'https://script.google.com/macros/s/AKfycbwvFXgo9I5-9GKvNeywtW7h3DLeKQxzJiqxO935n7xaNTiJA-afFbUxTePhgdS4_Q8Z/exec?key=B_Assel_Admin_2026_Sec'; // استبدل هذا بالرابط الذي حصلت عليه بعد آخر Deployment
+    const urlParams = new URLSearchParams(window.location.search);
+    const slug = urlParams.get('id');
+
+    // 2. دالة لجلب البيانات الحالية فور فتح الصفحة
+    async function loadCurrentData() {
+        if (!slug) {
+            alert("خطأ: لم يتم العثور على معرف الملعب.");
+            return;
+        }
+
+        try {
+            const response = await fetch(`${scriptURL}&action=getStadiumDetails&id=${slug}`);
+            const data = await response.json();
+
+            if (data !== "NotFound") {
+                // تعبئة الخانات بالبيانات الموجودة مسبقاً في الشيت
+                document.getElementById('stadiumName').value = data.stadium_name || "";
+                document.getElementById('organization').value = data.org || "";
+                document.getElementById('priceDay').value = data.price_day || "";
+                document.getElementById('priceNight').value = data.price_night || "";
+                document.getElementById('managerPhone').value = data.phone || "";
+                document.getElementById('location').value = data.location || "";
+                document.getElementById('fbLink').value = data.fb || "";
+                document.getElementById('instaLink').value = data.insta || "";
+            }
+        } catch (e) {
+            console.log("لا توجد بيانات سابقة أو حدث خطأ في الجلب.");
+        }
+    }
+
+    // تشغيل الجلب التلقائي عند فتح الصفحة
+    loadCurrentData();
+
+  // 3. دالة حفظ البيانات الجديدة المعدلة
+    async function saveSettings() {
+        const btn = document.querySelector('.btn-save');
+        
+        // تجميع البيانات من الخانات
+        const stadiumName = document.getElementById('stadiumName').value;
+        const org = document.getElementById('organization').value;
+        const pDay = document.getElementById('priceDay').value;
+        const pNight = document.getElementById('priceNight').value;
+        const phone = document.getElementById('managerPhone').value;
+        const loc = document.getElementById('location').value;
+        const fb = document.getElementById('fbLink').value;
+        const insta = document.getElementById('instaLink').value;
+
+        // جلب الإحداثيات من الحقول المخفية (التي تملأ عند الضغط على زر 📍)
+        const lat = document.getElementById('lat') ? document.getElementById('lat').value : "";
+        const lng = document.getElementById('lng') ? document.getElementById('lng').value : "";
+
+        if (!stadiumName || !phone) {
+            alert("يرجى كتابة اسم الملعب ورقم الهاتف على الأقل.");
+            return;
+        }
+
+        // تنبيه بسيط إذا نسى الضغط على زر الموقع (اختياري)
+        if (!lat || !lng) {
+            const confirmNoLoc = confirm("لم يتم تحديد إحداثيات الموقع عبر زر (📍). هل تريد الاستمرار بحفظ الرابط فقط؟ (لن يظهر الملعب في خاصية الملاعب القريبة بدونها)");
+            if (!confirmNoLoc) return;
+        }
+
+        btn.innerText = "جاري الحفظ والتحميل...";
+        btn.disabled = true;
+
+        // بناء الرابط الخاص بالأمر updateSettings مع إضافة lat و lng
+        const finalUpdateURL = `${scriptURL}&action=updateSettings` + 
+                             `&slug=${slug}` +
+                             `&stadiumName=${encodeURIComponent(stadiumName)}` +
+                             `&org=${encodeURIComponent(org)}` +
+                             `&pDay=${pDay}` +
+                             `&pNight=${pNight}` +
+                             `&phone=${phone}` +
+                             `&loc=${encodeURIComponent(loc)}` +
+                             `&fb=${encodeURIComponent(fb)}` +
+                             `&insta=${encodeURIComponent(insta)}` +
+                             `&lat=${lat}` + 
+                             `&lng=${lng}`;
+
+        try {
+            const response = await fetch(finalUpdateURL);
+            const result = await response.text();
+
+            if (result === "Update Success") {
+                alert("✅ تم حفظ الإعدادات بنجاح! سيتم توجيهك الآن لمشاهدة صفحة الحجز الخاصة بملعبك.");
+                
+                // تفعيل التوجيه التلقائي لصفحة الحجز مع إرسال المعرف (slug)
+                window.location.href = "booking.html?id=" + slug;
+                
+            } else {
+                alert("❌ حدث خطأ في قاعدة البيانات: " + result);
+            }
+        } catch (e) {
+            console.error(e);
+            alert("❌ خطأ في الاتصال بالسيرفر، تأكد من أن رابط السكريبت صحيح.");
+        } finally {
+            btn.innerText = "حفظ التغييرات ونشر الصفحة";
+            btn.disabled = false;
+        }
+    }
+function detectCoordinates() {
+    if (navigator.geolocation) {
+        // إعدادات لزيادة الدقة
+        const options = {
+            enableHighAccuracy: true, // تفعيل الدقة العالية (استخدام GPS)
+            timeout: 10000,           // انتظار الإشارة لمدة 10 ثوانٍ كحد أقصى
+            maximumAge: 0             // عدم استخدام موقع قديم مخزن في الذاكرة
+        };
+
+        // إظهار رسالة انتظار للمستخدم (اختياري)
+        const btn = document.querySelector('button[onclick="detectCoordinates()"]');
+        btn.innerText = "⏳";
+
+        navigator.geolocation.getCurrentPosition(function(position) {
+            document.getElementById('lat').value = position.coords.latitude;
+            document.getElementById('lng').value = position.coords.longitude;
+            
+            // إظهار رسالة النجاح
+            document.getElementById('coordSuccess').style.display = 'block';
+            
+            // تغيير لون الزر ليعرف أنه تم بنجاح
+            btn.style.background = "#059669";
+            btn.innerHTML = "✅";
+            
+            alert("تم تحديد إحداثيات ملعبك بدقة عالية!");
+        }, function(error) {
+            // إعادة شكل الزر الأصلي في حال الفشل
+            btn.innerHTML = "📍";
+            
+            let msg = "فشل الحصول على الموقع.";
+            if(error.code === 1) msg = "يرجى السماح للمتصفح بالوصول للموقع (Permission Denied).";
+            else if(error.code === 3) msg = "استغرق الهاتف وقتاً طويلاً لتحديد الموقع، حاول مرة أخرى في مكان مفتوح.";
+            
+            alert(msg);
+        }, options); // تمرير الإعدادات هنا
+    } else {
+        alert("متصفحك لا يدعم خاصية تحديد الموقع.");
+    }
+}
+    
+</script>
+
+</body>
+</html>

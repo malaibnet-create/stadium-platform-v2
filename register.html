@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>إنشاء حساب - منصة ملاعب</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <style>
+        :root {
+            --primary-color: #2563eb;
+            --secondary-color: #10b981;
+            --bg-color: #f8fafc;
+        }
+        body {
+            font-family: 'Cairo', sans-serif;
+            background-color: var(--bg-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+        .register-container {
+            background: white;
+            padding: 2rem;
+            border-radius: 15px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 450px;
+            text-align: center;
+        }
+        .logo {
+            font-size: 2rem;
+            font-weight: bold;
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+        }
+        .logo span { color: var(--secondary-color); }
+        h2 { margin-bottom: 1.5rem; color: #1e293b; }
+        
+        .form-group {
+            text-align: right;
+            margin-bottom: 1.2rem;
+        }
+        label { display: block; margin-bottom: 0.5rem; font-weight: bold; }
+        input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            box-sizing: border-box;
+            font-family: inherit;
+        }
+        input:focus { border-color: var(--primary-color); outline: none; }
+        
+        .hint { font-size: 0.8rem; color: #64748b; margin-top: 4px; }
+        
+        .btn-submit {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 14px;
+            width: 100%;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        .btn-submit:hover { background: #1d4ed8; }
+        
+        .footer-links { margin-top: 1.5rem; font-size: 0.9rem; }
+        .footer-links a { color: var(--primary-color); text-decoration: none; }
+
+        #otpModal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5);
+            justify-content: center; align-items: center;
+        }
+        .modal-content {
+            background: white; padding: 2rem; border-radius: 12px; text-align: center;
+        }
+    </style>
+</head>
+<body>
+
+<div class="register-container">
+    <div class="logo">ملاعب<span>.net</span></div>
+    <h2>إنشاء حساب جديد</h2>
+    
+    <form id="registerForm">
+        <div class="form-group">
+            <label>الاسم الكامل</label>
+            <input type="text" id="fullName" placeholder="أدخل اسمك" required>
+        </div>
+        
+        <div class="form-group">
+            <label>البريد الإلكتروني</label>
+            <input type="email" id="email" placeholder="example@mail.com" required>
+        </div>
+        
+       <div class="form-group">
+    <label style="display: block; font-weight: bold;">كلمة المرور</label>
+    <input type="password" id="password" placeholder="********" required style="width: 100%; padding: 10px; margin-top: 5px;">
+    <small style="display: block; color: #d97706; margin-top: 5px; font-size: 0.85rem; line-height: 1.4;">
+        ⚠️ يرجى تذكر الرقم السري جيداً، فهو وسيلتك الوحيدة لدخول لوحة التحكم.
+    </small>
+</div>
+        
+        <div class="form-group">
+            <label>اسم الملعب أو الجمعية</label>
+            <input type="text" id="stadiumName" placeholder="مثلاً: ملعب السعادة" required>
+            <p class="hint">يمكنك تغيير هذا لاحقاً من الإعدادات</p>
+        </div>
+        
+        <button type="button" class="btn-submit" onclick="showOTP()">متابعة لإنشاء الحساب</button>
+    </form>
+
+    <div class="footer-links">
+        لديك حساب بالفعل؟ <a href="login.html">تسجيل الدخول</a>
+    </div>
+</div>
+
+<div id="otpModal">
+    <div class="modal-content">
+        <h3>تأكيد البريد الإلكتروني</h3>
+        <p>لقد أرسلنا رمزاً إلى بريدك، أدخله هنا:</p>
+        <input type="text" id="otpCode" placeholder="- - - -" style="text-align: center; letter-spacing: 10px; font-size: 1.5rem;">
+        <br><br>
+        <button class="btn-submit" onclick="verifyOTP()">تأكيد ودخول</button>
+    </div>
+</div>
+
+<script>
+    const scriptURL = 'https://script.google.com/macros/s/AKfycbwvFXgo9I5-9GKvNeywtW7h3DLeKQxzJiqxO935n7xaNTiJA-afFbUxTePhgdS4_Q8Z/exec?key=B_Assel_Admin_2026_Sec';
+
+  
+    let generatedOTP = ""; // لتخزين الرمز مؤقتاً
+
+    async function hashString(str) {
+    const encoder = new TextEncoder();
+    const data = encoder.encode(str);
+    const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+}
+    
+    async function showOTP() {
+    const fullName = document.getElementById('fullName').value;
+    const email = document.getElementById('email').value;
+    const stadiumName = document.getElementById('stadiumName').value;
+
+    if (!fullName || !email || !stadiumName) {
+        alert("يرجى ملء جميع الخانات");
+        return;
+    }
+
+    const btn = document.querySelector('.btn-submit');
+    btn.innerText = "جاري إرسال الرمز...";
+    btn.disabled = true;
+
+    // الخطوة 1: طلب الرمز من جوجل سكريبت مع إضافة المفتاح السري
+    try {
+        // تم إضافة &key لضمان أن الطلب قادم من موقعك فقط
+        const response = await fetch(`${scriptURL}&action=sendOTP&email=${encodeURIComponent(email)}`);
+        
+        // استخراج النص من الاستجابة (الذي سيكون الهاش المشفر)
+        const result = await response.text();
+        
+        if (result === "Error" || result === "Unauthorized") {
+            alert("فشل إرسال الإيميل. تأكد من صحة البريد أو صلاحيات الوصول.");
+        } else {
+            // الآن generatedOTP سيخزن "الهاش" القادم من السكريبت وليس الرقم الصافي
+            generatedOTP = result.trim(); 
+            document.getElementById('otpModal').style.display = 'flex';
+        }
+    } catch (e) {
+        console.error(e);
+        alert("خطأ في الاتصال بالسيرفر.");
+    } finally {
+        btn.innerText = "متابعة لإنشاء الحساب";
+        btn.disabled = false;
+    }
+}
+
+  async function verifyOTP() {
+    const userOTP = document.getElementById('otpCode').value;
+    
+    // تصحيح: يجب تعريف btn داخل هذه الدالة أيضاً
+    const btn = document.querySelector('#otpModal .btn-submit');
+
+    // تشفير ما كتبه المستخدم للمقارنة مع الهاش المستلم من جوجل
+    const hashedUserOTP = await hashString(userOTP.trim());
+
+    if (hashedUserOTP !== generatedOTP) {
+        alert("الرمز غير صحيح، حاول مجدداً.");
+        return;
+    }
+
+    // الآن سيعمل هذا الجزء بشكل صحيح
+    btn.innerText = "جاري الحفظ النهائي...";
+    btn.disabled = true;
+
+    const fullName = document.getElementById('fullName').value;
+    const email = document.getElementById('email').value;
+    const password = document.getElementById('password').value;
+    const stadiumName = document.getElementById('stadiumName').value;
+
+    // الرابط النهائي لإرسال البيانات
+    const finalURL = `${scriptURL}&action=saveData&fullName=${encodeURIComponent(fullName)}&email=${encodeURIComponent(email)}&password=${encodeURIComponent(password)}&stadiumName=${encodeURIComponent(stadiumName)}&otp=${userOTP}`;
+
+    try {
+        // نستخدم fetch بدون no-cors لنتمكن من قراءة الـ slug العشوائي الراجع من جوجل
+        const response = await fetch(finalURL);
+        const resultText = await response.text();
+
+        if (resultText.includes("Success:")) {
+            document.getElementById('otpModal').style.display = 'none';
+            const finalSlug = resultText.split(":")[1]; // استخراج المعرف العشوائي مثل st-xxxx
+            const userLink = "https://abyesb.github.io/stadium-platform-v2/booking.html?id=" + finalSlug;
+
+            // استبدال محتوى الصفحة بواجهة النجاح الجميلة
+            document.querySelector('.register-container').innerHTML = `
+                <div style="padding: 10px;">
+                    <h2 style="color: var(--secondary-color);">تم إنشاء الحساب بنجاح!</h2>
+                    <p>أهلاً بك <b>${fullName}</b> في منصتنا.</p>
+                    <hr style="border: 0.5px solid #eee; margin: 20px 0;">
+                    
+                    <p style="font-size: 0.9rem; color: #64748b;">رابط صفحة الحجز الخاصة بملعبك:</p>
+                    <div style="background: #f1f5f9; padding: 10px; border-radius: 8px; word-break: break-all; font-size: 0.85rem; margin-bottom: 10px;">
+                        ${userLink}
+                    </div>
+                    
+                    <button onclick="navigator.clipboard.writeText('${userLink}'); alert('تم نسخ الرابط!')" 
+                            style="background: #64748b; color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer; margin-bottom: 20px;">
+                        نسخ الرابط
+                    </button>
+
+                    <div id="qrcode" style="display: flex; justify-content: center; margin-bottom: 15px;"></div>
+                    <p class="hint">صور الشاشة أو احفظ رمز QR لوضعه في مدخل الملعب</p>
+
+                    <button onclick="window.location.href='dashboard.html?id=${finalSlug}'" 
+                            class="btn-submit" style="margin-top: 20px;">
+                        الدخول للوحة التحكم
+                    </button>
+                </div>
+            `;
+
+            // توليد رمز QR فوراً
+            new QRCode(document.getElementById("qrcode"), {
+                text: userLink,
+                width: 160,
+                height: 160
+            });
+
+        } else {
+            alert("حدث خطأ أثناء الحفظ في السيرفر.");
+            btn.disabled = false;
+        }
+    } catch (e) {
+        alert("خطأ في الاتصال. تأكد من تحديث النشر (Deployment) في Google Script.");
+        btn.disabled = false;
+    }
+}
+</script>
+</body>
+</html>

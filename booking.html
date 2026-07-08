@@ -1,0 +1,918 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <!-- كود Google Tag Manager يوضع هنا لضمان عمل التتبع بدقة -->
+    <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+    new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+    j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+    'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+    })(window,document,'script','dataLayer','GTM-NG32N2WN');</script>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- عنوان الصفحة سيتغير ديناميكياً عبر الجافاسكريبت لاحقاً -->
+    <title id="pageTitle">ملاعب NET - حجز</title>
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
+
+    <!-- تم ترك المانيفست هنا كاحتياط وسيتم استبداله برمجياً بواسطة دالة setupDynamicManifest في script.js -->
+    <link rel="manifest" href="manifest.json">
+    
+    <link rel="icon" type="image/png" href="logo_no_background.png">
+    <meta name="theme-color" content="#1e3a8a">
+
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <!-- إضافة إصدار (Version) للملفات لضمان تحديث الكاش عند المستخدمين -->
+    <link rel="stylesheet" href="style.css?v=1.197">
+    
+    <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+    
+    <!-- تأكد من أن script.js يحتوي على دالة setupDynamicManifest التي برمجناها -->
+    <script src="script.js?v=1.197" defer></script>
+</head>
+<body>
+    <!-- الجزء التابع لـ Google Tag Manager لضمان التتبع في حال تعطل الجافاسكريبت -->
+    <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-NG32N2WN" height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+
+    <!-- هنا تبدأ محتويات واجهة الموقع الخاصة بك -->
+
+
+<div id="pricingModal" class="modal-overlay" style="display:none;">
+    <div class="pricing-container">
+        <span class="close-pricing" onclick="closePricingModal()">&times;</span>
+        <h2 style="color: #1e3a8a; margin-bottom: 20px;">اختر خطة النجاح لملعبك 🚀</h2>
+        
+        <div class="plans-wrapper">
+            <div class="plan-card">
+                <h3>الخطة المجانية</h3>
+                <div class="price">0 د.م <span>/ دائماً</span></div>
+                <ul class="features">
+                    <li>✅ حجز ساعات لا محدود</li>
+                    <li>✅ وضع عنوان الملعب</li>
+                    <li>✅ اسم الجهة المشرفة</li>
+                    <li>✅ التواصل مع المشرف</li>
+                    <li>✅ الموقع على الخريطة</li>
+                    <li>✅ التحكم في الأسعار</li>
+                    <li>✅ روابط التواصل</li>
+                </ul>
+                <button class="plan-btn free-btn" onclick="closePricingModal()">العودة للواجهة</button>
+            </div>
+
+            <div class="plan-card premium-card">
+                <div class="popular-tag">الموصى به</div>
+                <h3>الخطة الاحترافية</h3>
+                <div class="price">200 د.م <span>/ شهرياً</span></div>
+                <ul class="features">
+                    <li>⭐ كل مميزات المجانية</li>
+                    <li>✅ لوحة تحكم متكاملة</li>
+                    <li>✅ وضع شعار الجمعية</li>
+                    <li>✅ صور الملعب في السلايدر</li>
+                    <li>✅ إدارة وإلغاء الحجوزات</li>
+                    <li>✅ إحصائيات الأرباح 📊</li>
+                </ul>
+                <div id="paymentSelection">
+                    <button class="plan-btn premium-btn" onclick="showPaymentOptions()">اشترك الآن</button>
+                </div>
+                
+               <div id="paymentOptions" style="display: none; margin-top: 15px; text-align: right;">
+    <p style="font-weight: bold; font-size: 0.9rem;">اختر نوع الاشتراك:</p>
+    <select id="planType" style="width: 100%; padding: 8px; margin-bottom: 10px; border-radius: 5px; font-family: 'Cairo';">
+        <option value="200">شهري - 200 د.م</option>
+        <option value="1500">سنوي - 1500 د.م</option>
+    </select>
+
+    <p style="font-weight: bold; font-size: 0.9rem;">وسيلة الدفع:</p>
+    <select id="payMethod" onchange="toggleTransferDetails()" style="width: 100%; padding: 8px; margin-bottom: 15px; border-radius: 5px; font-family: 'Cairo';">
+        <option value="Transfer">تحويل بنكي 🏦</option>
+        <option value="Card">بطاقة بنكية 💳</option>
+    </select>
+
+    <div id="transferInstructions" style="background: #f0fdf4; border: 1px solid #bbf7d0; padding: 12px; border-radius: 8px; margin-bottom: 15px; text-align: right; font-size: 0.85rem;">
+        <p style="color: #166534; font-weight: bold; margin-bottom: 5px;">تفاصيل التحويل البنكي:</p>
+        <p style="margin: 5px 0;"><strong>RIB:</strong> 0000 0000 0000 0000 0000 0000</p>
+        <p style="margin: 5px 0;"><strong>الاسم:</strong> اسمك الكامل أو اسم الشركة</p>
+        <p style="color: #ef4444; font-size: 0.75rem; margin-top: 8px; line-height: 1.4;">
+            * يرجى إرسال صورة وصل التحويل عبر واتساب لتفعيل حسابك فوراً.
+        </p>
+    </div>
+
+    <button class="plan-btn premium-btn" onclick="confirmFinalPayment()">مواصلة التفعيل</button>
+</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+    <div id="installBanner" style="display:none; background: #2e7d32; color: white; padding: 15px; text-align: center; font-family: 'Cairo', sans-serif; position: sticky; top: 0; z-index: 9999; box-shadow: 0 4px 10px rgba(0,0,0,0.2);">
+        <div style="display: flex; align-items: center; justify-content: center; gap: 10px;">
+            <img src="logo_no_background.png" width="30" height="30" style="border-radius: 5px; background: white; padding: 2px;">
+            <span style="font-size: 14px; font-weight: bold;">ثبت تطبيق "ملاعب NET" لحجز أسرع!</span>
+        </div>
+        <div style="margin-top: 10px;">
+            <button id="installApp" style="background: white; color: #2e7d32; border: none; padding: 8px 20px; border-radius: 20px; font-weight: bold; cursor: pointer; margin-right: 10px; font-family: 'Cairo';">
+                تثبيت الآن 📲
+            </button>
+            <button onclick="document.getElementById('installBanner').style.display='none'" style="background: transparent; color: white; border: none; font-size: 12px; cursor: pointer; text-decoration: underline; font-family: 'Cairo';">
+                إغلاق
+            </button>
+        </div>
+    </div>
+
+  <div class="app-container">
+    
+  <div class="header-section" style="text-align: center; padding: 20px;">
+      <!-- هذه الخانات لن تظهر للمستخدم، هي فقط لتخزين الأرقام برمجياً -->
+<input type="hidden" id="lat" name="lat">
+<input type="hidden" id="lng" name="lng">
+    <img id="displayLogo" 
+         src="logo_no_background.png" 
+         alt="ملاعب NET" 
+         onerror="this.src='https://i.ibb.co/HLRFczNy/resized-1.png'"
+         style="max-width: 110px; height: 110px; object-fit: contain; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); background: white; padding: 5px;">
+    
+    <h2 id="displayStadiumName" style="margin-top: 15px; color: #1e3a8a; font-family: 'Cairo'; font-weight: bold;">جاري التحميل...</h2>
+    
+    <p id="displayOrg" style="color: #64748b; font-size: 0.9rem; margin-bottom: 5px;"></p>
+    <p id="displayLocation" style="color: #94a3b8; font-size: 0.8rem; font-style: italic;"></p>
+</div>
+        </div>
+
+ <div class="action-buttons" style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-bottom: 20px;">
+    <button onclick="toggleRules()" class="btn-info" style="flex: 1; min-width: 120px; white-space: nowrap;">📜 ثمن الحجز</button>
+    
+    <button type="button" id="btnLocation" class="btn-map" style="flex: 1; min-width: 120px; white-space: nowrap;">📍 موقع الملعب</button>
+    
+    <button onclick="openNearbyModal()" class="btn-nearby" style="width: 100%; background: #10b981; color: white; border: none; padding: 15px; border-radius: 8px; cursor: pointer;">
+    ⚽ ملاعب قريبة
+</div>
+
+<div id="rulesModal" class="modal">
+    <div class="modal-content" style="max-width: 450px; border-radius: 20px; border: none; box-shadow: 0 20px 40px rgba(0,0,0,0.2);">
+        
+        <div style="background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%); color: white; padding: 20px; text-align: center; position: relative;">
+            <span class="close" onclick="toggleRules()" style="color: white; font-size: 30px; cursor: pointer; position: absolute; right: 20px; top: 12px; opacity: 0.8;">&times;</span>
+            <h3 style="margin: 0; font-family: 'Cairo', sans-serif; font-weight: 700; letter-spacing: 1px;">📜 تفاصيل وقوانين الملعب</h3>
+        </div>
+
+        <div style="padding: 20px; background: #f8fafc; direction: rtl; font-family: 'Cairo', sans-serif;">
+            
+            <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+                <div style="flex: 1; background: white; padding: 15px; border-radius: 15px; text-align: center; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px rgba(0,0,0,0.02);">
+                    <span style="font-size: 1.5rem; display: block; margin-bottom: 5px;">☀️</span>
+                    <span style="color: #64748b; font-size: 0.8rem; display: block;">ثمن النهار</span>
+                    <strong style="color: #1e3a8a; font-size: 1.2rem;"><span id="displayPriceDay">--</span> <small style="font-size: 0.7rem;">درهم</small></strong>
+                </div>
+                
+                <div id="nightPriceRow" style="flex: 1; background: white; padding: 15px; border-radius: 15px; text-align: center; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px rgba(0,0,0,0.02);">
+                    <span style="font-size: 1.5rem; display: block; margin-bottom: 5px;">🌙</span>
+                    <span style="color: #64748b; font-size: 0.8rem; display: block;">ثمن الليل</span>
+                    <strong style="color: #f59e0b; font-size: 1.2rem;"><span id="displayPriceNight">--</span> <small style="font-size: 0.7rem;">درهم</small></strong>
+                </div>
+            </div>
+
+            <div style="background: white; padding: 15px; border-radius: 15px; border: 1px solid #e2e8f0;">
+                <h4 style="margin: 0 0 10px 0; color: #1e3a8a; font-size: 0.9rem; border-bottom: 1px solid #f1f5f9; padding-bottom: 5px;">⚠️ تعليمات هامة:</h4>
+                <ul style="list-style: none; padding: 0; margin: 0; font-size: 0.85rem; color: #475569; line-height: 1.8;">
+                    <li style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+                        <span style="color: #22c55e;">✔</span> يمنع السب أو السلوك غير الرياضي نهائياً.
+                    </li>
+                    <li style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+                        <span style="color: #22c55e;">✔</span> الحفاظ على نظافة الملعب والمرافق التابعة له.
+                    </li>
+                    <li style="display: flex; align-items: center; gap: 8px;">
+                        <span style="color: #22c55e;">✔</span> الحضور قبل الموعد بـ 10 دقائق لتأكيد الحجز.
+                    </li>
+                </ul>
+            </div>
+
+            <button onclick="toggleRules()" style="width: 100%; margin-top: 20px; padding: 14px; background: #1e3a8a; color: white; border: none; border-radius: 12px; cursor: pointer; font-weight: bold; font-family: 'Cairo'; transition: 0.3s; box-shadow: 0 4px 12px rgba(30, 58, 138, 0.2);">
+                حسناً، فهمت
+            </button>
+        </div>
+    </div>
+</div>
+
+        <div class="week-navigation">
+            <button onclick="changeWeek(-1)">⬅️ السابق</button>
+            <div id="dateDisplay">الشهر والسنة</div>
+            <button onclick="changeWeek(1)">القادم ➡️</button>
+        </div>
+
+     <table id="bookingTable">
+    <thead>
+        <tr id="headerRow">
+            <th>الساعة</th>
+        </tr>
+    </thead>
+    
+    <tbody id="tableBody">
+        </tbody>
+
+    <tfoot>
+        <tr id="footerRow">
+            <th>الساعة</th>
+        </tr>
+    </tfoot>
+</table>
+
+
+
+  
+
+<div id="bookingModal" class="modal">
+    <div class="modal-content" style="border-radius: 15px; overflow: hidden; border: none; max-width: 500px; position: relative; background: white;">
+        
+        <div style="background-color: #1e3a8a; color: white; padding: 15px; position: relative;">
+            <span class="close" onclick="closeBookingModal()" style="color: white; font-size: 28px; cursor: pointer; position: absolute; right: 20px; top: 10px;">×</span>
+            <h3 style="margin: 0; text-align: center; font-family: 'Cairo', sans-serif;">تأكيد حجز <span id="modalStadiumName">الملعب</span></h3>
+        </div>
+        
+        <div id="successTicketContainer" style="display:none; padding: 20px; background: white; text-align: center; font-family: 'Cairo', sans-serif;">
+            </div>
+
+        <div id="bookingFormContent" style="padding: 20px; text-align: right; font-family: 'Cairo', sans-serif; background: white;">
+            
+            <p id="selectedDetails" style="background: #f0f7ff; padding: 10px; border-radius: 8px; color: #1e3a8a; font-weight: bold; border-right: 5px solid #2563eb;"></p>
+
+            <div id="extraSlotContainer" style="display:none; margin: 15px 0; padding: 12px; background-color: #f0fdf4; border: 1px dashed #22c55e; border-radius: 10px; text-align: center;">
+                <p style="margin: 0 0 10px 0; color: #166534; font-weight: bold; font-size: 0.9rem;">💡 هل ترغب في حجز ساعتين متتاليتين بدلاً من ساعة واحدة؟</p>
+                <button type="button" onclick="addNextSlot()" style="background-color: #22c55e; color: white; border: none; padding: 8px 15px; border-radius: 6px; cursor: pointer; font-weight: bold; font-family: 'Cairo', sans-serif;">نعم، أضفها للحجز</button>
+            </div>
+
+            <div style="background: #fff3cd; padding: 12px; border-radius: 8px; font-size: 0.85em; color: #856404; margin-bottom: 15px; border: 1px solid #ffeeba; line-height: 1.6;">
+                ⚠️ <strong>نظام الحماية:</strong> يتم تسجيل رقم الهاتف. في حال الحجز وعدم الحضور، سيتم <strong>حظر رقمك</strong> نهائياً.
+            </div>
+
+            <label style="display: block; margin-top: 10px; font-weight: bold;">الاسم الكامل:</label>
+            <input type="text" id="userName" placeholder="مثال: محمد العلوي" style="width: 100%; padding: 12px; margin-top: 5px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box;">
+            
+            <label style="display: block; margin-top: 15px; font-weight: bold;">رقم الهاتف (واتساب):</label>
+            <input type="tel" id="userPhone" placeholder="06XXXXXXXX" style="width: 100%; padding: 12px; margin-top: 5px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box;">
+            
+            <label style="display: flex; align-items: center; gap: 10px; margin-top: 20px; cursor: pointer; background: #f9f9f9; padding: 10px; border-radius: 8px;">
+                <input type="checkbox" id="confirmCheckbox" onchange="toggleSubmitButton()" style="width: 20px; height: 20px;">
+                <span style="font-size: 0.9em; font-weight: bold; color: #333;">أنا أتحمل مسؤولية هذا الحجز وأتعهد بالحضور.</span>
+            </label>
+
+            <div style="margin-top: 20px; display: flex; gap: 10px;">
+                <button id="finalConfirmBtn" onclick="submitFinalBooking()" disabled style="flex: 2; background-color: #22c55e; color: white; padding: 12px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 1.1em; opacity: 0.5; font-family: 'Cairo', sans-serif;">تأكيد الحجز</button>
+                <button onclick="closeBookingModal()" style="flex: 1; background-color: #ef4444; color: white; padding: 12px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; font-family: 'Cairo', sans-serif;">إلغاء</button>
+            </div>
+        </div>
+    </div>
+</div>  
+
+    
+
+  
+<div class="field-gallery-container">
+    <h3 class="gallery-title">ألبوم صور الملعب</h3>
+    
+    <div class="swiper-container">
+        <div class="swiper-wrapper">
+            
+            <div class="swiper-slide">
+                <img src="https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=800" alt="ملعب قرب حديث" style="width:100%; height:100%; object-fit:cover;">
+                <p class="slide-caption">مرحباً بكم في منصة ملاعب NET</p>
+            </div>
+
+            <div class="swiper-slide">
+                <img src="https://images.unsplash.com/photo-1522778119026-d647f0596c20?w=800" alt="شباك المرمى" style="width:100%; height:100%; object-fit:cover;">
+                <p class="slide-caption">احجز وقتك الآن واستمتع باللعب</p>
+            </div>
+
+            <div class="swiper-slide">
+                <img src="https://images.unsplash.com/photo-1522778119026-d647f0596c20?w=800" alt="حماس المباراة" style="width:100%; height:100%; object-fit:cover;">
+                <p class="slide-caption">أجواء كروية حماسية في انتظارك</p>
+            </div> 
+            
+        </div> 
+
+        <div class="swiper-button-next"></div>
+        <div class="swiper-button-prev"></div>
+        <div class="swiper-pagination"></div>
+    </div>
+</div>
+        
+        
+   <footer class="site-footer">
+    <div class="footer-social-links">
+        <a id="emailLink" href="mailto:support@example.com" class="footer-link-btn contact-btn">
+            <i class="fas fa-envelope"></i> تواصل معنا
+        </a>
+        
+        <a id="fbLink" href="#" target="_blank" class="footer-link-btn fb-btn">
+            <i class="fab fa-facebook-f"></i> فيسبوك
+        </a>
+
+        <a id="igLink" href="#" target="_blank" class="footer-link-btn ig-btn">
+            <i class="fab fa-instagram"></i> إنستغرام
+        </a>
+    </div>
+
+    <div class="legal-container">
+        <span class="legal-item" onclick="toggleRules()">📜 قوانين الملعب</span>
+        <span class="legal-item" onclick="openPrivacy()">🔒 سياسة الخصوصية</span>
+        <span class="legal-item" onclick="openAdminAuth()">🔑 لوحة التحكم</span>
+        <a href="https://wa.me/212600000000" target="_blank" class="legal-item" style="text-decoration: none; color: inherit;">👨‍💻 تواصل مع المطور</a>
+    </div>
+       <div class="user-booking-container">
+    <p style="text-align: center; color: #ffffff; margin-bottom: 10px; font-weight: bold;">اختر الملعب المفضل لبدء الحجز:</p>
+    <!-- شريط التبديل السلس بين الملاعب للاعبين -->
+    <div id="userCourtsTabs" class="user-courts-tabs">
+        <!-- الملاعب تظهر هنا كأزرار أنيقة تتبدل فورياً -->
+    </div>
+</div>
+
+    <p class="copyright-text">© 2026 ملاعب NET. جميع الحقوق محفوظة</p>
+</footer>
+
+<div id="adminAuthModal" class="modal-overlay" style="display:none;">
+    <div id="adminAuthBox" style="display: block; max-width: 400px; padding: 30px; text-align: center; border-radius: 20px; background: white; margin: auto; position: relative;">
+        <span class="close-admin" onclick="closeAdminAuth()">×</span>
+
+        
+        <div id="authContent">
+            <h2 style="color: #1e3a8a; margin-bottom: 10px;">🔐 دخول المسؤول</h2>
+            <p style="font-size: 0.85rem; color: #64748b; margin-bottom: 20px;">يرجى إدخال رمز الوصول الخاص بملعبك</p>
+            
+            <input type="password" id="adminPassInput" class="admin-input" 
+                   placeholder="أدخل كود المسؤول هنا" 
+                   style="text-align: center; letter-spacing: 4px; font-size: 1.1rem; padding: 14px;">
+            
+            <button onclick="handleAdminAuth(this)" id="loginBtn" 
+                    style="width: 100%; background: #1e3a8a; color: white; border: none; padding: 14px; border-radius: 10px; font-weight: bold; cursor: pointer; transition: 0.3s; font-size: 1rem;">
+                دخول النظام
+            </button>
+
+            <div style="margin-top: 20px; border-top: 1px solid #f1f5f9; padding-top: 15px;">
+                <span class="forgot-pass" onclick="handleForgotPassword()" 
+                      style="color: #3b82f6; cursor: pointer; font-size: 0.85rem; text-decoration: none; font-weight: 500;">
+                    نسيت كود الدخول؟
+                </span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="adminPanel" style="display:none;">
+    <div class="admin-full-container">
+        
+        <div class="admin-header">
+            <h2><i class="fas fa-user-shield"></i> لوحة تحكم المسؤول</h2>
+            <span onclick="closeAdminPanel()" class="admin-close-btn">&times;</span>
+        </div>
+        
+        <!-- شريط التنقل الخماسي -->
+        <div class="admin-nav-bar">
+            <div class="admin-nav-item" onclick="switchAdminTab('settings')">
+                <div class="nav-icon">⚙️</div>
+                <span>الإعدادات</span>
+            </div>
+            <div class="admin-nav-item active-tab" onclick="switchAdminTab('courts')">
+                <div class="nav-icon">🏟️</div>
+                <span>إدارة الملاعب</span>
+            </div>
+            <div class="admin-nav-item" onclick="switchAdminTab('cancellations')">
+                <div class="nav-icon">❌</div>
+                <span>إلغاء حجز</span>
+            </div>
+            <div class="admin-nav-item" onclick="switchAdminTab('stats')">
+                <div class="nav-icon">📊</div>
+                <span>البيانات</span>
+            </div>
+            <div class="admin-nav-item" onclick="switchAdminTab('payments')">
+                <div class="nav-icon">💳</div>
+                <span>طرق الدفع</span>
+            </div>
+        </div>
+
+       <div id="adminSectionContent" style="padding: 15px;">
+            <div id="courtsManagementSection">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <h3 style="margin: 0; color: #1e3a8a;">🏟️ الملاعب والمنشآت المتاحة</h3>
+                    <button onclick="openAddCourtModal()" class="btn-add-court">➕ إضافة ملعب جديد</button>
+                </div>
+
+                <!-- شبكة عرض الملاعب المضافة حالياً بشكل بطاقات احترافية -->
+                <div id="courtsGrid" class="courts-grid">
+                    <!-- سيتم توليد الملاعب هنا ديناميكياً بواسطة الجافاسكريبت -->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- النافذة المنبثقة الذكية (Modal) لإضافة وتعديل معلومات الملعب -->
+<div id="courtFormModal" class="admin-modal" style="display: none;">
+    <div class="admin-modal-content">
+        <div class="admin-modal-header">
+            <h3 id="modalFormTitle">➕ إضافة ملعب جديد</h3>
+            <span onclick="closeCourtFormModal()" class="admin-close-btn">&times;</span>
+        </div>
+        <div class="admin-modal-body">
+            <input type="hidden" id="editCourtId">
+            
+            <label>اسم أو رمز الملعب:</label>
+            <input type="text" id="courtName" class="admin-field" placeholder="مثال: الملعب المغطى A">
+
+            <label>نوع الرياضة:</label>
+            <select id="courtSport" class="admin-field">
+                <option value="⚽ كرة القدم">⚽ كرة القدم</option>
+                <option value="🎾 كرة التنس">🎾 كرة التنس</option>
+                <option value="🏀 كرة السلة">🏀 كرة السلة</option>
+                <option value="🏸 البايدل / الطائرة">🏸 البايدل / الطائرة</option>
+            </select>
+
+            <div style="display: flex; gap: 10px;">
+                <div style="flex: 1;">
+                    <label>السعر نهاراً (درهم/ساعة):</label>
+                    <input type="number" id="priceDay" class="admin-field" placeholder="150">
+                </div>
+                <div style="flex: 1;">
+                    <label>السعر ليلاً (درهم/ساعة):</label>
+                    <input type="number" id="priceNight" class="admin-field" placeholder="250">
+                </div>
+            </div>
+
+            <button onclick="saveCourtData()" class="btn-save-court">حفظ البيانات</button>
+        </div>
+    </div>
+</div> 
+        
+<div id="upgradeOptions" style="display: none; margin-top: 20px;">
+    <button id="mainUpgradeBtn" onclick="openPricingModal()" class="glow-animation" 
+            style="width: 100%; background: linear-gradient(135deg, #f59e0b, #d97706); color: white; padding: 15px; border: none; border-radius: 12px; cursor: pointer; font-family: 'Cairo'; font-weight: bold; font-size: 1.1rem;">
+        عرض خطط الترقية والمميزات <i class="fas fa-crown"></i>
+    </button>
+</div>     
+        
+        <div id="adminSectionContent">
+            </div>
+    </div>
+</div>
+
+<style>
+
+        /* تأثير الاهتزاز */
+@keyframes shakeMe {
+  0% { transform: translateX(0); }
+  25% { transform: translateX(5px); }
+  50% { transform: translateX(-5px); }
+  75% { transform: translateX(5px); }
+  100% { transform: translateX(0); }
+}
+
+/* تأثير اللمعان المستمر للجذب */
+@keyframes glowBtn {
+  0% { box-shadow: 0 0 5px #f59e0b; }
+  50% { box-shadow: 0 0 20px #f59e0b; }
+  100% { box-shadow: 0 0 5px #f59e0b; }
+}
+
+.shake-animation {
+  animation: shakeMe 0.4s ease-in-out;
+}
+
+.glow-animation {
+  animation: glowBtn 1.5s infinite;
+}
+ /* 1. هيكلة اللوحة كصفحة كاملة (Full Screen) */
+/* 1. هيكلة اللوحة كصفحة كاملة (Full Screen) */
+#adminPanel {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: #ffffff;
+    /* جعلناه 9999 ليكون تحت النوافذ المنبثقة (Modals) */
+    z-index: 9999; 
+    display: none; 
+    flex-direction: column;
+    font-family: 'Cairo', sans-serif;
+    overflow: hidden;
+}
+
+.admin-full-container {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    width: 100%;
+    max-width: 900px; 
+    margin: 0 auto;
+    background: #fff;
+    position: relative;
+    box-shadow: 0 0 40px rgba(0,0,0,0.1);
+}
+
+/* 2. النظام العالمي لتوسيط النوافذ (Modals) */
+/* هذا الجزء سيحل مشكلة الصور التي أرسلتها (الانزياح) */
+.modal, .custom-modal, .modal-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(4px); /* لمسة عصرية */
+    /* التوسيط المطلق */
+    align-items: center;
+    justify-content: center;
+    /* z-index أعلى من لوحة الإدارة لضمان الظهور فوقها */
+    z-index: 999999 !important; 
+}
+
+.modal-content, .custom-modal-content {
+    background-color: #ffffff;
+    width: 90%;
+    max-width: 450px;
+    border-radius: 20px;
+    margin: auto !important; /* إلغاء أي انزياح قديم */
+    position: relative;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+    animation: modalSlideUp 0.3s ease-out;
+}
+
+@keyframes modalSlideUp {
+    from { transform: translateY(20px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+/* 2. الجزء العلوي الثابت (Header) */
+.admin-header {
+    padding: 15px 25px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #1e3a8a;
+    color: white;
+    flex-shrink: 0;
+}
+
+.admin-header h2 { margin: 0; font-size: 1.2rem; display: flex; align-items: center; gap: 10px; }
+
+.admin-close-btn { font-size: 35px; cursor: pointer; line-height: 1; transition: 0.3s; }
+.admin-close-btn:hover { color: #ff4d4d; }
+
+/* 3. شريط التنقل (الأيقونات الثلاث) */
+.admin-nav-bar {
+    display: flex;
+    justify-content: space-around;
+    padding: 15px;
+    background: #f8fafc;
+    border-bottom: 1px solid #e2e8f0;
+    flex-shrink: 0;
+}
+
+.admin-nav-item {
+    text-align: center;
+    cursor: pointer;
+    flex: 1;
+    transition: 0.3s;
+    padding: 10px;
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+}
+
+.admin-nav-item:hover { background: #eff6ff; transform: translateY(-2px); }
+
+.nav-icon { font-size: 24px; }
+
+.admin-nav-item span { font-size: 0.85rem; font-weight: bold; color: #475569; }
+
+/* 4. منطقة المحتوى القابلة للتمرير */
+#adminSectionContent {
+    flex: 1;
+    overflow-y: auto;
+    padding: 25px;
+    background: #ffffff;
+    -webkit-overflow-scrolling: touch;
+}
+
+/* 5. تنسيق الجداول (من كودك الأصلي مع تحسين) */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 20px;
+}
+th {
+    background-color: #1e3a8a;
+    color: white;
+    padding: 12px 8px;
+    position: sticky;
+    top: 0;
+    font-size: 0.85rem;
+    z-index: 5;
+}
+td {
+    padding: 10px 8px;
+    border-bottom: 1px solid #f1f5f9;
+    text-align: center;
+    font-size: 0.85rem;
+}
+
+/* 6. تنسيق الحقول (Inputs) */
+.admin-input {
+    width: 100%;
+    padding: 14px;
+    margin-bottom: 15px;
+    border: 1px solid #cbd5e1;
+    border-radius: 10px;
+    box-sizing: border-box;
+    font-size: 1rem;
+}
+
+/* 7. تأثيرات التحميل (من كودك الأصلي) */
+.btn-loading {
+    position: relative;
+    color: transparent !important;
+    pointer-events: none;
+}
+.btn-loading::after {
+    content: "";
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    top: 50%;
+    left: 50%;
+    margin: -10px 0 0 -10px;
+    border: 3px solid rgba(255,255,255,0.3);
+    border-radius: 50%;
+    border-top-color: #fff;
+    animation: spin 0.8s ease-in-out infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* تحسينات الموبايل */
+@media (max-width: 600px) {
+    .admin-header h2 { font-size: 1rem; }
+    .nav-icon { font-size: 20px; }
+}
+    /* الكود الناقص لظهور زر الترقية */
+#upgradeBadgeContainer {
+    display: block !important;
+    text-align: center;
+    margin: 15px auto;
+    width: 100%;
+}
+
+.upgrade-btn {
+    background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+    color: white !important;
+    padding: 10px 25px;
+    border-radius: 50px;
+    font-weight: bold;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.9rem;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    /* ربط الحركات الموجودة في كودك */
+    animation: shakeMe 2s infinite, glowBtn 1.5s infinite; 
+}
+
+.upgrade-btn:hover {
+    transform: scale(1.05);
+    filter: brightness(1.1);
+}
+
+ /* تنسيق موحد للأزرار الثلاثة في صفحة الحجز */
+.action-buttons {
+    display: flex;
+    gap: 15px; /* زيادة المسافة قليلاً بين الأزرار */
+    justify-content: center;
+    padding: 20px 10px;
+    width: 100%;
+    flex-wrap: wrap; /* للسماح بنزول الأزرار في الشاشات الصغيرة جداً */
+}
+
+.btn-info, .btn-map, .btn-nearby {
+    /* التعديل الجوهري هنا */
+    flex: 0 1 auto; /* تمنع الزر من التمدد إجبارياً */
+    min-width: 120px; /* أقل عرض ممكن للحفاظ على الشكل */
+    max-width: 200px; /* أقصى عرض ممكن لكي لا تصبح طويلة جداً */
+    
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 8px 16px; /* تقليل الحشو الرأسي */
+    border-radius: 50px; /* جعل الحواف دائرية أكثر (بيضاوي) لتبدو أصغر */
+    font-family: 'Cairo', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    color: white;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1); /* إضافة ظل خفيف للجمالية */
+}
+
+/* الألوان الخاصة بكل زر (مع تعديل لون النص في الزر السماوي ليتطابق مع صورتك) */
+.btn-info { background-color: #374151; } 
+.btn-map { background-color: #2563eb; color: white; } /* تم تعديله للأزرق الواضح */
+.btn-nearby { background-color: #059669; } 
+
+.btn-info:hover, .btn-map:hover, .btn-nearby:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+/* تحسين المظهر على الهواتف */
+@media (max-width: 480px) {
+    .action-buttons {
+        gap: 8px;
+    }
+    .btn-info, .btn-map, .btn-nearby {
+        font-size: 0.75rem;
+        padding: 6px 12px;
+        min-width: 100px;
+    }
+}
+
+</style>
+    
+                                                         
+  <!-- ======================================================== -->
+<!-- 1. بنية نافذة الملاعب القريبة (HTML) المحدثة بدون تعارضات -->
+<!-- ======================================================== -->
+<div id="nearbyModal" class="modal">
+    <div class="modal-content"> 
+        <div class="modal-header">
+            <h3 style="margin:0; color:#1e40af; font-family:'Cairo', sans-serif; font-size:1.2rem;">⚽ ملاعب في محيط 20 كلم</h3>
+            <span onclick="closeNearbyModal()" class="close-btn">&times;</span>
+        </div>
+        
+        <div id="stadiumsList" class="modal-body">
+            <div class="loading-state">
+                <div class="spinner"></div>
+                <p>جاري تحديد موقعك وجلب الملاعب...</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ======================================================== -->
+<!-- 2. التنسيقات الموحدة (CSS) لتوسيط مرن متوافق مع الموبايل -->
+<!-- ======================================================== -->
+<style>
+    /* النظام العالمي الذكي لتوسيط النوافذ عبر Flexbox لمنع التضارب */
+    .modal {
+        display: none; /* يتم تحويله إلى flex عبر الجافاسكريبت عند الفتح */
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(15, 23, 42, 0.9);
+        backdrop-filter: blur(4px); 
+        align-items: center;     /* التوسيط الرأسي المطلق الآمن */
+        justify-content: center;   /* التوسيط الأفقي المطلق الآمن */
+        z-index: 999999 !important; 
+        font-family: 'Cairo', sans-serif;
+    }
+
+    /* تحسينات محتوى النافذة لتناسب كل الشاشات بدون استخدام transform يدوي مسبب للمشاكل */
+    .modal-content {
+        background: white;
+        width: 95%;
+        max-width: 450px;
+        margin: auto !important; /* يضمن التمركز الفليكسي */
+        border-radius: 20px;
+        overflow: hidden;
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+        animation: slideUp 0.3s ease-out; /* حركتك المفضلة للظهور السلس */
+    }
+
+    .modal-header {
+        padding: 20px;
+        background: #f8fafc;
+        border-bottom: 1px solid #e2e8f0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .close-btn {
+        cursor: pointer;
+        font-size: 28px;
+        color: #64748b;
+        line-height: 1;
+    }
+
+    .modal-body {
+        padding: 15px;
+        max-height: 70vh;
+        overflow-y: auto;
+        background: #ffffff;
+    }
+
+    /* تصميم بطاقة الملعب */
+    .stadium-card {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 15px;
+        padding: 15px;
+        margin-bottom: 12px;
+        transition: transform 0.2s;
+    }
+
+    .stadium-card:active { transform: scale(0.98); }
+
+    .stadium-info h4 { margin: 0 0 5px 0; color: #0f172a; font-size: 1.1rem; }
+    .stadium-info .distance-tag {
+        display: inline-block;
+        background: #dcfce7;
+        color: #166534;
+        padding: 2px 8px;
+        border-radius: 6px;
+        font-size: 0.8rem;
+        font-weight: bold;
+        margin-bottom: 10px;
+    }
+
+    /* أزرار التحكم داخل بطاقة الملعب */
+    .btn-group {
+        display: flex;
+        gap: 10px;
+    }
+
+    .btn-action {
+        flex: 1;
+        border: none;
+        padding: 12px 5px;
+        border-radius: 10px;
+        font-family: 'Cairo', sans-serif;
+        font-size: 0.85rem;
+        font-weight: bold;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 5px;
+        text-decoration: none;
+        transition: opacity 0.2s;
+    }
+
+    .btn-map { background: #10b981; color: white; }
+    .btn-book { background: #2563eb; color: white; }
+
+    /* أنيميشن الظهور وحالة التحميل */
+    @keyframes slideUp {
+        from { transform: translateY(20px); opacity: 0; }
+        to { transform: translateY(0); opacity: 1; }
+    }
+
+    .loading-state { text-align: center; padding: 40px 20px; color: #64748b; }
+    .spinner {
+        width: 30px; height: 30px;
+        border: 3px solid #e2e8f0;
+        border-top-color: #2563eb;
+        border-radius: 50%;
+        margin: 0 auto 15px;
+        animation: spin 1s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* تعديلات للموبايل الصغير جداً */
+    @media (max-width: 350px) {
+        .btn-group { flex-direction: column; }
+    }
+    
+    </style>
+    
+<script>
+    
+function setFootballBackground() {
+    const footballImg = 'https://images.unsplash.com/photo-1579952363873-27f3bade9f55?q=80&w=1920'; 
+    const overlay = "linear-gradient(rgba(15, 23, 42, 0.4), rgba(15, 23, 42, 0.75))";
+    
+    // تطبيق الخصائص على الـ body والـ html معاً لكسر أي حاجز أبيض
+    [document.documentElement, document.body].forEach(element => {
+        element.style.setProperty('background-color', '#0f172a', 'important');
+        element.style.setProperty('background-image', `${overlay}, url('${footballImg}')`, 'important');
+        element.style.setProperty('background-size', 'cover', 'important');
+        element.style.setProperty('background-position', 'center center', 'important');
+        element.style.setProperty('background-repeat', 'no-repeat', 'important');
+        element.style.setProperty('background-attachment', 'fixed', 'important');
+    });
+}
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', setFootballBackground);
+} else {
+    setFootballBackground();
+}
+</script>
+</body>
+</html>
