@@ -1821,18 +1821,22 @@ function openNearbyModal() {
 }
 
 
-function switchAdminTab(tab) {
+function switchAdminTab(tab, evt) {
     document.querySelectorAll('.admin-nav-item').forEach(item => {
         item.classList.remove('active-tab');
     });
 
-    const clickedItem = event.currentTarget;
+    const clickedItem = evt?.currentTarget || window.event?.currentTarget;
     if (clickedItem) clickedItem.classList.add('active-tab');
+
+    const content = document.getElementById('adminSectionContent');
+    if (!content) {
+        console.error('adminSectionContent غير موجود داخل لوحة التحكم');
+        return;
+    }
 
     if (tab === 'settings') {
         showSettings();
-    } else if (tab === 'courts') {
-        showCourtsManagement();
     } else if (tab === 'cancellations') {
         showCancellations();
     } else if (tab === 'stats') {
