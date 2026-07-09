@@ -1819,3 +1819,34 @@ function openNearbyModal() {
         findNearbyStadiums();
     }
 }
+
+
+function switchAdminTab(tab) {
+    document.querySelectorAll('.admin-nav-item').forEach(item => {
+        item.classList.remove('active-tab');
+    });
+
+    const clickedItem = event.currentTarget;
+    if (clickedItem) clickedItem.classList.add('active-tab');
+
+    if (tab === 'settings') {
+        showSettings();
+    } else if (tab === 'courts') {
+        showCourtsManagement();
+    } else if (tab === 'cancellations') {
+        showCancellations();
+    } else if (tab === 'stats') {
+        showStats();
+    } else if (tab === 'payments') {
+        showPaymentMethods();
+    }
+}
+
+function showCourtsManagement() {
+    const content = document.getElementById('adminSectionContent');
+    const courtsSection = document.getElementById('courtsManagementSection');
+
+    if (content && courtsSection) {
+        content.innerHTML = courtsSection.outerHTML;
+    }
+}
