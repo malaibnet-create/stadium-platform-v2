@@ -25,12 +25,12 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     
     <!-- إضافة إصدار (Version) للملفات لضمان تحديث الكاش عند المستخدمين -->
-    <link rel="stylesheet" href="style.css?v=1.199">
+    <link rel="stylesheet" href="style.css?v=1.200">
     
     <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
     
     <!-- تأكد من أن script.js يحتوي على دالة setupDynamicManifest التي برمجناها -->
-    <script src="script.js?v=1.199" defer></script>
+    <script src="script.js?v=1.200" defer></script>
 </head>
 <body>
     <!-- الجزء التابع لـ Google Tag Manager لضمان التتبع في حال تعطل الجافاسكريبت -->
@@ -845,27 +845,25 @@ td {
     </style>
     
 <script>
-    
 function setFootballBackground() {
-    const footballImg = 'https://images.unsplash.com/photo-1574629810360-7efbbe195018?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80'; 
+    const footballImg = 'https://images.unsplash.com/photo-1574629810360-7efbbe195018?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80';
     const overlay = "linear-gradient(rgba(15, 23, 42, 0.4), rgba(15, 23, 42, 0.75))";
-    
-    // تطبيق الخصائص على الـ body والـ html معاً لكسر أي حاجز أبيض
-    [document.documentElement, document.body].forEach(element => {
-        element.style.setProperty('background-color', '#0f172a', 'important');
-        element.style.setProperty('background-image', `${overlay}, url('${footballImg}')`, 'important');
-        element.style.setProperty('background-size', 'cover', 'important');
-        element.style.setProperty('background-position', 'center center', 'important');
-        element.style.setProperty('background-repeat', 'no-repeat', 'important');
-        element.style.setProperty('background-attachment', 'fixed', 'important');
-    });
+
+    [document.documentElement, document.body, document.querySelector('.app-container')]
+        .filter(Boolean)
+        .forEach(element => {
+            element.style.setProperty('background-color', '#0f172a', 'important');
+            element.style.setProperty('background-image', `${overlay}, url("${footballImg}")`, 'important');
+            element.style.setProperty('background-size', 'cover', 'important');
+            element.style.setProperty('background-position', 'center center', 'important');
+            element.style.setProperty('background-repeat', 'no-repeat', 'important');
+            element.style.setProperty('background-attachment', 'fixed', 'important');
+        });
 }
 
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', setFootballBackground);
-} else {
-    setFootballBackground();
-}
+document.addEventListener('DOMContentLoaded', setFootballBackground);
+
+
 </script>
 </body>
 </html>
