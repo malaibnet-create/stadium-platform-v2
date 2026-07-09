@@ -30,7 +30,7 @@
     <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
     
     <!-- تأكد من أن script.js يحتوي على دالة setupDynamicManifest التي برمجناها -->
-    <script src="script.js?v=1.197" defer></script>
+    <script src="script.js?v=1.198" defer></script>
 </head>
 <body>
     <!-- الجزء التابع لـ Google Tag Manager لضمان التتبع في حال تعطل الجافاسكريبت -->
@@ -371,10 +371,7 @@
                 <div class="nav-icon">⚙️</div>
                 <span>الإعدادات</span>
             </div>
-            <div class="admin-nav-item active-tab" onclick="switchAdminTab('courts')">
-                <div class="nav-icon">🏟️</div>
-                <span>إدارة الملاعب</span>
-            </div>
+        
             <div class="admin-nav-item" onclick="switchAdminTab('cancellations')">
                 <div class="nav-icon">❌</div>
                 <span>إلغاء حجز</span>
@@ -389,58 +386,14 @@
             </div>
         </div>
 
-       <div id="adminSectionContent" style="padding: 15px;">
-            <div id="courtsManagementSection">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                    <h3 style="margin: 0; color: #1e3a8a;">🏟️ الملاعب والمنشآت المتاحة</h3>
-                    <button onclick="openAddCourtModal()" class="btn-add-court">➕ إضافة ملعب جديد</button>
-                </div>
 
-                <!-- شبكة عرض الملاعب المضافة حالياً بشكل بطاقات احترافية -->
-                <div id="courtsGrid" class="courts-grid">
-                    <!-- سيتم توليد الملاعب هنا ديناميكياً بواسطة الجافاسكريبت -->
-                </div>
             </div>
         </div>
     </div>
 </div>
 
-<!-- النافذة المنبثقة الذكية (Modal) لإضافة وتعديل معلومات الملعب -->
-<div id="courtFormModal" class="admin-modal" style="display: none;">
-    <div class="admin-modal-content">
-        <div class="admin-modal-header">
-            <h3 id="modalFormTitle">➕ إضافة ملعب جديد</h3>
-            <span onclick="closeCourtFormModal()" class="admin-close-btn">&times;</span>
-        </div>
-        <div class="admin-modal-body">
-            <input type="hidden" id="editCourtId">
-            
-            <label>اسم أو رمز الملعب:</label>
-            <input type="text" id="courtName" class="admin-field" placeholder="مثال: الملعب المغطى A">
 
-            <label>نوع الرياضة:</label>
-            <select id="courtSport" class="admin-field">
-                <option value="⚽ كرة القدم">⚽ كرة القدم</option>
-                <option value="🎾 كرة التنس">🎾 كرة التنس</option>
-                <option value="🏀 كرة السلة">🏀 كرة السلة</option>
-                <option value="🏸 البايدل / الطائرة">🏸 البايدل / الطائرة</option>
-            </select>
-
-            <div style="display: flex; gap: 10px;">
-                <div style="flex: 1;">
-                    <label>السعر نهاراً (درهم/ساعة):</label>
-                    <input type="number" id="priceDay" class="admin-field" placeholder="150">
-                </div>
-                <div style="flex: 1;">
-                    <label>السعر ليلاً (درهم/ساعة):</label>
-                    <input type="number" id="priceNight" class="admin-field" placeholder="250">
-                </div>
-            </div>
-
-            <button onclick="saveCourtData()" class="btn-save-court">حفظ البيانات</button>
-        </div>
-    </div>
-</div> 
+    
         
 <div id="upgradeOptions" style="display: none; margin-top: 20px;">
     <button id="mainUpgradeBtn" onclick="openPricingModal()" class="glow-animation" 
@@ -894,7 +847,7 @@ td {
 <script>
     
 function setFootballBackground() {
-    const footballImg = 'https://images.unsplash.com/photo-1579952363873-27f3bade9f55?q=80&w=1920'; 
+    const footballImg = 'https://images.unsplash.com/photo-1574629810360-7efbbe195018?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80'; 
     const overlay = "linear-gradient(rgba(15, 23, 42, 0.4), rgba(15, 23, 42, 0.75))";
     
     // تطبيق الخصائص على الـ body والـ html معاً لكسر أي حاجز أبيض
