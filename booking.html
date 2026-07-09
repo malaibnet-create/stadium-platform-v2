@@ -25,12 +25,12 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     
     <!-- إضافة إصدار (Version) للملفات لضمان تحديث الكاش عند المستخدمين -->
-    <link rel="stylesheet" href="style.css?v=1.202">
+    <link rel="stylesheet" href="style.css?v=1.203">
     
     <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
     
     <!-- تأكد من أن script.js يحتوي على دالة setupDynamicManifest التي برمجناها -->
-    <script src="script.js?v=1.202" defer></script>
+    <script src="script.js?v=1.203" defer></script>
 </head>
 <body>
     <!-- الجزء التابع لـ Google Tag Manager لضمان التتبع في حال تعطل الجافاسكريبت -->
@@ -359,51 +359,42 @@
 
 <div id="adminPanel" style="display:none;">
     <div class="admin-full-container">
-        
+
         <div class="admin-header">
             <h2><i class="fas fa-user-shield"></i> لوحة تحكم المسؤول</h2>
             <span onclick="closeAdminPanel()" class="admin-close-btn">&times;</span>
         </div>
-        
-        <!-- شريط التنقل الخماسي -->
+
         <div class="admin-nav-bar">
-            <div class="admin-nav-item" onclick="switchAdminTab('settings')">
+            <div class="admin-nav-item" onclick="switchAdminTab('settings', event)">
                 <div class="nav-icon">⚙️</div>
                 <span>الإعدادات</span>
             </div>
-        
-            <div class="admin-nav-item" onclick="switchAdminTab('cancellations')">
+
+            <div class="admin-nav-item" onclick="switchAdminTab('cancellations', event)">
                 <div class="nav-icon">❌</div>
                 <span>إلغاء حجز</span>
             </div>
-            <div class="admin-nav-item" onclick="switchAdminTab('stats')">
+
+            <div class="admin-nav-item" onclick="switchAdminTab('stats', event)">
                 <div class="nav-icon">📊</div>
                 <span>البيانات</span>
             </div>
-            <div class="admin-nav-item" onclick="switchAdminTab('payments')">
+
+            <div class="admin-nav-item" onclick="switchAdminTab('payments', event)">
                 <div class="nav-icon">💳</div>
                 <span>طرق الدفع</span>
             </div>
         </div>
 
-
-            </div>
+        <div id="upgradeOptions" style="display: none; margin: 20px 25px 0;">
+            <button id="mainUpgradeBtn" onclick="openPricingModal()" class="glow-animation">
+                عرض خطط الترقية والمميزات <i class="fas fa-crown"></i>
+            </button>
         </div>
-    </div>
-</div>
 
+        <div id="adminSectionContent"></div>
 
-    
-        
-<div id="upgradeOptions" style="display: none; margin-top: 20px;">
-    <button id="mainUpgradeBtn" onclick="openPricingModal()" class="glow-animation" 
-            style="width: 100%; background: linear-gradient(135deg, #f59e0b, #d97706); color: white; padding: 15px; border: none; border-radius: 12px; cursor: pointer; font-family: 'Cairo'; font-weight: bold; font-size: 1.1rem;">
-        عرض خطط الترقية والمميزات <i class="fas fa-crown"></i>
-    </button>
-</div>     
-        
-        <div id="adminSectionContent">
-            </div>
     </div>
 </div>
 
