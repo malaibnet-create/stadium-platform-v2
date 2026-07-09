@@ -958,3 +958,18 @@ body {
 .header-section {
     background: transparent !important;
 }
+
+#displayStadiumName {
+    color: #ffffff !important;
+    font-size: 1.8rem !important;
+    font-weight: 800 !important;
+    text-shadow: 0 3px 10px rgba(0, 0, 0, 0.75);
+}
+
+#displayOrg,
+#displayLocation {
+    color: #ffffff !important;
+    font-size: 1rem !important;
+    font-weight: 600 !important;
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.8);
+}
