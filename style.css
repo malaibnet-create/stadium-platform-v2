@@ -1,5 +1,5 @@
 
-/* 1. التنسيقات العامة والخلفية الأصلية */
+/* 1. Ø§Ù„ØªÙ†Ø³ÙŠÙ‚Ø§Øª Ø§Ù„Ø¹Ø§Ù…Ø© ÙˆØ§Ù„Ø®Ù„ÙÙŠØ© Ø§Ù„Ø£ØµÙ„ÙŠØ© */
 
 body {
     
@@ -8,13 +8,13 @@ body {
     top: 0; left: 0; 
     width: 100%; height: 100%;
     background: rgba(0,0,0,0.7); 
-    display: none; /* تم التغيير لضمان عدم ظهوره تلقائياً إلا عند الضغط */
+    display: none; /* ØªÙ… Ø§Ù„ØªØºÙŠÙŠØ± Ù„Ø¶Ù…Ø§Ù† Ø¹Ø¯Ù… Ø¸Ù‡ÙˆØ±Ù‡ ØªÙ„Ù‚Ø§Ø¦ÙŠØ§Ù‹ Ø¥Ù„Ø§ Ø¹Ù†Ø¯ Ø§Ù„Ø¶ØºØ· */
     align-items: center; 
     justify-content: center; 
-    z-index: 10000 !important; /* رفع الرقم لضمان الظهور فوق لوحة التحكم */
+    z-index: 10000 !important; /* Ø±ÙØ¹ Ø§Ù„Ø±Ù‚Ù… Ù„Ø¶Ù…Ø§Ù† Ø§Ù„Ø¸Ù‡ÙˆØ± ÙÙˆÙ‚ Ù„ÙˆØ­Ø© Ø§Ù„ØªØ­ÙƒÙ… */
 }
 
-/* باقي الكود كما هو تماماً دون أي تغيير */
+/* Ø¨Ø§Ù‚ÙŠ Ø§Ù„ÙƒÙˆØ¯ ÙƒÙ…Ø§ Ù‡Ùˆ ØªÙ…Ø§Ù…Ø§Ù‹ Ø¯ÙˆÙ† Ø£ÙŠ ØªØºÙŠÙŠØ± */
 .pricing-container {
     background: white; width: 90%; max-width: 800px; padding: 30px; border-radius: 20px;
     position: relative; max-height: 90vh; overflow-y: auto; text-align: center;
@@ -42,7 +42,7 @@ body {
 .premium-btn { background: #1e3a8a; color: white; }
 .close-pricing { position: absolute; top: 15px; right: 20px; font-size: 30px; cursor: pointer; color: #94a3b8; }
 
-/* أضف كود حركة الاهتزاز هنا أيضاً ليعمل الزر */
+/* Ø£Ø¶Ù ÙƒÙˆØ¯ Ø­Ø±ÙƒØ© Ø§Ù„Ø§Ù‡ØªØ²Ø§Ø² Ù‡Ù†Ø§ Ø£ÙŠØ¶Ø§Ù‹ Ù„ÙŠØ¹Ù…Ù„ Ø§Ù„Ø²Ø± */
 @keyframes shakeMe {
   0% { transform: translateX(0); }
   25% { transform: translateX(5px); }
@@ -54,7 +54,7 @@ body {
 
    
  body {
-    /* احذف سطر background-image من هنا */
+    /* Ø§Ø­Ø°Ù Ø³Ø·Ø± background-image Ù…Ù† Ù‡Ù†Ø§ */
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
@@ -70,7 +70,7 @@ body {
 
 
 
-/* 2. الهيدر والشعار (توسيط وتصميم دائري احترافي) */
+/* 2. Ø§Ù„Ù‡ÙŠØ¯Ø± ÙˆØ§Ù„Ø´Ø¹Ø§Ø± (ØªÙˆØ³ÙŠØ· ÙˆØªØµÙ…ÙŠÙ… Ø¯Ø§Ø¦Ø±ÙŠ Ø§Ø­ØªØ±Ø§ÙÙŠ) */
 .header-section, .header {
     display: flex !important;
     flex-direction: column !important;
@@ -82,17 +82,17 @@ body {
     padding-top: 20px;
 }
 
-/* الكود السحري لتحويل أي شعار لدائرة */
+/* Ø§Ù„ÙƒÙˆØ¯ Ø§Ù„Ø³Ø­Ø±ÙŠ Ù„ØªØ­ÙˆÙŠÙ„ Ø£ÙŠ Ø´Ø¹Ø§Ø± Ù„Ø¯Ø§Ø¦Ø±Ø© */
 .main-logo, .header img, #displayLogo {
     display: block !important;
     margin: 0 auto 15px auto !important;
-    width: 110px !important;      /* عرض ثابت */
-    height: 110px !important;     /* طول ثابت مطابق للعرض */
-    border-radius: 50% !important; /* جعل الحواف دائرية 100% */
-    object-fit: cover !important;  /* قص الصورة لتملأ الدائرة دون تمطيط */
-    border: 3px solid #ffffff !important; /* إطار أبيض ينهي شكل الدائرة */
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15) !important; /* ظل لإبراز الشعار */
-    background-color: white !important; /* خلفية بيضاء للشعارات الشفافة */
+    width: 110px !important;      /* Ø¹Ø±Ø¶ Ø«Ø§Ø¨Øª */
+    height: 110px !important;     /* Ø·ÙˆÙ„ Ø«Ø§Ø¨Øª Ù…Ø·Ø§Ø¨Ù‚ Ù„Ù„Ø¹Ø±Ø¶ */
+    border-radius: 50% !important; /* Ø¬Ø¹Ù„ Ø§Ù„Ø­ÙˆØ§Ù Ø¯Ø§Ø¦Ø±ÙŠØ© 100% */
+    object-fit: cover !important;  /* Ù‚Øµ Ø§Ù„ØµÙˆØ±Ø© Ù„ØªÙ…Ù„Ø£ Ø§Ù„Ø¯Ø§Ø¦Ø±Ø© Ø¯ÙˆÙ† ØªÙ…Ø·ÙŠØ· */
+    border: 3px solid #ffffff !important; /* Ø¥Ø·Ø§Ø± Ø£Ø¨ÙŠØ¶ ÙŠÙ†Ù‡ÙŠ Ø´ÙƒÙ„ Ø§Ù„Ø¯Ø§Ø¦Ø±Ø© */
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15) !important; /* Ø¸Ù„ Ù„Ø¥Ø¨Ø±Ø§Ø² Ø§Ù„Ø´Ø¹Ø§Ø± */
+    background-color: white !important; /* Ø®Ù„ÙÙŠØ© Ø¨ÙŠØ¶Ø§Ø¡ Ù„Ù„Ø´Ø¹Ø§Ø±Ø§Øª Ø§Ù„Ø´ÙØ§ÙØ© */
 }
 
 h2 {
@@ -105,25 +105,25 @@ h2 {
 }
 
 
-/* 3. أزرار العمليات (Action Buttons) - تصميم عصري وموحد */
+/* 3. Ø£Ø²Ø±Ø§Ø± Ø§Ù„Ø¹Ù…Ù„ÙŠØ§Øª (Action Buttons) - ØªØµÙ…ÙŠÙ… Ø¹ØµØ±ÙŠ ÙˆÙ…ÙˆØ­Ø¯ */
 .action-buttons {
     display: flex;
     flex-direction: row;
     flex-wrap: wrap;
     justify-content: center;
     align-items: center;
-    gap: 12px; /* زيادة المسافة قليلاً للتنفس */
+    gap: 12px; /* Ø²ÙŠØ§Ø¯Ø© Ø§Ù„Ù…Ø³Ø§ÙØ© Ù‚Ù„ÙŠÙ„Ø§Ù‹ Ù„Ù„ØªÙ†ÙØ³ */
     padding: 15px 5px;
     width: 100%;
     box-sizing: border-box;
     margin-bottom: 25px;
 }
 
-/* توحيد تنسيق جميع الأزرار العلوية */
+/* ØªÙˆØ­ÙŠØ¯ ØªÙ†Ø³ÙŠÙ‚ Ø¬Ù…ÙŠØ¹ Ø§Ù„Ø£Ø²Ø±Ø§Ø± Ø§Ù„Ø¹Ù„ÙˆÙŠØ© */
 .btn-membership, .btn-info, .btn-map, .btn-video {
     padding: 12px 20px;
     border: none;
-    border-radius: 12px; /* حواف أكثر نعومة واحترافية */
+    border-radius: 12px; /* Ø­ÙˆØ§Ù Ø£ÙƒØ«Ø± Ù†Ø¹ÙˆÙ…Ø© ÙˆØ§Ø­ØªØ±Ø§ÙÙŠØ© */
     cursor: pointer;
     color: white;
     font-weight: bold;
@@ -138,36 +138,36 @@ h2 {
     box-shadow: 0 2px 4px rgba(0,0,0,0.05);
 }
 
-/* توزيع الألوان الجديدة (هوية بصرية موحدة) */
+/* ØªÙˆØ²ÙŠØ¹ Ø§Ù„Ø£Ù„ÙˆØ§Ù† Ø§Ù„Ø¬Ø¯ÙŠØ¯Ø© (Ù‡ÙˆÙŠØ© Ø¨ØµØ±ÙŠØ© Ù…ÙˆØ­Ø¯Ø©) */
 
-/* زر الانخراط: جعلناه الأبرز بمتدرج أزرق احترافي */
+/* Ø²Ø± Ø§Ù„Ø§Ù†Ø®Ø±Ø§Ø·: Ø¬Ø¹Ù„Ù†Ø§Ù‡ Ø§Ù„Ø£Ø¨Ø±Ø² Ø¨Ù…ØªØ¯Ø±Ø¬ Ø£Ø²Ø±Ù‚ Ø§Ø­ØªØ±Ø§ÙÙŠ */
 .btn-membership { 
     background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%); 
 } 
 
-/* زر القوانين: رمادي معدني رزين لعدم تشتيت العين */
+/* Ø²Ø± Ø§Ù„Ù‚ÙˆØ§Ù†ÙŠÙ†: Ø±Ù…Ø§Ø¯ÙŠ Ù…Ø¹Ø¯Ù†ÙŠ Ø±Ø²ÙŠÙ† Ù„Ø¹Ø¯Ù… ØªØ´ØªÙŠØª Ø§Ù„Ø¹ÙŠÙ† */
 .btn-info { 
     background-color: #475569; 
 } 
 
-/* زر الموقع: أزرق سماوي داكن */
+/* Ø²Ø± Ø§Ù„Ù…ÙˆÙ‚Ø¹: Ø£Ø²Ø±Ù‚ Ø³Ù…Ø§ÙˆÙŠ Ø¯Ø§ÙƒÙ† */
 .btn-map { 
     background-color: #2563eb; 
 } 
 
-/* زر الفيديو: رمادي داكن هادئ */
+/* Ø²Ø± Ø§Ù„ÙÙŠØ¯ÙŠÙˆ: Ø±Ù…Ø§Ø¯ÙŠ Ø¯Ø§ÙƒÙ† Ù‡Ø§Ø¯Ø¦ */
 .btn-video { 
     background-color: #334155; 
 } 
 
-/* تأثيرات التفاعل (Hover) */
+/* ØªØ£Ø«ÙŠØ±Ø§Øª Ø§Ù„ØªÙØ§Ø¹Ù„ (Hover) */
 .btn-membership:hover, .btn-info:hover, .btn-map:hover, .btn-video:hover {
-    transform: translateY(-3px); /* رفعة بسيطة */
-    box-shadow: 0 8px 15px rgba(30, 58, 138, 0.2); /* ظل ناعم ملون */
-    filter: brightness(1.1); /* إضاءة بسيطة عند اللمس */
+    transform: translateY(-3px); /* Ø±ÙØ¹Ø© Ø¨Ø³ÙŠØ·Ø© */
+    box-shadow: 0 8px 15px rgba(30, 58, 138, 0.2); /* Ø¸Ù„ Ù†Ø§Ø¹Ù… Ù…Ù„ÙˆÙ† */
+    filter: brightness(1.1); /* Ø¥Ø¶Ø§Ø¡Ø© Ø¨Ø³ÙŠØ·Ø© Ø¹Ù†Ø¯ Ø§Ù„Ù„Ù…Ø³ */
 }
 
-/* تأثير عند الضغط */
+/* ØªØ£Ø«ÙŠØ± Ø¹Ù†Ø¯ Ø§Ù„Ø¶ØºØ· */
 .btn-membership:active, .btn-info:active, .btn-map:active, .btn-video:active {
     transform: translateY(-1px);
 }
@@ -175,7 +175,8 @@ h2 {
 
 
 
-/* 5. شريط التنقل بين الأسابيع فوق جدول الحجز */
+/* 5. Ø§Ù„Ø¬Ø¯ÙˆÙ„ ÙˆØ§Ù„ØªÙ†Ù‚Ù„ - ØªØµÙ…ÙŠÙ… Ø¹ØµØ±ÙŠ */
+/* Ø´Ø±ÙŠØ· Ø§Ù„ØªÙ†Ù‚Ù„ Ø¨ÙŠÙ† Ø§Ù„Ø£Ø³Ø§Ø¨ÙŠØ¹ */
 .week-navigation {
     width: min(100%, 1326px);
     margin: 26px auto 12px;
@@ -233,19 +234,19 @@ h2 {
 }
 
 .week-navigation button:first-of-type::before {
-    content: "السابق";
+    content: "Ø§Ù„Ø³Ø§Ø¨Ù‚";
 }
 
 .week-navigation button:first-of-type::after {
-    content: "‹";
+    content: "â€¹";
 }
 
 .week-navigation button:last-of-type::before {
-    content: "القادم";
+    content: "Ø§Ù„Ù‚Ø§Ø¯Ù…";
 }
 
 .week-navigation button:last-of-type::after {
-    content: "›";
+    content: "â€º";
 }
 
 .week-navigation button:hover {
@@ -269,10 +270,18 @@ h2 {
 }
 
 @keyframes arrowShake {
-    0%, 100% { transform: translateY(-1px) translateX(0); }
-    25% { transform: translateY(-1px) translateX(3px); }
-    50% { transform: translateY(-1px) translateX(-3px); }
-    75% { transform: translateY(-1px) translateX(2px); }
+    0%, 100% {
+        transform: translateY(-1px) translateX(0);
+    }
+    25% {
+        transform: translateY(-1px) translateX(3px);
+    }
+    50% {
+        transform: translateY(-1px) translateX(-3px);
+    }
+    75% {
+        transform: translateY(-1px) translateX(2px);
+    }
 }
 
 #dateDisplay {
@@ -327,17 +336,20 @@ h2 {
         font-size: 0.8rem;
     }
 }
-/* تحسين شكل الجدول */
-/* 5. تنسيق جدول المواعيد الاحترافي */
+/* ØªÙ†Ø³ÙŠÙ‚ Ø¹Ø±Ø¶ Ø§Ù„ØªØ§Ø±ÙŠØ® ÙÙŠ Ø§Ù„ÙˆØ³Ø· */
+
+
+/* ØªØ­Ø³ÙŠÙ† Ø´ÙƒÙ„ Ø§Ù„Ø¬Ø¯ÙˆÙ„ */
+/* 5. ØªÙ†Ø³ÙŠÙ‚ Ø¬Ø¯ÙˆÙ„ Ø§Ù„Ù…ÙˆØ§Ø¹ÙŠØ¯ Ø§Ù„Ø§Ø­ØªØ±Ø§ÙÙŠ */
 table { 
     width: 100%; 
-    border-collapse: separate; /* لتفعيل الحواف المستديرة */
+    border-collapse: separate; /* Ù„ØªÙØ¹ÙŠÙ„ Ø§Ù„Ø­ÙˆØ§Ù Ø§Ù„Ù…Ø³ØªØ¯ÙŠØ±Ø© */
     border-spacing: 0;
     font-size: 0.85em; 
     background: white; 
-    border-radius: 15px; /* حواف مستديرة للجدول بالكامل */
+    border-radius: 15px; /* Ø­ÙˆØ§Ù Ù…Ø³ØªØ¯ÙŠØ±Ø© Ù„Ù„Ø¬Ø¯ÙˆÙ„ Ø¨Ø§Ù„ÙƒØ§Ù…Ù„ */
     overflow: hidden;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.08); /* ظل عميق يعطي فخامة */
+    box-shadow: 0 10px 30px rgba(0,0,0,0.08); /* Ø¸Ù„ Ø¹Ù…ÙŠÙ‚ ÙŠØ¹Ø·ÙŠ ÙØ®Ø§Ù…Ø© */
     border: 1px solid #e2e8f0;
     margin-top: 10px;
 }
@@ -345,11 +357,11 @@ table {
 th, td { 
     border-bottom: 1px solid #f1f5f9; 
     border-right: 1px solid #f1f5f9; 
-    padding: 15px 5px; /* زيادة المساحة داخل الخانات */
+    padding: 15px 5px; /* Ø²ÙŠØ§Ø¯Ø© Ø§Ù„Ù…Ø³Ø§Ø­Ø© Ø¯Ø§Ø®Ù„ Ø§Ù„Ø®Ø§Ù†Ø§Øª */
     text-align: center; 
 }
 
-/* إزالة الحدود الأخيرة لعدم تشويه الحواف المستديرة */
+/* Ø¥Ø²Ø§Ù„Ø© Ø§Ù„Ø­Ø¯ÙˆØ¯ Ø§Ù„Ø£Ø®ÙŠØ±Ø© Ù„Ø¹Ø¯Ù… ØªØ´ÙˆÙŠÙ‡ Ø§Ù„Ø­ÙˆØ§Ù Ø§Ù„Ù…Ø³ØªØ¯ÙŠØ±Ø© */
 th:last-child, td:last-child { border-right: none; }
 tr:last-child td { border-bottom: none; }
 
@@ -362,7 +374,7 @@ th {
     padding: 18px 5px;
 }
 
-/* خانات الوقت (العمود الأول) */
+/* Ø®Ø§Ù†Ø§Øª Ø§Ù„ÙˆÙ‚Øª (Ø§Ù„Ø¹Ù…ÙˆØ¯ Ø§Ù„Ø£ÙˆÙ„) */
 td:first-child {
     background-color: #f8fafc;
     font-weight: bold;
@@ -370,7 +382,7 @@ td:first-child {
     border-right: 2px solid #e2e8f0;
 }
 
-/* الخانات المتاحة للحجز */
+/* Ø§Ù„Ø®Ø§Ù†Ø§Øª Ø§Ù„Ù…ØªØ§Ø­Ø© Ù„Ù„Ø­Ø¬Ø² */
 .slot { 
     cursor: pointer; 
     transition: all 0.2s ease; 
@@ -378,15 +390,15 @@ td:first-child {
     position: relative;
 }
 
-/* تأثير عند تمرير الماوس على خانة حرة */
+/* ØªØ£Ø«ÙŠØ± Ø¹Ù†Ø¯ ØªÙ…Ø±ÙŠØ± Ø§Ù„Ù…Ø§ÙˆØ³ Ø¹Ù„Ù‰ Ø®Ø§Ù†Ø© Ø­Ø±Ø© */
 .slot:hover {
-    background-color: #eff6ff !important; /* أزرق فاتح جداً */
-    transform: scale(1.02); /* تكبير بسيط جداً */
+    background-color: #eff6ff !important; /* Ø£Ø²Ø±Ù‚ ÙØ§ØªØ­ Ø¬Ø¯Ø§Ù‹ */
+    transform: scale(1.02); /* ØªÙƒØ¨ÙŠØ± Ø¨Ø³ÙŠØ· Ø¬Ø¯Ø§Ù‹ */
     z-index: 10;
     box-shadow: 0 4px 12px rgba(0,0,0,0.05);
 }
 
-/* الخانة المختارة (عند الضغط) */
+/* Ø§Ù„Ø®Ø§Ù†Ø© Ø§Ù„Ù…Ø®ØªØ§Ø±Ø© (Ø¹Ù†Ø¯ Ø§Ù„Ø¶ØºØ·) */
 .selected { 
     background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%) !important; 
     color: white !important; 
@@ -395,7 +407,7 @@ td:first-child {
     border: none !important;
 }
 
-/* تحسين شكل النصوص داخل الخلايا */
+/* ØªØ­Ø³ÙŠÙ† Ø´ÙƒÙ„ Ø§Ù„Ù†ØµÙˆØµ Ø¯Ø§Ø®Ù„ Ø§Ù„Ø®Ù„Ø§ÙŠØ§ */
 .slot span {
     display: block;
     font-size: 0.9em;
@@ -408,11 +420,11 @@ td:first-child {
 
 
 
-/* 6. قسم المعرض والسلايدر (تصميم ثابت ومتكيف) */
+/* 6. Ù‚Ø³Ù… Ø§Ù„Ù…Ø¹Ø±Ø¶ ÙˆØ§Ù„Ø³Ù„Ø§ÙŠØ¯Ø± (ØªØµÙ…ÙŠÙ… Ø«Ø§Ø¨Øª ÙˆÙ…ØªÙƒÙŠÙ) */
 
 .field-gallery-container {
 
-    max-width: 600px; /* مقاس صغير وثابت يناسب الحاسوب والهاتف */
+    max-width: 600px; /* Ù…Ù‚Ø§Ø³ ØµØºÙŠØ± ÙˆØ«Ø§Ø¨Øª ÙŠÙ†Ø§Ø³Ø¨ Ø§Ù„Ø­Ø§Ø³ÙˆØ¨ ÙˆØ§Ù„Ù‡Ø§ØªÙ */
 
     margin: 20px auto !important;
 
@@ -432,7 +444,7 @@ td:first-child {
 
     width: 100%;
 
-    aspect-ratio: 16 / 9; /* نسبة عرض ثابتة تمنع المساحات البيضاء */
+    aspect-ratio: 16 / 9; /* Ù†Ø³Ø¨Ø© Ø¹Ø±Ø¶ Ø«Ø§Ø¨ØªØ© ØªÙ…Ù†Ø¹ Ø§Ù„Ù…Ø³Ø§Ø­Ø§Øª Ø§Ù„Ø¨ÙŠØ¶Ø§Ø¡ */
 
     border-radius: 10px;
 
@@ -440,7 +452,7 @@ td:first-child {
 
     position: relative;
 
-    background: #000; /* خلفية سوداء احتياطية */
+    background: #000; /* Ø®Ù„ÙÙŠØ© Ø³ÙˆØ¯Ø§Ø¡ Ø§Ø­ØªÙŠØ§Ø·ÙŠØ© */
 
 }
 
@@ -464,7 +476,7 @@ td:first-child {
 
     height: 100%;
 
-    object-fit: cover; /* يملأ الحاوية بالكامل ويقص الزوائد برقي */
+    object-fit: cover; /* ÙŠÙ…Ù„Ø£ Ø§Ù„Ø­Ø§ÙˆÙŠØ© Ø¨Ø§Ù„ÙƒØ§Ù…Ù„ ÙˆÙŠÙ‚Øµ Ø§Ù„Ø²ÙˆØ§Ø¦Ø¯ Ø¨Ø±Ù‚ÙŠ */
 
     display: block;
 
@@ -472,7 +484,7 @@ td:first-child {
 
 
 
-/* النص فوق الصورة بشكل أنيق */
+/* Ø§Ù„Ù†Øµ ÙÙˆÙ‚ Ø§Ù„ØµÙˆØ±Ø© Ø¨Ø´ÙƒÙ„ Ø£Ù†ÙŠÙ‚ */
 
 .slide-caption {
 
@@ -500,7 +512,7 @@ td:first-child {
 
 
 
-/* إخفاء أزرار التالي والسابق تماماً */
+/* Ø¥Ø®ÙØ§Ø¡ Ø£Ø²Ø±Ø§Ø± Ø§Ù„ØªØ§Ù„ÙŠ ÙˆØ§Ù„Ø³Ø§Ø¨Ù‚ ØªÙ…Ø§Ù…Ø§Ù‹ */
 
 .swiper-button-next, 
 
@@ -512,7 +524,7 @@ td:first-child {
 
 
 
-/* تنسيق النقاط السفلى فقط */
+/* ØªÙ†Ø³ÙŠÙ‚ Ø§Ù„Ù†Ù‚Ø§Ø· Ø§Ù„Ø³ÙÙ„Ù‰ ÙÙ‚Ø· */
 
 .swiper-pagination-bullet {
 
@@ -532,11 +544,11 @@ td:first-child {
 
 
 
-/* لتأكيد التوسيط في الهواتف */
+/* Ù„ØªØ£ÙƒÙŠØ¯ Ø§Ù„ØªÙˆØ³ÙŠØ· ÙÙŠ Ø§Ù„Ù‡ÙˆØ§ØªÙ */
 
 @media (max-width: 600px) {
 
-    .swiper-slide img { height: 250px; } /* تصغير الارتفاع قليلاً للهواتف */
+    .swiper-slide img { height: 250px; } /* ØªØµØºÙŠØ± Ø§Ù„Ø§Ø±ØªÙØ§Ø¹ Ù‚Ù„ÙŠÙ„Ø§Ù‹ Ù„Ù„Ù‡ÙˆØ§ØªÙ */
 
 }
 
@@ -548,12 +560,12 @@ td:first-child {
 
 
 
-/* --- التنسيق الاحترافي الجديد لأسفل المنصة --- */
+/* --- Ø§Ù„ØªÙ†Ø³ÙŠÙ‚ Ø§Ù„Ø§Ø­ØªØ±Ø§ÙÙŠ Ø§Ù„Ø¬Ø¯ÙŠØ¯ Ù„Ø£Ø³ÙÙ„ Ø§Ù„Ù…Ù†ØµØ© --- */
 .site-footer {
     background-color: #ffffff;
     padding: 35px 20px 20px;
     margin-top: 50px;
-    border-radius: 30px 30px 0 0; /* حواف دائرية ناعمة من الأعلى */
+    border-radius: 30px 30px 0 0; /* Ø­ÙˆØ§Ù Ø¯Ø§Ø¦Ø±ÙŠØ© Ù†Ø§Ø¹Ù…Ø© Ù…Ù† Ø§Ù„Ø£Ø¹Ù„Ù‰ */
     border-top: 1px solid #f1f5f9;
     text-align: center;
     direction: rtl;
@@ -569,7 +581,7 @@ td:first-child {
     flex-wrap: wrap;
 }
 
-/* توحيد الأزرار */
+/* ØªÙˆØ­ÙŠØ¯ Ø§Ù„Ø£Ø²Ø±Ø§Ø± */
 .footer-link-btn {
     text-decoration: none;
     padding: 12px 20px;
@@ -594,7 +606,7 @@ td:first-child {
     box-shadow: 0 8px 20px rgba(0,0,0,0.15);
 }
 
-/* روابط الخصوصية والقوانين */
+/* Ø±ÙˆØ§Ø¨Ø· Ø§Ù„Ø®ØµÙˆØµÙŠØ© ÙˆØ§Ù„Ù‚ÙˆØ§Ù†ÙŠÙ† */
 .legal-container {
     margin: 20px 0;
     padding-top: 20px;
@@ -618,7 +630,7 @@ td:first-child {
     font-size: 0.75rem;
     margin-top: 10px;
 }
-/* 8. زر تثبيت التطبيق PWA (المضاف حديثاً) */
+/* 8. Ø²Ø± ØªØ«Ø¨ÙŠØª Ø§Ù„ØªØ·Ø¨ÙŠÙ‚ PWA (Ø§Ù„Ù…Ø¶Ø§Ù Ø­Ø¯ÙŠØ«Ø§Ù‹) */
 
 #installContainer {
 display: none;
@@ -642,7 +654,7 @@ display: inline-flex;
 align-items: center;
 justify-content: center;
 gap: 10px;
-box-shadow: 0 10px 20px rgba(59, 130, 246, 0.3); /* ظل ملون يعطي طابع التطبيقات الذكية */
+box-shadow: 0 10px 20px rgba(59, 130, 246, 0.3); /* Ø¸Ù„ Ù…Ù„ÙˆÙ† ÙŠØ¹Ø·ÙŠ Ø·Ø§Ø¨Ø¹ Ø§Ù„ØªØ·Ø¨ÙŠÙ‚Ø§Øª Ø§Ù„Ø°ÙƒÙŠØ© */
 transition: all 0.3s ease;
 border: 2px solid rgba(255, 255, 255, 0.1);
 }
@@ -657,15 +669,15 @@ filter: brightness(1.1);
 transform: translateY(-1px);
 }
 
-/* إضافة أيقونة الهاتف بجانب النص (اختياري عبر CSS) */
+/* Ø¥Ø¶Ø§ÙØ© Ø£ÙŠÙ‚ÙˆÙ†Ø© Ø§Ù„Ù‡Ø§ØªÙ Ø¨Ø¬Ø§Ù†Ø¨ Ø§Ù„Ù†Øµ (Ø§Ø®ØªÙŠØ§Ø±ÙŠ Ø¹Ø¨Ø± CSS) */
 #btnInstall::before {
-content: '📱';
+content: 'ðŸ“±';
 font-size: 1.2rem;
 }
 
 
 
-/* تنسيق أيقونة الواتساب الطافية */
+/* ØªÙ†Ø³ÙŠÙ‚ Ø£ÙŠÙ‚ÙˆÙ†Ø© Ø§Ù„ÙˆØ§ØªØ³Ø§Ø¨ Ø§Ù„Ø·Ø§ÙÙŠØ© */
 
 .whatsapp-float {
 
@@ -675,11 +687,11 @@ font-size: 1.2rem;
 
     height: 60px;
 
-    bottom: 30px; /* المسافة من الأسفل */
+    bottom: 30px; /* Ø§Ù„Ù…Ø³Ø§ÙØ© Ù…Ù† Ø§Ù„Ø£Ø³ÙÙ„ */
 
-    right: 30px;  /* المسافة من اليمين */
+    right: 30px;  /* Ø§Ù„Ù…Ø³Ø§ÙØ© Ù…Ù† Ø§Ù„ÙŠÙ…ÙŠÙ† */
 
-    background-color: #25d366; /* لون واتساب الرسمي */
+    background-color: #25d366; /* Ù„ÙˆÙ† ÙˆØ§ØªØ³Ø§Ø¨ Ø§Ù„Ø±Ø³Ù…ÙŠ */
 
     color: #FFF;
 
@@ -691,7 +703,7 @@ font-size: 1.2rem;
 
     box-shadow: 2px 5px 15px rgba(0,0,0,0.3);
 
-    z-index: 9999; /* لضمان ظهورها فوق كل شيء */
+    z-index: 9999; /* Ù„Ø¶Ù…Ø§Ù† Ø¸Ù‡ÙˆØ±Ù‡Ø§ ÙÙˆÙ‚ ÙƒÙ„ Ø´ÙŠØ¡ */
 
     display: flex;
 
@@ -707,7 +719,7 @@ font-size: 1.2rem;
 
 
 
-/* تأثير عند تمرير الماوس */
+/* ØªØ£Ø«ÙŠØ± Ø¹Ù†Ø¯ ØªÙ…Ø±ÙŠØ± Ø§Ù„Ù…Ø§ÙˆØ³ */
 
 .whatsapp-float:hover {
 
@@ -721,7 +733,7 @@ font-size: 1.2rem;
 
 
 
-/* نص توضيحي صغير */
+/* Ù†Øµ ØªÙˆØ¶ÙŠØ­ÙŠ ØµØºÙŠØ± */
 
 .tooltip-text {
 
@@ -767,7 +779,7 @@ font-size: 1.2rem;
 
 
 
-/* ضبط المقاس للهواتف */
+/* Ø¶Ø¨Ø· Ø§Ù„Ù…Ù‚Ø§Ø³ Ù„Ù„Ù‡ÙˆØ§ØªÙ */
 
 @media screen and (max-width: 768px) {
 
@@ -854,15 +866,15 @@ font-size: 1.2rem;
 .share-btn:hover {
     background: #128C7E;
 }
-/* --- النظام الموحد للنوافذ ولوحة التحكم ملاعب NET --- */
+/* --- Ø§Ù„Ù†Ø¸Ø§Ù… Ø§Ù„Ù…ÙˆØ­Ø¯ Ù„Ù„Ù†ÙˆØ§ÙØ° ÙˆÙ„ÙˆØ­Ø© Ø§Ù„ØªØ­ÙƒÙ… Ù…Ù„Ø§Ø¹Ø¨ NET --- */
 
 
 
    
 
-/* --- النظام الموحد والنهائي لتوسيط النوافذ --- */
+/* --- Ø§Ù„Ù†Ø¸Ø§Ù… Ø§Ù„Ù…ÙˆØ­Ø¯ ÙˆØ§Ù„Ù†Ù‡Ø§Ø¦ÙŠ Ù„ØªÙˆØ³ÙŠØ· Ø§Ù„Ù†ÙˆØ§ÙØ° --- */
 
-/* 1. الخلفية المظلمة */
+/* 1. Ø§Ù„Ø®Ù„ÙÙŠØ© Ø§Ù„Ù…Ø¸Ù„Ù…Ø© */
 .modal, .modal-overlay, #pricingModal, #adminAuthModal {
     position: fixed !important;
     top: 0 !important;
@@ -873,16 +885,16 @@ font-size: 1.2rem;
     height: 100vh !important;
     background: rgba(0, 0, 0, 0.8) !important;
     z-index: 1000000 !important;
-    display: none; /* سيتم تفعيله عبر JS */
+    display: none; /* Ø³ÙŠØªÙ… ØªÙØ¹ÙŠÙ„Ù‡ Ø¹Ø¨Ø± JS */
 }
 
-/* 2. التوسيط المطلق (هذا الكود يتجاهل الـ RTL تماماً) */
+/* 2. Ø§Ù„ØªÙˆØ³ÙŠØ· Ø§Ù„Ù…Ø·Ù„Ù‚ (Ù‡Ø°Ø§ Ø§Ù„ÙƒÙˆØ¯ ÙŠØªØ¬Ø§Ù‡Ù„ Ø§Ù„Ù€ RTL ØªÙ…Ø§Ù…Ø§Ù‹) */
 .modal-content, .pricing-container, .custom-modal-content {
     position: absolute !important;
     top: 50% !important;
-    /* نستخدم left دائماً بنسبة 50% لكسر انحياز اليمين */
+    /* Ù†Ø³ØªØ®Ø¯Ù… left Ø¯Ø§Ø¦Ù…Ø§Ù‹ Ø¨Ù†Ø³Ø¨Ø© 50% Ù„ÙƒØ³Ø± Ø§Ù†Ø­ÙŠØ§Ø² Ø§Ù„ÙŠÙ…ÙŠÙ† */
     left: 50% !important; 
-    /* هذه الحركة هي السحر: تعيد النافذة لنصف عرضها ونصف طولها للخلف */
+    /* Ù‡Ø°Ù‡ Ø§Ù„Ø­Ø±ÙƒØ© Ù‡ÙŠ Ø§Ù„Ø³Ø­Ø±: ØªØ¹ÙŠØ¯ Ø§Ù„Ù†Ø§ÙØ°Ø© Ù„Ù†ØµÙ Ø¹Ø±Ø¶Ù‡Ø§ ÙˆÙ†ØµÙ Ø·ÙˆÙ„Ù‡Ø§ Ù„Ù„Ø®Ù„Ù */
     transform: translate(-50%, -50%) !important;
     
     background: white !important;
@@ -892,10 +904,10 @@ font-size: 1.2rem;
     margin: 0 !important;
     padding: 0 !important;
     box-shadow: 0 20px 50px rgba(0,0,0,0.5);
-    direction: rtl; /* لضمان بقاء المحتوى الداخلي عربي */
+    direction: rtl; /* Ù„Ø¶Ù…Ø§Ù† Ø¨Ù‚Ø§Ø¡ Ø§Ù„Ù…Ø­ØªÙˆÙ‰ Ø§Ù„Ø¯Ø§Ø®Ù„ÙŠ Ø¹Ø±Ø¨ÙŠ */
 }
 
-/* استثناء لنافذة الأسعار */
+/* Ø§Ø³ØªØ«Ù†Ø§Ø¡ Ù„Ù†Ø§ÙØ°Ø© Ø§Ù„Ø£Ø³Ø¹Ø§Ø± */
 @media (min-width: 768px) {
     #pricingModal .pricing-container { 
         max-width: 850px !important; 
@@ -909,12 +921,12 @@ font-size: 1.2rem;
 
 
 
-/* 3. لوحة تحكم المسؤول (ملء الشاشة - لا تُلمس) */
-/* --- تعديل لوحة المسؤول لضمان ملء الشاشة والتوسيط --- */
-/* --- الحل النهائي والقطعي للوحة المسؤول --- */
+/* 3. Ù„ÙˆØ­Ø© ØªØ­ÙƒÙ… Ø§Ù„Ù…Ø³Ø¤ÙˆÙ„ (Ù…Ù„Ø¡ Ø§Ù„Ø´Ø§Ø´Ø© - Ù„Ø§ ØªÙÙ„Ù…Ø³) */
+/* --- ØªØ¹Ø¯ÙŠÙ„ Ù„ÙˆØ­Ø© Ø§Ù„Ù…Ø³Ø¤ÙˆÙ„ Ù„Ø¶Ù…Ø§Ù† Ù…Ù„Ø¡ Ø§Ù„Ø´Ø§Ø´Ø© ÙˆØ§Ù„ØªÙˆØ³ÙŠØ· --- */
+/* --- Ø§Ù„Ø­Ù„ Ø§Ù„Ù†Ù‡Ø§Ø¦ÙŠ ÙˆØ§Ù„Ù‚Ø·Ø¹ÙŠ Ù„Ù„ÙˆØ­Ø© Ø§Ù„Ù…Ø³Ø¤ÙˆÙ„ --- */
 #adminPanel {
     position: fixed !important;
-    /* تصفير كامل لجميع الجهات لمنع أي انزياح */
+    /* ØªØµÙÙŠØ± ÙƒØ§Ù…Ù„ Ù„Ø¬Ù…ÙŠØ¹ Ø§Ù„Ø¬Ù‡Ø§Øª Ù„Ù…Ù†Ø¹ Ø£ÙŠ Ø§Ù†Ø²ÙŠØ§Ø­ */
     top: 0 !important;
     left: 0 !important;
     right: 0 !important;
@@ -925,29 +937,29 @@ font-size: 1.2rem;
     padding: 0 !important;
     background: #ffffff !important;
     z-index: 99999 !important;
-    display: none; /* يتم تفعيله بواسطة JS */
+    display: none; /* ÙŠØªÙ… ØªÙØ¹ÙŠÙ„Ù‡ Ø¨ÙˆØ§Ø³Ø·Ø© JS */
     overflow: hidden;
 }
 
-/* الحاوية الداخلية: سنستخدم Flexbox للتوسيط بدلاً من الإحداثيات */
+/* Ø§Ù„Ø­Ø§ÙˆÙŠØ© Ø§Ù„Ø¯Ø§Ø®Ù„ÙŠØ©: Ø³Ù†Ø³ØªØ®Ø¯Ù… Flexbox Ù„Ù„ØªÙˆØ³ÙŠØ· Ø¨Ø¯Ù„Ø§Ù‹ Ù…Ù† Ø§Ù„Ø¥Ø­Ø¯Ø§Ø«ÙŠØ§Øª */
 .admin-full-container {
     display: flex !important;
     flex-direction: column !important;
     height: 100% !important;
     width: 100% !important;
     max-width: 900px !important;
-    /* التوسيط التلقائي يميناً ويساراً */
+    /* Ø§Ù„ØªÙˆØ³ÙŠØ· Ø§Ù„ØªÙ„Ù‚Ø§Ø¦ÙŠ ÙŠÙ…ÙŠÙ†Ø§Ù‹ ÙˆÙŠØ³Ø§Ø±Ø§Ù‹ */
     margin-left: auto !important;
     margin-right: auto !important;
     background: #fff;
     position: relative !important;
-    /* حذف أي Transform قد يسبب انزياحاً */
+    /* Ø­Ø°Ù Ø£ÙŠ Transform Ù‚Ø¯ ÙŠØ³Ø¨Ø¨ Ø§Ù†Ø²ÙŠØ§Ø­Ø§Ù‹ */
     transform: none !important;
     left: auto !important;
     box-shadow: 0 0 40px rgba(0,0,0,0.1);
 }
 
-/* تعديل للموبايل: التأكد من ملء العرض */
+/* ØªØ¹Ø¯ÙŠÙ„ Ù„Ù„Ù…ÙˆØ¨Ø§ÙŠÙ„: Ø§Ù„ØªØ£ÙƒØ¯ Ù…Ù† Ù…Ù„Ø¡ Ø§Ù„Ø¹Ø±Ø¶ */
 @media (max-width: 900px) {
     .admin-full-container {
         width: 100% !important;
@@ -955,7 +967,7 @@ font-size: 1.2rem;
     }
 }
 
-/* حركات الظهور وأزرار الإغلاق */
+/* Ø­Ø±ÙƒØ§Øª Ø§Ù„Ø¸Ù‡ÙˆØ± ÙˆØ£Ø²Ø±Ø§Ø± Ø§Ù„Ø¥ØºÙ„Ø§Ù‚ */
 @keyframes modalZoom {
     from { transform: scale(0.8); opacity: 0; }
     to { transform: scale(1); opacity: 1; }
@@ -970,10 +982,10 @@ font-size: 1.2rem;
 
 .close:hover, .close-pricing:hover, .admin-close-btn:hover { color: #ef4444; }
 
-/* شريط تنبيه انقطاع الإنترنت */
+/* Ø´Ø±ÙŠØ· ØªÙ†Ø¨ÙŠÙ‡ Ø§Ù†Ù‚Ø·Ø§Ø¹ Ø§Ù„Ø¥Ù†ØªØ±Ù†Øª */
 #offline-banner {
     display: none;
-    background-color: #ef4444; /* لون أحمر */
+    background-color: #ef4444; /* Ù„ÙˆÙ† Ø£Ø­Ù…Ø± */
     color: white;
     text-align: center;
     padding: 10px;
@@ -986,7 +998,7 @@ font-size: 1.2rem;
     box-shadow: 0 2px 5px rgba(0,0,0,0.2);
 }
 
-/* حالة تعطيل الزر */
+/* Ø­Ø§Ù„Ø© ØªØ¹Ø·ÙŠÙ„ Ø§Ù„Ø²Ø± */
 .btn-disabled {
     opacity: 0.5;
     pointer-events: none;
@@ -995,7 +1007,7 @@ font-size: 1.2rem;
 
 
 
-/* أزرار ومودال لوحة التحكم */
+/* Ø£Ø²Ø±Ø§Ø± ÙˆÙ…ÙˆØ¯Ø§Ù„ Ù„ÙˆØ­Ø© Ø§Ù„ØªØ­ÙƒÙ… */
 .btn-add-court {
     background: #2563eb; color: white; border: none; padding: 10px 15px;
     border-radius: 10px; font-family: 'Cairo'; font-weight: bold; cursor: pointer;
@@ -1020,7 +1032,7 @@ font-size: 1.2rem;
 .btn-edit { background: #e2e8f0; color: #1e293b; border: none; flex: 1; padding: 8px; border-radius: 8px; font-family: 'Cairo'; cursor: pointer; }
 .btn-delete { background: #fee2e2; color: #dc2626; border: none; padding: 8px; border-radius: 8px; font-family: 'Cairo'; cursor: pointer; }
 
-/* تصميم النافذة المنبثقة لإضافة وتعديل الملاعب */
+/* ØªØµÙ…ÙŠÙ… Ø§Ù„Ù†Ø§ÙØ°Ø© Ø§Ù„Ù…Ù†Ø¨Ø«Ù‚Ø© Ù„Ø¥Ø¶Ø§ÙØ© ÙˆØªØ¹Ø¯ÙŠÙ„ Ø§Ù„Ù…Ù„Ø§Ø¹Ø¨ */
 .admin-modal {
     position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6);
     display: flex; align-items: center; justify-content: center; z-index: 9999999;
@@ -1031,7 +1043,7 @@ font-size: 1.2rem;
 .admin-field { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 8px; font-family: 'Cairo'; box-sizing: border-box; }
 .btn-save-court { background: #10b981; color: white; border: none; padding: 12px; border-radius: 10px; font-family: 'Cairo'; font-weight: bold; cursor: pointer; margin-top: 10px; }
 
-/* شريط تبديل الملاعب للمستخدم (واجهة الحجز) */
+/* Ø´Ø±ÙŠØ· ØªØ¨Ø¯ÙŠÙ„ Ø§Ù„Ù…Ù„Ø§Ø¹Ø¨ Ù„Ù„Ù…Ø³ØªØ®Ø¯Ù… (ÙˆØ§Ø¬Ù‡Ø© Ø§Ù„Ø­Ø¬Ø²) */
 .user-booking-container { max-width: 600px; margin: 20px auto; padding: 0 10px; }
 .user-courts-tabs {
     display: flex; gap: 10px; overflow-x: auto; padding-bottom: 5px; scrollbar-width: none;
@@ -1077,86 +1089,30 @@ body {
     font-weight: 600 !important;
     text-shadow: 0 2px 8px rgba(0, 0, 0, 0.8);
 }
-/* إصلاح انزياح لوحة التحكم على الهاتف ومنع ظهور الواجهة خلفها */
+
+/* === إصلاح انزياح لوحة التحكم والنوافذ على الهاتف === */
 html,
 body {
-    max-width: 100%;
-    overflow-x: hidden;
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow-x: hidden !important;
+}
+
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
 }
 
 body.admin-panel-open,
-html.admin-panel-open {
-    overflow: hidden !important;
-    touch-action: auto;
-    overscroll-behavior: none;
-}
-
-body.admin-panel-open {
-    position: fixed;
-    width: 100%;
-    left: 0;
-    right: 0;
-}
-
-#adminPanel {
+body.modal-open {
     position: fixed !important;
     inset: 0 !important;
-    width: 100vw !important;
-    max-width: 100vw !important;
-    height: 100dvh !important;
-    max-height: 100dvh !important;
-    margin: 0 !important;
-    padding: 0 !important;
-    overflow: hidden !important;
-    touch-action: auto;
-    transform: none !important;
-    left: 0 !important;
-    right: auto !important;
-}
-
-.admin-full-container {
-    width: 100vw !important;
-    max-width: 100vw !important;
-    height: 100dvh !important;
-    max-height: 100dvh !important;
-    margin: 0 !important;
-    overflow: hidden !important;
-    box-sizing: border-box;
-}
-
-.admin-nav-bar {
     width: 100% !important;
-    max-width: 100% !important;
-    display: grid !important;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-    gap: 0;
     overflow: hidden !important;
-    box-sizing: border-box;
-}
-
-.admin-nav-item {
-    min-width: 0 !important;
-    width: 100% !important;
-    box-sizing: border-box;
-    overflow: hidden;
-}
-
-.admin-nav-item span {
-    max-width: 100%;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
-
-#adminSectionContent {
-    min-width: 0 !important;
-    width: 100% !important;
-    max-width: 100% !important;
-    overflow-x: hidden !important;
-    overflow-y: auto !important;
-    -webkit-overflow-scrolling: touch;
-    touch-action: pan-y;
-    box-sizing: border-box;
+    touch-action: none;
 }
 
 .modal,
@@ -1165,45 +1121,147 @@ body.admin-panel-open {
 #pricingModal,
 #adminAuthModal,
 .admin-modal {
-    width: 100vw !important;
-    max-width: 100vw !important;
-    left: 0 !important;
-    right: auto !important;
+    position: fixed !important;
+    inset: 0 !important;
+    width: auto !important;
+    height: auto !important;
+    min-width: 0 !important;
+    max-width: none !important;
+    margin: 0 !important;
+    padding: 12px !important;
+    display: none;
+    align-items: center !important;
+    justify-content: center !important;
     overflow: hidden !important;
 }
 
 .modal-content,
-.custom-modal-content,
 .pricing-container,
-.admin-modal-content {
-    width: calc(100vw - 24px) !important;
+.custom-modal-content,
+.admin-modal-content,
+#adminAuthBox {
+    position: relative !important;
+    top: auto !important;
+    left: auto !important;
+    right: auto !important;
+    bottom: auto !important;
+    transform: none !important;
+    width: min(100%, 450px) !important;
     max-width: 450px !important;
-    box-sizing: border-box;
+    max-height: calc(100dvh - 24px) !important;
+    margin: 0 auto !important;
+    overflow-y: auto !important;
 }
 
-@media (max-width: 600px) {
+.pricing-container {
+    width: min(100%, 850px) !important;
+    max-width: 850px !important;
+}
+
+#adminPanel {
+    position: fixed !important;
+    inset: 0 !important;
+    width: auto !important;
+    height: auto !important;
+    min-width: 0 !important;
+    max-width: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+    background: #ffffff !important;
+}
+
+.admin-full-container {
+    width: 100% !important;
+    max-width: 900px !important;
+    min-width: 0 !important;
+    height: 100dvh !important;
+    max-height: 100dvh !important;
+    margin: 0 auto !important;
+    overflow: hidden !important;
+    transform: none !important;
+    left: auto !important;
+    right: auto !important;
+}
+
+.admin-header,
+.admin-nav-bar,
+#upgradeOptions,
+#adminSectionContent {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    box-sizing: border-box !important;
+}
+
+.admin-nav-bar {
+    display: grid !important;
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+    gap: 4px !important;
+    overflow-x: hidden !important;
+    padding: 10px 6px !important;
+}
+
+.admin-nav-item {
+    min-width: 0 !important;
+    width: 100% !important;
+    padding: 8px 3px !important;
+}
+
+.admin-nav-item span {
+    max-width: 100% !important;
+    overflow-wrap: anywhere !important;
+    font-size: 0.72rem !important;
+    line-height: 1.35 !important;
+}
+
+#adminSectionContent {
+    flex: 1 1 auto !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    padding: 16px 12px !important;
+    -webkit-overflow-scrolling: touch;
+}
+
+#adminSectionContent table,
+#adminSectionContent .table-wrapper,
+#adminSectionContent .courts-grid {
+    max-width: 100% !important;
+}
+
+#adminSectionContent table {
+    display: block !important;
+    overflow-x: auto !important;
+    white-space: nowrap;
+}
+
+@media (max-width: 900px) {
+    .admin-full-container {
+        max-width: 100% !important;
+        box-shadow: none !important;
+    }
+}
+
+@media (max-width: 420px) {
+    .modal,
+    .custom-modal,
+    .modal-overlay,
+    #pricingModal,
+    #adminAuthModal,
+    .admin-modal {
+        padding: 10px !important;
+    }
+
     .admin-header {
         padding: 12px 14px !important;
     }
 
-    .admin-nav-bar {
-        padding: 8px 4px !important;
-    }
-
-    .admin-nav-item {
-        padding: 8px 3px !important;
-        gap: 3px !important;
-    }
-
-    .admin-nav-item span {
-        font-size: 0.72rem !important;
+    .admin-header h2 {
+        font-size: 0.95rem !important;
+        min-width: 0 !important;
     }
 
     .nav-icon {
-        font-size: 20px !important;
-    }
-
-    #adminSectionContent {
-        padding: 14px !important;
+        font-size: 19px !important;
     }
 }
