@@ -1890,3 +1890,4 @@ function showCourtsManagement() {
             .forEach(el => observer.observe(el, { attributes: true, attributeFilter: ['style', 'class'] }));
     });
     
+})();
