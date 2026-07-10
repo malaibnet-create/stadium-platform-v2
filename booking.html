@@ -25,12 +25,12 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     
     <!-- إضافة إصدار (Version) للملفات لضمان تحديث الكاش عند المستخدمين -->
-    <link rel="stylesheet" href="style.css?v=1.206">
+    <link rel="stylesheet" href="style.css?v=1.207">
     
     <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
     
     <!-- تأكد من أن script.js يحتوي على دالة setupDynamicManifest التي برمجناها -->
-    <script src="script.js?v=1.206" defer></script>
+    <script src="script.js?v=1.207" defer></script>
 </head>
 <body>
     <!-- الجزء التابع لـ Google Tag Manager لضمان التتبع في حال تعطل الجافاسكريبت -->
@@ -856,5 +856,201 @@ document.addEventListener('DOMContentLoaded', setFootballBackground);
 
 
 </script>
+    <script id="mobile-admin-lock-fix">
+(function () {
+    function refreshOverlayState() {
+        const adminPanel = document.getElementById('adminPanel');
+        const adminOpen = adminPanel && getComputedStyle(adminPanel).display !== 'none';
+        const overlayOpen = Array.from(document.querySelectorAll('.modal, .modal-overlay, .custom-modal, .admin-modal, #pricingModal, #adminAuthModal'))
+            .some(el => getComputedStyle(el).display !== 'none');
+
+        document.body.classList.toggle('admin-panel-open', !!adminOpen);
+        document.body.classList.toggle('modal-open', !adminOpen && overlayOpen);
+        document.documentElement.style.overflowX = 'hidden';
+        document.body.style.overflowX = 'hidden';
+    }
+
+    function startWatcher() {
+        const observer = new MutationObserver(refreshOverlayState);
+        document.querySelectorAll('.modal, .modal-overlay, .custom-modal, .admin-modal, #pricingModal, #adminAuthModal, #adminPanel')
+            .forEach(el => observer.observe(el, { attributes: true, attributeFilter: ['style', 'class'] }));
+        refreshOverlayState();
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', startWatcher);
+    } else {
+        startWatcher();
+    }
+})();
+</script>
+
+<style id="mobile-admin-alignment-fix">
+html, body {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow-x: hidden !important;
+}
+
+*, *::before, *::after {
+    box-sizing: border-box;
+}
+
+body.admin-panel-open,
+body.modal-open {
+    position: fixed !important;
+    inset: 0 !important;
+    width: 100% !important;
+    overflow: hidden !important;
+    touch-action: none;
+}
+
+.modal,
+.custom-modal,
+.modal-overlay,
+#pricingModal,
+#adminAuthModal,
+.admin-modal {
+    position: fixed !important;
+    inset: 0 !important;
+    width: auto !important;
+    height: auto !important;
+    min-width: 0 !important;
+    max-width: none !important;
+    margin: 0 !important;
+    padding: 12px !important;
+    align-items: center !important;
+    justify-content: center !important;
+    overflow: hidden !important;
+}
+
+.modal-content,
+.pricing-container,
+.custom-modal-content,
+.admin-modal-content,
+#adminAuthBox {
+    position: relative !important;
+    top: auto !important;
+    left: auto !important;
+    right: auto !important;
+    bottom: auto !important;
+    transform: none !important;
+    width: min(100%, 450px) !important;
+    max-width: 450px !important;
+    max-height: calc(100dvh - 24px) !important;
+    margin: 0 auto !important;
+    overflow-y: auto !important;
+}
+
+.pricing-container {
+    width: min(100%, 850px) !important;
+    max-width: 850px !important;
+}
+
+#adminPanel {
+    position: fixed !important;
+    inset: 0 !important;
+    width: auto !important;
+    height: auto !important;
+    min-width: 0 !important;
+    max-width: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+    background: #ffffff !important;
+}
+
+.admin-full-container {
+    width: 100% !important;
+    max-width: 900px !important;
+    min-width: 0 !important;
+    height: 100dvh !important;
+    max-height: 100dvh !important;
+    margin: 0 auto !important;
+    overflow: hidden !important;
+    transform: none !important;
+    left: auto !important;
+    right: auto !important;
+}
+
+.admin-header,
+.admin-nav-bar,
+#upgradeOptions,
+#adminSectionContent {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    box-sizing: border-box !important;
+}
+
+.admin-nav-bar {
+    display: grid !important;
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+    gap: 4px !important;
+    overflow-x: hidden !important;
+    padding: 10px 6px !important;
+}
+
+.admin-nav-item {
+    min-width: 0 !important;
+    width: 100% !important;
+    padding: 8px 3px !important;
+}
+
+.admin-nav-item span {
+    max-width: 100% !important;
+    overflow-wrap: anywhere !important;
+    font-size: 0.72rem !important;
+    line-height: 1.35 !important;
+}
+
+#adminSectionContent {
+    flex: 1 1 auto !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    padding: 16px 12px !important;
+    -webkit-overflow-scrolling: touch;
+}
+
+#adminSectionContent table {
+    display: block !important;
+    max-width: 100% !important;
+    overflow-x: auto !important;
+    white-space: nowrap;
+}
+
+@media (max-width: 900px) {
+    .admin-full-container {
+        max-width: 100% !important;
+        box-shadow: none !important;
+    }
+}
+
+@media (max-width: 420px) {
+    .modal,
+    .custom-modal,
+    .modal-overlay,
+    #pricingModal,
+    #adminAuthModal,
+    .admin-modal {
+        padding: 10px !important;
+    }
+
+    .admin-header {
+        padding: 12px 14px !important;
+    }
+
+    .admin-header h2 {
+        font-size: 0.95rem !important;
+        min-width: 0 !important;
+    }
+
+    .nav-icon {
+        font-size: 19px !important;
+    }
+}
+</style>
 </body>
 </html>
