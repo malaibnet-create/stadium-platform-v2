@@ -1367,3 +1367,83 @@ action-buttons {
         font-size: 0.84rem !important;
     }
 }
+
+.booking-table-scroll {
+    width: min(100% - 16px, 1326px) !important;
+    max-width: 100% !important;
+    margin: 0 auto 24px !important;
+    overflow-x: auto !important;
+    overflow-y: visible !important;
+    direction: rtl !important;
+    -webkit-overflow-scrolling: touch !important;
+    overscroll-behavior-inline: contain !important;
+    border-radius: 15px !important;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.08) !important;
+}
+
+.booking-table-scroll #bookingTable {
+    margin: 0 !important;
+    width: max-content !important;
+    min-width: 100% !important;
+    table-layout: fixed !important;
+    box-shadow: none !important;
+}
+.booking-table-scroll th,
+.booking-table-scroll td {
+    min-width: 86px !important;
+    width: 86px !important;
+    white-space: nowrap !important;
+}
+
+.booking-table-scroll th:first-child,
+.booking-table-scroll td:first-child,
+.booking-table-scroll th:last-child,
+.booking-table-scroll td:last-child {
+    min-width: 108px !important;
+    width: 108px !important;
+}
+
+.booking-table-scroll::-webkit-scrollbar {
+    height: 8px;
+}
+
+.booking-table-scroll::-webkit-scrollbar-track {
+    background: rgba(226, 232, 240, 0.8);
+    border-radius: 999px;
+}
+.booking-table-scroll::-webkit-scrollbar-track {
+    background: rgba(226, 232, 240, 0.8);
+    border-radius: 999px;
+}
+
+.booking-table-scroll::-webkit-scrollbar-thumb {
+    background: #2563eb;
+    border-radius: 999px;
+}
+
+@media (max-width: 700px) {
+    .booking-table-scroll {
+        width: 100% !important;
+        margin-right: 0 !important;
+        margin-left: 0 !important;
+        border-radius: 12px 0 0 12px !important;
+    }
+
+    .booking-table-scroll #bookingTable {
+        min-width: 720px !important;
+    }
+     .booking-table-scroll th,
+    .booking-table-scroll td {
+        min-width: 88px !important;
+        width: 88px !important;
+        padding: 13px 5px !important;
+    }
+
+    .booking-table-scroll th:first-child,
+    .booking-table-scroll td:first-child,
+    .booking-table-scroll th:last-child,
+    .booking-table-scroll td:last-child {
+        min-width: 108px !important;
+        width: 108px !important;
+    }
+}
