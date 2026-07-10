@@ -1854,3 +1854,39 @@ function showCourtsManagement() {
         content.innerHTML = courtsSection.outerHTML;
     }
 }
+(function setupMobileOverlayLock() {
+    const openDisplays = new Set(['block', 'flex', 'grid']);
+
+    function anyOverlayOpen() {
+        return Array.from(document.querySelectorAll('.modal, .modal-overlay, .custom-modal, .admin-modal, #pricingModal, #adminAuthModal'))
+            .some(el => openDisplays.has(getComputedStyle(el).display));
+    }
+
+    window.lockPageBehindOverlay = function lockPageBehindOverlay(isAdminPanel) {
+        document.body.classList.toggle('admin-panel-open', !!isAdminPanel);
+        document.body.classList.toggle('modal-open', !isAdminPanel && anyOverlayOpen());
+        document.documentElement.style.overflowX = 'hidden';
+        document.body.style.overflowX = 'hidden';
+    };
+
+    window.unlockPageBehindOverlay = function unlockPageBehindOverlay() {
+        if (!anyOverlayOpen()) {
+            document.body.classList.remove('modal-open');
+        }
+        const adminPanel = document.getElementById('adminPanel');
+        if (!adminPanel || getComputedStyle(adminPanel).display === 'none') {
+            document.body.classList.remove('admin-panel-open');
+        }
+    };
+     const observer = new MutationObserver(() => {
+        const adminPanel = document.getElementById('adminPanel');
+        const adminOpen = adminPanel && getComputedStyle(adminPanel).display !== 'none';
+        document.body.classList.toggle('admin-panel-open', !!adminOpen);
+        document.body.classList.toggle('modal-open', !adminOpen && anyOverlayOpen());
+    });
+
+    document.addEventListener('DOMContentLoaded', () => {
+        document.querySelectorAll('.modal, .modal-overlay, .custom-modal, .admin-modal, #pricingModal, #adminAuthModal, #adminPanel')
+            .forEach(el => observer.observe(el, { attributes: true, attributeFilter: ['style', 'class'] }));
+    });
+    
