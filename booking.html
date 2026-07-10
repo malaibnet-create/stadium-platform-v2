@@ -139,13 +139,21 @@
 </div>
         </div>
 
- <div class="action-buttons" style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-bottom: 20px;">
-    <button onclick="toggleRules()" class="btn-info" style="flex: 1; min-width: 120px; white-space: nowrap;">📜 ثمن الحجز</button>
-    
-    <button type="button" id="btnLocation" class="btn-map" style="flex: 1; min-width: 120px; white-space: nowrap;">📍 موقع الملعب</button>
-    
-    <button onclick="openNearbyModal()" class="btn-nearby" style="width: 100%; background: #10b981; color: white; border: none; padding: 15px; border-radius: 8px; cursor: pointer;">
-    ⚽ ملاعب قريبة
+<div class="action-buttons">
+    <button type="button" onclick="toggleRules()" class="btn-info">
+        <span class="action-icon">📜</span>
+        <span>ثمن الحجز</span>
+    </button>
+
+    <button type="button" id="btnLocation" class="btn-map">
+        <span class="action-icon">📍</span>
+        <span>موقع الملعب</span>
+    </button>
+
+    <button type="button" onclick="openNearbyModal()" class="btn-nearby">
+        <span class="action-icon">⚽</span>
+        <span>ملاعب قريبة</span>
+    </button>
 </div>
 
 <div id="rulesModal" class="modal">
