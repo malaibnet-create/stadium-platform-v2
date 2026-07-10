@@ -1,5 +1,6 @@
 
 /* 1. التنسيقات العامة والخلفية الأصلية */
+
 body {
     
 .modal-overlay {
@@ -7,10 +8,10 @@ body {
     top: 0; left: 0; 
     width: 100%; height: 100%;
     background: rgba(0,0,0,0.7); 
-    display: none; /* ØªÙ… Ø§Ù„ØªØºÙŠÙŠØ± Ù„Ø¶Ù…Ø§Ù† Ø¹Ø¯Ù… Ø¸Ù‡ÙˆØ±Ù‡ ØªÙ„Ù‚Ø§Ø¦ÙŠØ§Ù‹ Ø¥Ù„Ø§ Ø¹Ù†Ø¯ Ø§Ù„Ø¶ØºØ· */
+    display: none; /* تم التغيير لضمان عدم ظهوره تلقائياً إلا عند الضغط */
     align-items: center; 
     justify-content: center; 
-    z-index: 10000 !important; /* Ø±ÙØ¹ Ø§Ù„Ø±Ù‚Ù… Ù„Ø¶Ù…Ø§Ù† Ø§Ù„Ø¸Ù‡ÙˆØ± ÙÙˆÙ‚ Ù„ÙˆØ­Ø© Ø§Ù„ØªØ­ÙƒÙ… */
+    z-index: 10000 !important; /* رفع الرقم لضمان الظهور فوق لوحة التحكم */
 }
 
 /* باقي الكود كما هو تماماً دون أي تغيير */
@@ -174,8 +175,7 @@ h2 {
 
 
 
-/* 5. الجدول والتنقل - تصميم عصري */
-/* شريط التنقل بين الأسابيع */
+/* 5. شريط التنقل بين الأسابيع فوق جدول الحجز */
 .week-navigation {
     width: min(100%, 1326px);
     margin: 26px auto 12px;
@@ -269,18 +269,10 @@ h2 {
 }
 
 @keyframes arrowShake {
-    0%, 100% {
-        transform: translateY(-1px) translateX(0);
-    }
-    25% {
-        transform: translateY(-1px) translateX(3px);
-    }
-    50% {
-        transform: translateY(-1px) translateX(-3px);
-    }
-    75% {
-        transform: translateY(-1px) translateX(2px);
-    }
+    0%, 100% { transform: translateY(-1px) translateX(0); }
+    25% { transform: translateY(-1px) translateX(3px); }
+    50% { transform: translateY(-1px) translateX(-3px); }
+    75% { transform: translateY(-1px) translateX(2px); }
 }
 
 #dateDisplay {
@@ -335,9 +327,6 @@ h2 {
         font-size: 0.8rem;
     }
 }
-/* تنسيق عرض التاريخ في الوسط */
-
-
 /* تحسين شكل الجدول */
 /* 5. تنسيق جدول المواعيد الاحترافي */
 table { 
@@ -884,7 +873,7 @@ font-size: 1.2rem;
     height: 100vh !important;
     background: rgba(0, 0, 0, 0.8) !important;
     z-index: 1000000 !important;
-    display: none; /* Ø³ÙŠØªÙ… ØªÙØ¹ÙŠÙ„Ù‡ Ø¹Ø¨Ø± JS */
+    display: none; /* سيتم تفعيله عبر JS */
 }
 
 /* 2. التوسيط المطلق (هذا الكود يتجاهل الـ RTL تماماً) */
@@ -1087,4 +1076,134 @@ body {
     font-size: 1rem !important;
     font-weight: 600 !important;
     text-shadow: 0 2px 8px rgba(0, 0, 0, 0.8);
+}
+/* إصلاح انزياح لوحة التحكم على الهاتف ومنع ظهور الواجهة خلفها */
+html,
+body {
+    max-width: 100%;
+    overflow-x: hidden;
+}
+
+body.admin-panel-open,
+html.admin-panel-open {
+    overflow: hidden !important;
+    touch-action: auto;
+    overscroll-behavior: none;
+}
+
+body.admin-panel-open {
+    position: fixed;
+    width: 100%;
+    left: 0;
+    right: 0;
+}
+
+#adminPanel {
+    position: fixed !important;
+    inset: 0 !important;
+    width: 100vw !important;
+    max-width: 100vw !important;
+    height: 100dvh !important;
+    max-height: 100dvh !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+    touch-action: auto;
+    transform: none !important;
+    left: 0 !important;
+    right: auto !important;
+}
+
+.admin-full-container {
+    width: 100vw !important;
+    max-width: 100vw !important;
+    height: 100dvh !important;
+    max-height: 100dvh !important;
+    margin: 0 !important;
+    overflow: hidden !important;
+    box-sizing: border-box;
+}
+
+.admin-nav-bar {
+    width: 100% !important;
+    max-width: 100% !important;
+    display: grid !important;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 0;
+    overflow: hidden !important;
+    box-sizing: border-box;
+}
+
+.admin-nav-item {
+    min-width: 0 !important;
+    width: 100% !important;
+    box-sizing: border-box;
+    overflow: hidden;
+}
+
+.admin-nav-item span {
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+#adminSectionContent {
+    min-width: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch;
+    touch-action: pan-y;
+    box-sizing: border-box;
+}
+
+.modal,
+.custom-modal,
+.modal-overlay,
+#pricingModal,
+#adminAuthModal,
+.admin-modal {
+    width: 100vw !important;
+    max-width: 100vw !important;
+    left: 0 !important;
+    right: auto !important;
+    overflow: hidden !important;
+}
+
+.modal-content,
+.custom-modal-content,
+.pricing-container,
+.admin-modal-content {
+    width: calc(100vw - 24px) !important;
+    max-width: 450px !important;
+    box-sizing: border-box;
+}
+
+@media (max-width: 600px) {
+    .admin-header {
+        padding: 12px 14px !important;
+    }
+
+    .admin-nav-bar {
+        padding: 8px 4px !important;
+    }
+
+    .admin-nav-item {
+        padding: 8px 3px !important;
+        gap: 3px !important;
+    }
+
+    .admin-nav-item span {
+        font-size: 0.72rem !important;
+    }
+
+    .nav-icon {
+        font-size: 20px !important;
+    }
+
+    #adminSectionContent {
+        padding: 14px !important;
+    }
 }
