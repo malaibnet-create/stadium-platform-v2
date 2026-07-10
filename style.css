@@ -231,19 +231,19 @@ h2 {
 }
 
 .week-navigation button:first-of-type::before {
-    content: "Ø§Ù„Ø³Ø§Ø¨Ù‚";
+    content: "السابق";
 }
 
 .week-navigation button:first-of-type::after {
-    content: "â€¹";
+    content: "‹";
 }
 
 .week-navigation button:last-of-type::before {
-    content: "Ø§Ù„Ù‚Ø§Ø¯Ù…";
+    content: "القادم";
 }
 
 .week-navigation button:last-of-type::after {
-    content: "â€º";
+    content: "›";
 }
 
 .week-navigation button:hover {
