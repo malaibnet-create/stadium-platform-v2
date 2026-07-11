@@ -44,8 +44,8 @@
 })();
 
 // 1. الإعدادات والروابط الأساسية
-const settingsScriptURL = 'https://script.google.com/macros/s/AKfycbzp97V8vSTWtDhkiQ0NgxMzvFZ0qecuXA29fSM0ceU5LCilVQCgkK5EbAi48eBOGndoJQ/exec?key=B_Assel_Admin_2026_Sec';
-const bookingScriptURL = 'https://script.google.com/macros/s/AKfycbzp97V8vSTWtDhkiQ0NgxMzvFZ0qecuXA29fSM0ceU5LCilVQCgkK5EbAi48eBOGndoJQ/exec?key=B_Assel_Admin_2026_Sec';
+const settingsScriptURL = 'https://script.google.com/macros/s/AKfycbx0Tj7VZ1zJY5Me6ZR74T8k5tyGOTQmj0ICG_0NPrX6aVUSG-d2-QfbsURZ6sqGbMesxg/exec?key=B_Assel_Admin_2026_Sec';
+const bookingScriptURL = 'https://script.google.com/macros/s/AKfycbx0Tj7VZ1zJY5Me6ZR74T8k5tyGOTQmj0ICG_0NPrX6aVUSG-d2-QfbsURZ6sqGbMesxg/exec?key=B_Assel_Admin_2026_Sec';
 
 
 const urlParams = new URLSearchParams(window.location.search);
@@ -306,9 +306,8 @@ if (logoImg) {
             }
 
         } else {
-            // في حال لم يتم العثور على الملعب
-            if (tableBody) tableBody.innerHTML = '<tr><td colspan="8" style="text-align:center;">عذراً، لم يتم العثور على بيانات هذا الملعب.</td></tr>';
-        }
+    hideBookingForMissingStadium();
+}
       
     } catch (error) { 
         console.error("Error loading details:", error); 
@@ -375,7 +374,9 @@ function initTable(dataFromFetch) {
     let allRowsHtml = ''; 
 
     // --- 2. بناء الصفوف بناءً على الساعات المحددة أعلاه ---
-    for (let hour = startHour; hour <= endHour; hour++) {
+   const lastHour = Math.min(endHour, 24);
+
+for (let hour = startHour; hour < lastHour; hour++) {
         let hLabel24 = `${hour}:00`; 
         let currentH = hour > 12 ? hour - 12 : hour;
         let nextH = (hour + 1) > 12 ? (hour + 1) - 12 : (hour + 1);
@@ -1041,7 +1042,15 @@ async function loadActualSettings() {
             💾 حفظ التغييرات النهائية
         </button>
     </div>
+    <div class="danger-zone">
+    <h4>حذف الحساب</h4>
+    <p>سيتم حذف بيانات الملعب من المنصة. لا تقم بهذا الإجراء إلا إذا كنت متأكدًا.</p>
+    <button type="button" onclick="confirmDeleteAccount()" class="delete-account-btn">
+        حذف الحساب
+    </button>
+</div>
     `;
+     
 content.innerHTML = html;
 
 // --- أضف الكود هنا لملء الخيارات فور ظهورها في الصفحة ---
@@ -1049,7 +1058,7 @@ content.innerHTML = html;
     const closeSelect = document.getElementById('closeHourInput');
 
     if (openSelect && closeSelect) {
-        for (let i = 0; i <= 23; i++) {
+        for (let i = 0; i <= 24; i++) {
             let label = i < 10 ? '0' + i + ':00' : i + ':00';
             openSelect.add(new Option(label, i));
             closeSelect.add(new Option(label, i));
@@ -2059,4 +2068,27 @@ async function confirmDeleteAccount() {
     } catch (error) {
         alert("فشل الاتصال بالسيرفر.");
     }
+
+
+    
+}
+function hideBookingForMissingStadium() {
+    const tableWrap = document.querySelector(".booking-table-scroll");
+    const weekNav = document.querySelector(".week-navigation");
+    const actionButtons = document.querySelector(".action-buttons");
+    const title = document.getElementById("displayStadiumName");
+
+    if (tableWrap) tableWrap.style.display = "none";
+    if (weekNav) weekNav.style.display = "none";
+    if (actionButtons) actionButtons.style.display = "none";
+
+    if (title) {
+        title.innerText = "هذا الملعب غير متوفر حاليًا";
+    }
+
+    const container = document.querySelector(".app-container") || document.body;
+    const msg = document.createElement("div");
+    msg.style.cssText = "max-width:600px;margin:30px auto;padding:20px;background:white;border-radius:14px;text-align:center;font-family:Cairo;color:#b91c1c;font-weight:bold;";
+    msg.innerText = "عذرًا، لا يمكن عرض جدول الحجز لأن بيانات هذا الملعب غير موجودة أو تم حذف الحساب.";
+    container.appendChild(msg);
 }
