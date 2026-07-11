@@ -323,11 +323,13 @@
     </div>
 
     <div class="legal-container">
-        <span class="legal-item" onclick="toggleRules()">📜 قوانين الملعب</span>
-        <span class="legal-item" onclick="openPrivacy()">🔒 سياسة الخصوصية</span>
-        <span class="legal-item" onclick="openAdminAuth()">🔑 لوحة التحكم</span>
-        <a href="https://wa.me/212600000000" target="_blank" class="legal-item" style="text-decoration: none; color: inherit;">👨‍💻 تواصل مع المطور</a>
-    </div>
+    <span class="legal-item" onclick="toggleRules()">📜 قوانين الملعب</span>
+    <span class="legal-item" onclick="openLegalModal('privacy')">🔒 سياسة الخصوصية</span>
+    <span class="legal-item" onclick="openLegalModal('terms')">📄 شروط الاستخدام</span>
+    <span class="legal-item" onclick="openLegalModal('refund')">↩️ الإلغاء والاسترداد</span>
+    <span class="legal-item" onclick="openAdminAuth()">🔑 لوحة التحكم</span>
+    <a href="https://wa.me/212600000000" target="_blank" class="legal-item" style="text-decoration: none; color: inherit;">👨‍💻 تواصل مع المطور</a>
+</div>
        <div class="user-booking-container">
     <p style="text-align: center; color: #ffffff; margin-bottom: 10px; font-weight: bold;">اختر الملعب المفضل لبدء الحجز:</p>
     <!-- شريط التبديل السلس بين الملاعب للاعبين -->
@@ -343,6 +345,24 @@
     <div id="adminAuthBox" style="display: block; max-width: 400px; padding: 30px; text-align: center; border-radius: 20px; background: white; margin: auto; position: relative;">
         <span class="close-admin" onclick="closeAdminAuth()">×</span>
 
+
+<div id="legalModal" class="modal legal-modal" style="display:none;">
+    <div class="legal-modal-content">
+        <div class="legal-modal-header">
+            <h3 id="legalModalTitle">سياسة الخصوصية</h3>
+            <span class="close" onclick="closeLegalModal()">&times;</span>
+        </div>
+
+        <div class="legal-tabs">
+            <button type="button" onclick="switchLegalTab('privacy')" id="tab-privacy">سياسة الخصوصية</button>
+            <button type="button" onclick="switchLegalTab('terms')" id="tab-terms">شروط الاستخدام</button>
+            <button type="button" onclick="switchLegalTab('refund')" id="tab-refund">الإلغاء والاسترداد</button>
+        </div>
+
+        <div id="legalModalBody" class="legal-modal-body"></div>
+    </div>
+</div>
+        
         
         <div id="authContent">
             <h2 style="color: #1e3a8a; margin-bottom: 10px;">🔐 دخول المسؤول</h2>
