@@ -25,12 +25,12 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     
     <!-- إضافة إصدار (Version) للملفات لضمان تحديث الكاش عند المستخدمين -->
-    <link rel="stylesheet" href="style.css?v=1.211">
+    <link rel="stylesheet" href="style.css?v=1.212">
     
     <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
     
     <!-- تأكد من أن script.js يحتوي على دالة setupDynamicManifest التي برمجناها -->
-    <script src="script.js?v=1.211" defer></script>
+    <script src="script.js?v=1.212" defer></script>
 </head>
 <body>
     <!-- الجزء التابع لـ Google Tag Manager لضمان التتبع في حال تعطل الجافاسكريبت -->
@@ -341,12 +341,7 @@
     <p class="copyright-text">© 2026 ملاعب NET. جميع الحقوق محفوظة</p>
 </footer>
 
-<div id="adminAuthModal" class="modal-overlay" style="display:none;">
-    <div id="adminAuthBox" style="display: block; max-width: 400px; padding: 30px; text-align: center; border-radius: 20px; background: white; margin: auto; position: relative;">
-        <span class="close-admin" onclick="closeAdminAuth()">×</span>
-
-
-<div id="legalModal" class="modal legal-modal" style="display:none;">
+    <div id="legalModal" class="modal legal-modal" style="display:none;">
     <div class="legal-modal-content">
         <div class="legal-modal-header">
             <h3 id="legalModalTitle">سياسة الخصوصية</h3>
@@ -362,6 +357,13 @@
         <div id="legalModalBody" class="legal-modal-body"></div>
     </div>
 </div>
+
+<div id="adminAuthModal" class="modal-overlay" style="display:none;">
+    <div id="adminAuthBox" style="display: block; max-width: 400px; padding: 30px; text-align: center; border-radius: 20px; background: white; margin: auto; position: relative;">
+        <span class="close-admin" onclick="closeAdminAuth()">×</span>
+
+
+
         
         
         <div id="authContent">
