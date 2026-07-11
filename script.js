@@ -2024,3 +2024,39 @@ function showCourtsManagement() {
     });
     
 })();
+
+async function confirmDeleteAccount() {
+    const pass = prompt("أدخل الرقم السري لحسابك لتأكيد حذف الحساب:");
+
+    if (!pass) return;
+
+    const confirmText = prompt('للتأكيد النهائي اكتب: حذف');
+
+    if (confirmText !== "حذف") {
+        alert("تم إلغاء عملية الحذف.");
+        return;
+    }
+
+    try {
+        const hashedPassword = await hashString(pass);
+
+        const url = new URL(settingsScriptURL);
+        url.searchParams.set("action", "deleteStadiumAccount");
+        url.searchParams.set("id", stadiumId);
+        url.searchParams.set("pass", hashedPassword);
+
+        const response = await fetch(url.toString());
+        const result = await response.text();
+
+        if (result.trim() === "DeleteSuccess") {
+            alert("تم حذف الحساب بنجاح.");
+            window.location.href = "index.html";
+        } else if (result.trim() === "Unauthorized") {
+            alert("الرقم السري غير صحيح.");
+        } else {
+            alert("حدث خطأ أثناء الحذف: " + result);
+        }
+    } catch (error) {
+        alert("فشل الاتصال بالسيرفر.");
+    }
+}
