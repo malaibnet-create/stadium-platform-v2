@@ -1040,6 +1040,16 @@ async function loadActualSettings() {
         <button onclick="saveAdminSettings(event)" id="saveBtn" style="background:#22c55e; color:white; border:none; padding:15px; border-radius:8px; cursor:pointer; font-weight:bold; margin-top:10px; font-size:1.1em; transition: 0.3s;">
             💾 حفظ التغييرات النهائية
         </button>
+
+        <div style="background: #fff1f2; border: 1px solid #fecdd3; border-radius: 14px; padding: 16px; margin-top: 18px;">
+            <h4 style="margin: 0 0 8px; color: #be123c; text-align: center;">🗑️ حذف الحساب</h4>
+            <p style="margin: 0 0 12px; color: #881337; font-size: 0.9rem; line-height: 1.8; text-align: center;">
+                إذا رغبت في حذف حساب ملعبك نهائياً من الشيت، اضغط الزر أسفله ثم أدخل رقمك السري للتأكيد.
+            </p>
+            <button onclick="openDeleteAccountModal()" type="button" style="width: 100%; background:#dc2626; color:white; border:none; padding:14px; border-radius:10px; cursor:pointer; font-weight:bold; font-size:1rem;">
+                حذف الحساب نهائياً
+            </button>
+        </div>
     </div>
     `;
 content.innerHTML = html;
@@ -1436,6 +1446,128 @@ async function handleForgotPassword() {
 function closeAdminPanel() {
     document.getElementById('adminPanel').style.display = 'none';
 }
+
+function ensureDeleteAccountModal() {
+    let modal = document.getElementById('deleteAccountModal');
+    if (modal) return modal;
+
+    modal = document.createElement('div');
+    modal.id = 'deleteAccountModal';
+    modal.className = 'modal-overlay';
+    modal.style.display = 'none';
+    modal.innerHTML = `
+        <div style="background: white; width: 92%; max-width: 420px; border-radius: 20px; padding: 24px; position: relative; text-align: right; font-family: 'Cairo', sans-serif;">
+            <span onclick="closeDeleteAccountModal()" style="position: absolute; top: 10px; left: 16px; font-size: 28px; cursor: pointer; color: #94a3b8;">&times;</span>
+            <h3 style="margin: 0 0 10px; color: #b91c1c; text-align: center;">تأكيد حذف الحساب</h3>
+            <p style="margin: 0 0 16px; color: #475569; font-size: 0.9rem; line-height: 1.8; text-align: center;">
+                أدخل رقمك السري الحالي، وإذا كان صحيحاً سيتم حذف حساب ملعبك نهائياً من الشيت.
+            </p>
+            <input type="password" id="deleteAccountPasswordInput" class="admin-input" placeholder="أدخل الرقم السري الحالي" style="margin-bottom: 14px;">
+            <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                <button type="button" onclick="submitDeleteAccount(this)" id="confirmDeleteAccountBtn" style="flex: 1; min-width: 140px; background: #dc2626; color: white; border: none; padding: 13px; border-radius: 10px; cursor: pointer; font-weight: bold;">
+                    تأكيد الحذف
+                </button>
+                <button type="button" onclick="closeDeleteAccountModal()" style="flex: 1; min-width: 140px; background: #e2e8f0; color: #1e293b; border: none; padding: 13px; border-radius: 10px; cursor: pointer; font-weight: bold;">
+                    إلغاء
+                </button>
+            </div>
+        </div>
+    `;
+
+    modal.addEventListener('click', function(event) {
+        if (event.target === modal) {
+            closeDeleteAccountModal();
+        }
+    });
+
+    document.body.appendChild(modal);
+    return modal;
+}
+
+function openDeleteAccountModal() {
+    const modal = ensureDeleteAccountModal();
+    const input = document.getElementById('deleteAccountPasswordInput');
+    if (input) {
+        input.value = "";
+    }
+    modal.style.display = 'flex';
+    setTimeout(() => {
+        if (input) input.focus();
+    }, 50);
+}
+
+function closeDeleteAccountModal() {
+    const modal = document.getElementById('deleteAccountModal');
+    const input = document.getElementById('deleteAccountPasswordInput');
+    const btn = document.getElementById('confirmDeleteAccountBtn');
+
+    if (input) {
+        input.value = "";
+    }
+    if (btn) {
+        btn.disabled = false;
+        btn.innerText = "تأكيد الحذف";
+    }
+    if (modal) {
+        modal.style.display = 'none';
+    }
+}
+
+async function submitDeleteAccount(btn) {
+    const passwordInput = document.getElementById('deleteAccountPasswordInput');
+    const password = passwordInput ? passwordInput.value.trim() : "";
+
+    if (!password) {
+        alert("⚠️ أدخل الرقم السري أولاً.");
+        if (passwordInput) passwordInput.focus();
+        return;
+    }
+
+    const confirmed = confirm("هل أنت متأكد من حذف الحساب نهائياً؟ لا يمكن التراجع عن هذه العملية.");
+    if (!confirmed) return;
+
+    const originalText = btn ? btn.innerText : "تأكيد الحذف";
+    if (btn) {
+        btn.disabled = true;
+        btn.innerText = "جاري الحذف... ⏳";
+    }
+
+    try {
+        const hashedPassword = await hashString(password);
+        const response = await fetch(`${settingsScriptURL}&action=deleteAccount&id=${stadiumId}&pass=${encodeURIComponent(hashedPassword)}&_t=${Date.now()}`);
+        const result = (await response.text()).trim();
+        const normalizedResult = result.toLowerCase();
+
+        if (["success", "deleted", "delete success", "account deleted"].includes(normalizedResult)) {
+            localStorage.removeItem('lastVisitedStadiumId');
+            closeDeleteAccountModal();
+            closeAdminPanel();
+            alert("✅ تم حذف الحساب نهائياً.");
+            window.location.href = "index.html";
+            return;
+        }
+
+        if (["wrongpass", "invalidpass", "invalid password", "wrong password"].includes(normalizedResult)) {
+            alert("❌ الرقم السري غير صحيح.");
+            if (passwordInput) {
+                passwordInput.value = "";
+                passwordInput.focus();
+            }
+            return;
+        }
+
+        alert("⚠️ تعذر حذف الحساب: " + result);
+    } catch (e) {
+        console.error("Delete Account Error:", e);
+        alert("❌ فشل الاتصال بالسيرفر أثناء حذف الحساب.");
+    } finally {
+        if (btn) {
+            btn.disabled = false;
+            btn.innerText = originalText;
+        }
+    }
+}
+
 function showBookingTicket(stadiumName, date, time, stadiumUrl) {
     // 1. استخراج اسم اليوم بطريقة آمنة
     const days = ["الأحد", "الإثنين", "الثلاثاء", "الأربعاء", "الخميس", "الجمعة", "السبت"];
