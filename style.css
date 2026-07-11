@@ -1539,3 +1539,33 @@ action-buttons {
         font-size: 0.92rem;
     }
 }
+.danger-zone {
+    background: #fff5f5;
+    border: 1px solid #fecaca;
+    border-radius: 12px;
+    padding: 15px;
+    margin-top: 18px;
+}
+
+.danger-zone h4 {
+    margin: 0 0 8px;
+    color: #b91c1c;
+}
+
+.danger-zone p {
+    margin: 0 0 12px;
+    color: #7f1d1d;
+    font-size: 0.85rem;
+}
+
+.delete-account-btn {
+    width: 100%;
+    background: #dc2626;
+    color: white;
+    border: none;
+    padding: 13px;
+    border-radius: 8px;
+    font-family: 'Cairo', sans-serif;
+    font-weight: bold;
+    cursor: pointer;
+}
