@@ -1792,6 +1792,9 @@ function closeLegalModal() {
     if (modal) {
         modal.style.display = "none";
     }
+
+    document.body.classList.remove("modal-open");
+    document.body.style.overflow = "auto";
 }
 
 function switchLegalTab(page) {
