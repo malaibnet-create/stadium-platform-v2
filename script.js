@@ -1447,7 +1447,14 @@ function closeAdminPanel() {
     document.getElementById('adminPanel').style.display = 'none';
 }
 
-function ensureDeleteAccountModal() {
+const deleteAccountSuccessStatuses = new Set(["success", "deleted", "deletesuccess", "accountdeleted"]);
+const deleteAccountInvalidPassStatuses = new Set(["wrongpass", "invalidpass", "invalidpassword", "wrongpassword"]);
+
+function normalizeBackendStatus(value) {
+    return String(value || "").toLowerCase().replace(/[\s_-]+/g, "");
+}
+
+function getOrCreateDeleteAccountModal() {
     let modal = document.getElementById('deleteAccountModal');
     if (modal) return modal;
 
@@ -1485,7 +1492,7 @@ function ensureDeleteAccountModal() {
 }
 
 function openDeleteAccountModal() {
-    const modal = ensureDeleteAccountModal();
+    const modal = getOrCreateDeleteAccountModal();
     const input = document.getElementById('deleteAccountPasswordInput');
     if (input) {
         input.value = "";
@@ -1545,9 +1552,12 @@ async function submitDeleteAccount(btn) {
             body: requestBody.toString()
         });
         const result = (await response.text()).trim();
-        const normalizedResult = result.toLowerCase();
+        if (!response.ok) {
+            throw new Error(result || `HTTP ${response.status}`);
+        }
+        const normalizedResult = normalizeBackendStatus(result);
 
-        if (["success", "deleted", "delete success", "account deleted"].includes(normalizedResult)) {
+        if (deleteAccountSuccessStatuses.has(normalizedResult)) {
             if (localStorage.getItem('lastVisitedStadiumId') === stadiumId) {
                 localStorage.removeItem('lastVisitedStadiumId');
             }
@@ -1558,7 +1568,7 @@ async function submitDeleteAccount(btn) {
             return;
         }
 
-        if (["wrongpass", "invalidpass", "invalid password", "wrong password"].includes(normalizedResult)) {
+        if (deleteAccountInvalidPassStatuses.has(normalizedResult)) {
             alert("❌ الرقم السري غير صحيح.");
             if (passwordInput) {
                 passwordInput.value = "";
