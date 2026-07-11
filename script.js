@@ -1447,13 +1447,6 @@ function closeAdminPanel() {
     document.getElementById('adminPanel').style.display = 'none';
 }
 
-const deleteAccountSuccessStatuses = new Set(["success", "deleted", "deletesuccess", "accountdeleted"]);
-const deleteAccountInvalidPassStatuses = new Set(["wrongpass", "invalidpass", "invalidpassword", "wrongpassword"]);
-
-function normalizeBackendStatus(value) {
-    return String(value || "").toLowerCase().replace(/[\s_-]+/g, "");
-}
-
 function getOrCreateDeleteAccountModal() {
     let modal = document.getElementById('deleteAccountModal');
     if (modal) return modal;
@@ -1523,6 +1516,10 @@ function closeDeleteAccountModal() {
 async function submitDeleteAccount(btn) {
     const passwordInput = document.getElementById('deleteAccountPasswordInput');
     const password = passwordInput ? passwordInput.value.trim() : "";
+    const deleteAccountSuccessStatuses = new Set(["success", "deleted", "deletesuccess", "accountdeleted"]);
+    const deleteAccountInvalidPassStatuses = new Set(["wrongpass", "invalidpass", "invalidpassword", "wrongpassword"]);
+    // بعض ردود Google Apps Script تعود بمسافات أو شرطات مختلفة لنفس الحالة، لذلك نوحدها قبل المقارنة.
+    const normalizeBackendStatus = (value) => String(value || "").toLowerCase().replace(/[\s_-]+/g, "");
 
     if (!password) {
         alert("⚠️ أدخل الرقم السري أولاً.");
@@ -1564,7 +1561,7 @@ async function submitDeleteAccount(btn) {
             closeDeleteAccountModal();
             closeAdminPanel();
             alert("✅ تم حذف الحساب نهائياً.");
-            window.location.href = "index.html";
+            window.location.href = new URL("index.html", window.location.href).toString();
             return;
         }
 
