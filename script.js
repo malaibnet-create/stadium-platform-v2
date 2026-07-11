@@ -44,8 +44,8 @@
 })();
 
 // 1. الإعدادات والروابط الأساسية
-const settingsScriptURL = 'https://script.google.com/macros/s/AKfycbwvFXgo9I5-9GKvNeywtW7h3DLeKQxzJiqxO935n7xaNTiJA-afFbUxTePhgdS4_Q8Z/exec?key=B_Assel_Admin_2026_Sec';
-const bookingScriptURL = 'https://script.google.com/macros/s/AKfycbwvFXgo9I5-9GKvNeywtW7h3DLeKQxzJiqxO935n7xaNTiJA-afFbUxTePhgdS4_Q8Z/exec?key=B_Assel_Admin_2026_Sec';
+const settingsScriptURL = 'https://script.google.com/macros/s/AKfycbztQIKnihRAM-SfqqYP8wfss1mjdWn9w64gXHKedKSFlM2d5b1zzg4fOSloPTvgT4PXFw/exec?key=B_Assel_Admin_2026_Sec';
+const bookingScriptURL = 'https://script.google.com/macros/s/AKfycbztQIKnihRAM-SfqqYP8wfss1mjdWn9w64gXHKedKSFlM2d5b1zzg4fOSloPTvgT4PXFw/exec?key=B_Assel_Admin_2026_Sec';
 
 
 const urlParams = new URLSearchParams(window.location.search);
