@@ -1523,9 +1523,6 @@ async function submitDeleteAccount(btn) {
         return;
     }
 
-    const confirmed = confirm("هل أنت متأكد من حذف الحساب نهائياً؟ لا يمكن التراجع عن هذه العملية.");
-    if (!confirmed) return;
-
     const originalText = btn ? btn.innerText : "تأكيد الحذف";
     if (btn) {
         btn.disabled = true;
@@ -1534,12 +1531,26 @@ async function submitDeleteAccount(btn) {
 
     try {
         const hashedPassword = await hashString(password);
-        const response = await fetch(`${settingsScriptURL}&action=deleteAccount&id=${stadiumId}&pass=${encodeURIComponent(hashedPassword)}&_t=${Date.now()}`);
+        const requestBody = new URLSearchParams({
+            action: "deleteAccount",
+            id: stadiumId,
+            pass: hashedPassword,
+            _t: String(Date.now())
+        });
+        const response = await fetch(settingsScriptURL, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8"
+            },
+            body: requestBody.toString()
+        });
         const result = (await response.text()).trim();
         const normalizedResult = result.toLowerCase();
 
         if (["success", "deleted", "delete success", "account deleted"].includes(normalizedResult)) {
-            localStorage.removeItem('lastVisitedStadiumId');
+            if (localStorage.getItem('lastVisitedStadiumId') === stadiumId) {
+                localStorage.removeItem('lastVisitedStadiumId');
+            }
             closeDeleteAccountModal();
             closeAdminPanel();
             alert("✅ تم حذف الحساب نهائياً.");
