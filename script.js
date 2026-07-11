@@ -135,9 +135,17 @@ async function loadStadiumDynamicDetails() {
 
     try {
         const response = await fetch(`${settingsScriptURL}&action=getStadiumDetails&id=${stadiumId}`);
-        const data = await response.json();
+        const rawText = await response.text();
 
-        if (data !== "NotFound") {
+        // GAS يُعيد نص "NotFound" عند عدم وجود الملعب، وليس JSON
+        if (rawText.trim() === "NotFound") {
+            if (tableBody) tableBody.innerHTML = '<tr><td colspan="8" style="text-align:center;">عذراً، لم يتم العثور على بيانات هذا الملعب.</td></tr>';
+            return;
+        }
+
+        const data = JSON.parse(rawText);
+
+        if (data) {
             // تخزين الحالة في متغير عالمي لاستخدامه عند الضغط على زر الحجز
             window.stadiumData = data; 
             window.stadiumStatus = data.status;
@@ -305,11 +313,6 @@ if (logoImg) {
                 initTable(data); 
             }
 
-        } else {
-            // في حال لم يتم العثور على الملعب
-            if (tableBody) tableBody.innerHTML = '<tr><td colspan="8" style="text-align:center;">عذراً، لم يتم العثور على بيانات هذا الملعب.</td></tr>';
-        }
-      
     } catch (error) { 
         console.error("Error loading details:", error); 
         // عرض رسالة الخطأ للمستخدم في حال فشل الاتصال بالسيرفر
@@ -532,6 +535,10 @@ function updateModalDetails() {
 }
 
 async function submitFinalBooking() {
+    if (!window.stadiumData) {
+        alert("عذراً، لا يمكن إتمام الحجز. بيانات الملعب غير متوفرة، يرجى تحديث الصفحة والمحاولة مجدداً.");
+        return;
+    }
     if (window.stadiumStatus === "maintenance") {
         alert("نعتذر منك، لا يمكن إتمام الحجز حالياً لأن الملعب في حالة صيانة أو إصلاح.");
         return; // هذا السطر سيمنع الكود بالأسفل من العمل
@@ -735,15 +742,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (mainContainer) mainContainer.style.opacity = '0';
 
     try {
-        // 2. جلب تفاصيل الملعب (الاسم، اللوغو، السعر)
+        // 2. جلب تفاصيل الملعب (الاسم، اللوغو، السعر) - initTable تُستدعى داخلها عند النجاح
         await loadStadiumDynamicDetails();
-        
-        // 3. بناء الجدول وتحميل الحجوزات
-        if (typeof initTable === "function") {
-            await initTable();
-        }
 
-        // 4. إظهار المحتوى بسلاسة بعد اكتمال كل شيء
+        // 3. إظهار المحتوى بسلاسة بعد اكتمال كل شيء
         if (mainContainer) {
             mainContainer.style.transition = 'opacity 0.4s ease-in-out';
             mainContainer.style.opacity = '1';
