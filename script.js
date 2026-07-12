@@ -127,7 +127,10 @@ window.stadiumData = null;
 
 // 2. جلب تفاصيل الملعب وتحديث الواجهة
 async function loadStadiumDynamicDetails() {
-    if (!stadiumId) return;
+    if (!stadiumId) {
+    showMissingStadiumLanding();
+    return false;
+}
 
     // 1. (اختياري) إظهار رسالة تحميل بسيطة في الجدول
     const tableBody = document.getElementById('tableBody');
@@ -305,9 +308,11 @@ if (logoImg) {
                 initTable(data); 
             }
 
-        } else {
-    hideBookingForMissingStadium();
-}
+return true;
+           } else {
+    showMissingStadiumLanding();
+    return false;
+} 
       
     } catch (error) { 
         console.error("Error loading details:", error); 
@@ -2072,23 +2077,49 @@ async function confirmDeleteAccount() {
 
     
 }
-function hideBookingForMissingStadium() {
+
+function showMissingStadiumLanding() {
+    window.stadiumMissing = true;
+
     const tableWrap = document.querySelector(".booking-table-scroll");
     const weekNav = document.querySelector(".week-navigation");
     const actionButtons = document.querySelector(".action-buttons");
+    const footer = document.querySelector(".site-footer");
     const title = document.getElementById("displayStadiumName");
+    const org = document.getElementById("displayOrg");
+    const location = document.getElementById("displayLocation");
 
     if (tableWrap) tableWrap.style.display = "none";
     if (weekNav) weekNav.style.display = "none";
     if (actionButtons) actionButtons.style.display = "none";
+    if (footer) footer.style.display = "none";
 
-    if (title) {
-        title.innerText = "هذا الملعب غير متوفر حاليًا";
-    }
+    if (title) title.innerText = "هذا الملعب غير متوفر حاليًا";
+    if (org) org.innerText = "";
+    if (location) location.innerText = "";
 
-    const container = document.querySelector(".app-container") || document.body;
-    const msg = document.createElement("div");
-    msg.style.cssText = "max-width:600px;margin:30px auto;padding:20px;background:white;border-radius:14px;text-align:center;font-family:Cairo;color:#b91c1c;font-weight:bold;";
-    msg.innerText = "عذرًا، لا يمكن عرض جدول الحجز لأن بيانات هذا الملعب غير موجودة أو تم حذف الحساب.";
-    container.appendChild(msg);
+    const oldLanding = document.getElementById("missingStadiumLanding");
+    if (oldLanding) oldLanding.remove();
+
+    const app = document.querySelector(".app-container") || document.body;
+
+    const landing = document.createElement("div");
+    landing.id = "missingStadiumLanding";
+    landing.className = "missing-stadium-landing";
+    landing.innerHTML = `
+        <div class="missing-stadium-card">
+            <img src="logo_no_background.png" alt="MalaibNet" class="missing-stadium-logo">
+            <h2>الملعب غير موجود أو تم حذف الحساب</h2>
+            <p>يمكنك إنشاء واجهة ملعب جديدة، أو البحث عن ملاعب قريبة منك في حدود 20 كلم.</p>
+
+            <div class="missing-stadium-actions">
+                <a href="register.html" class="missing-primary-btn">إنشاء واجهة ملعب جديدة</a>
+                <button type="button" onclick="openNearbyModal()" class="missing-secondary-btn">
+                    زيارة ملاعب قريبة
+                </button>
+            </div>
+        </div>
+    `;
+
+    app.appendChild(landing);
 }
