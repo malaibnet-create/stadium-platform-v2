@@ -138,9 +138,16 @@ async function loadStadiumDynamicDetails() {
 
     try {
         const response = await fetch(`${settingsScriptURL}&action=getStadiumDetails&id=${stadiumId}`);
-        const data = await response.json();
+const responseText = await response.text();
 
-        if (data !== "NotFound") {
+if (responseText.trim() === "NotFound") {
+    showMissingStadiumLanding();
+    return false;
+}
+
+const data = JSON.parse(responseText);
+
+if (data) {
             // تخزين الحالة في متغير عالمي لاستخدامه عند الضغط على زر الحجز
             window.stadiumData = data; 
             window.stadiumStatus = data.status;
