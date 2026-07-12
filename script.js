@@ -749,12 +749,15 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     try {
         // 2. جلب تفاصيل الملعب (الاسم، اللوغو، السعر)
-        await loadStadiumDynamicDetails();
-        
-        // 3. بناء الجدول وتحميل الحجوزات
-        if (typeof initTable === "function") {
-            await initTable();
-        }
+      const stadiumLoaded = await loadStadiumDynamicDetails();
+
+if (!stadiumLoaded) {
+    return;
+}
+
+if (typeof initTable === "function") {
+    await initTable();
+}
 
         // 4. إظهار المحتوى بسلاسة بعد اكتمال كل شيء
         if (mainContainer) {
