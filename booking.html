@@ -870,6 +870,34 @@ td {
     @media (max-width: 350px) {
         .btn-group { flex-direction: column; }
     }
+    .related-stadiums-bar {
+    margin: 12px auto 0;
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    flex-wrap: wrap;
+    max-width: 680px;
+}
+
+.related-stadium-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 12px;
+    border-radius: 999px;
+    background: #eff6ff;
+    color: #1e3a8a;
+    text-decoration: none;
+    font-family: 'Cairo', sans-serif;
+    font-size: 0.82rem;
+    font-weight: 700;
+    border: 1px solid #bfdbfe;
+}
+
+.related-stadium-link.active {
+    background: #1e3a8a;
+    color: white;
+}
     
     </style>
     
