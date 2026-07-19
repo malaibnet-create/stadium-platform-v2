@@ -1643,3 +1643,6 @@ action-buttons {
         grid-template-columns: 1fr;
     }
 }
+.admin-nav-bar {
+    grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
+}
