@@ -150,6 +150,7 @@ const data = JSON.parse(responseText);
 if (data) {
             // تخزين الحالة في متغير عالمي لاستخدامه عند الضغط على زر الحجز
             window.stadiumData = data; 
+            renderRelatedStadiums(data);
             window.stadiumStatus = data.status;
             if (data.lat) {
                 const latInput = document.getElementById('lat');
@@ -332,7 +333,26 @@ return true;
 } // نهاية الدالة loadStadiumDynamicDetails
 
 
+function renderRelatedStadiums(data) {
+    const bar = document.getElementById('relatedStadiumsBar');
+    if (!bar || !data || !Array.isArray(data.related_stadiums) || data.related_stadiums.length <= 1) {
+        if (bar) bar.style.display = 'none';
+        return;
+    }
 
+    bar.innerHTML = data.related_stadiums.map(stadium => {
+        const isActive = stadium.slug === stadiumId;
+        return `
+            <a class="related-stadium-link ${isActive ? 'active' : ''}"
+               href="booking.html?id=${encodeURIComponent(stadium.slug)}">
+                <span>⚽</span>
+                <span>${stadium.stadium_name}</span>
+            </a>
+        `;
+    }).join('');
+
+    bar.style.display = 'flex';
+}
 
 
 
@@ -1383,6 +1403,7 @@ async function handleAdminAuth(btn) {
         console.log("استجابة السيرفر:", result);
 
         if (result.trim() === "Success") {
+            sessionStorage.setItem('adminPassHash_' + stadiumId, hashedPassword);
             // 1. إغلاق نافذة طلب الكود الصغيرة
             closeAdminAuth(); 
             
@@ -2001,7 +2022,37 @@ function switchAdminTab(tab, evt) {
     } else if (tab === 'payments') {
         showPaymentMethods();
     }
+    } else if (tab === 'addStadium') {
+    openAddStadiumRegistration();
 }
+
+
+async function openAddStadiumRegistration() {
+    if (!stadiumId) {
+        alert("تعذر معرفة الملعب الحالي.");
+        return;
+    }
+
+    let parentPassHash = sessionStorage.getItem('adminPassHash_' + stadiumId);
+
+    if (!parentPassHash) {
+        const pass = prompt("أدخل كود المسؤول لتأكيد إضافة ملعب جديد تابع لهذا الحساب:");
+        if (!pass) return;
+        parentPassHash = await hashString(pass);
+    }
+
+    const registerUrl = new URL("register.html", window.location.href);
+    registerUrl.searchParams.set("mode", "addSubStadium");
+    registerUrl.searchParams.set("parent", stadiumId);
+    registerUrl.searchParams.set("parentPass", parentPassHash);
+    registerUrl.searchParams.set("_", Date.now());
+
+    window.location.href = registerUrl.toString();
+}
+
+
+
+
 
 function showCourtsManagement() {
     const content = document.getElementById('adminSectionContent');
