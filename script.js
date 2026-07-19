@@ -1999,6 +1999,7 @@ function openNearbyModal() {
 }
 
 
+
 function switchAdminTab(tab, evt) {
     document.querySelectorAll('.admin-nav-item').forEach(item => {
         item.classList.remove('active-tab');
@@ -2021,9 +2022,9 @@ function switchAdminTab(tab, evt) {
         showStats();
     } else if (tab === 'payments') {
         showPaymentMethods();
-    }
     } else if (tab === 'addStadium') {
-    openAddStadiumRegistration();
+        openAddStadiumRegistration();
+    }
 }
 
 
