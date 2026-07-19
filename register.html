@@ -137,7 +137,23 @@
 <script>
     const scriptURL = 'https://script.google.com/macros/s/AKfycbx0Tj7VZ1zJY5Me6ZR74T8k5tyGOTQmj0ICG_0NPrX6aVUSG-d2-QfbsURZ6sqGbMesxg/exec?key=B_Assel_Admin_2026_Sec';
 
-  
+  const registerParams = new URLSearchParams(window.location.search);
+const registerMode = registerParams.get('mode');
+const parentSlug = registerParams.get('parent') || "";
+const parentPass = registerParams.get('parentPass') || "";
+const isSubStadiumMode = registerMode === "addSubStadium";
+
+document.addEventListener('DOMContentLoaded', function () {
+    if (!isSubStadiumMode) return;
+
+    const title = document.querySelector('.register-container h2');
+    const submitBtn = document.querySelector('.btn-submit');
+    const footerLinks = document.querySelector('.footer-links');
+
+    if (title) title.innerText = "إضافة ملعب جديد";
+    if (submitBtn) submitBtn.innerText = "متابعة لإضافة الملعب";
+    if (footerLinks) footerLinks.style.display = "none";
+});
     let generatedOTP = ""; // لتخزين الرمز مؤقتاً
 
     async function hashString(str) {
@@ -210,8 +226,11 @@
     const stadiumName = document.getElementById('stadiumName').value;
 
     // الرابط النهائي لإرسال البيانات
-    const finalURL = `${scriptURL}&action=saveData&fullName=${encodeURIComponent(fullName)}&email=${encodeURIComponent(email)}&password=${encodeURIComponent(password)}&stadiumName=${encodeURIComponent(stadiumName)}&otp=${userOTP}`;
+   let finalURL = `${scriptURL}&action=saveData&fullName=${encodeURIComponent(fullName)}&email=${encodeURIComponent(email)}&password=${encodeURIComponent(password)}&stadiumName=${encodeURIComponent(stadiumName)}&otp=${userOTP}`;
 
+if (isSubStadiumMode) {
+    finalURL += `&parentSlug=${encodeURIComponent(parentSlug)}&parentPass=${encodeURIComponent(parentPass)}`;
+}
     try {
         // نستخدم fetch بدون no-cors لنتمكن من قراءة الـ slug العشوائي الراجع من جوجل
         const response = await fetch(finalURL);
@@ -225,7 +244,7 @@
             // استبدال محتوى الصفحة بواجهة النجاح الجميلة
             document.querySelector('.register-container').innerHTML = `
                 <div style="padding: 10px;">
-                    <h2 style="color: var(--secondary-color);">تم إنشاء الحساب بنجاح!</h2>
+                   <h2 style="color: var(--secondary-color);">${isSubStadiumMode ? 'تمت إضافة الملعب بنجاح!' : 'تم إنشاء الحساب بنجاح!'}</h2>
                     <p>أهلاً بك <b>${fullName}</b> في منصتنا.</p>
                     <hr style="border: 0.5px solid #eee; margin: 20px 0;">
                     
