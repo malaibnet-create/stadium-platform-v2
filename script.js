@@ -218,14 +218,8 @@ if (logoImg) {
             }
 
             // 4. الواتساب
-            window.stadiumPhone = data.phone;
-            const whatsappFloat = document.getElementById('whatsappFloat');
-            if (whatsappFloat && data.phone) {
-                let cleanPhone = data.phone.toString().replace(/\s+/g, '');
-                if (cleanPhone.startsWith('0')) cleanPhone = '212' + cleanPhone.substring(1);
-                const msg = encodeURIComponent(`السلام عليكم، استفسار عن حجز ${data.stadium_name}`);
-                whatsappFloat.href = `https://wa.me/${cleanPhone}?text=${msg}`;
-            }
+         window.stadiumPhone = data.phone;
+setupSupervisorContact(data.phone, data.stadium_name);
             
             // 5. زر الموقع
          const locBtn = document.getElementById('btnLocation');
@@ -2184,4 +2178,48 @@ function showMissingStadiumLanding() {
     `;
 
     app.appendChild(landing);
+}
+
+
+
+
+function normalizeMoroccanPhone(phone) {
+    let cleanPhone = String(phone || "").replace(/\s+/g, "").replace(/[^\d+]/g, "");
+
+    if (cleanPhone.startsWith("+")) {
+        cleanPhone = cleanPhone.substring(1);
+    }
+
+    if (cleanPhone.startsWith("0")) {
+        cleanPhone = "212" + cleanPhone.substring(1);
+    }
+
+    return cleanPhone;
+}
+
+function setupSupervisorContact(phone, stadiumName) {
+    const floatBtn = document.getElementById("supervisorFloatBtn");
+    const whatsappBtn = document.getElementById("supervisorWhatsappBtn");
+    const callBtn = document.getElementById("supervisorCallBtn");
+
+    if (!floatBtn || !whatsappBtn || !callBtn || !phone) return;
+
+    const cleanPhone = normalizeMoroccanPhone(phone);
+    const msg = encodeURIComponent(`السلام عليكم، أريد الاستفسار عن حجز ${stadiumName || "الملعب"}`);
+
+    whatsappBtn.href = `https://wa.me/${cleanPhone}?text=${msg}`;
+    callBtn.href = `tel:+${cleanPhone}`;
+    floatBtn.style.display = "flex";
+    floatBtn.style.alignItems = "center";
+    floatBtn.style.justifyContent = "center";
+}
+
+function openSupervisorContact() {
+    const modal = document.getElementById("supervisorContactModal");
+    if (modal) modal.style.display = "flex";
+}
+
+function closeSupervisorContact() {
+    const modal = document.getElementById("supervisorContactModal");
+    if (modal) modal.style.display = "none";
 }
