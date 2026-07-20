@@ -25,36 +25,16 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     
     <!-- إضافة إصدار (Version) للملفات لضمان تحديث الكاش عند المستخدمين -->
-    <link rel="stylesheet" href="style.css?v=1.219">
+    <link rel="stylesheet" href="style.css?v=1.220">
     
     <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
     
     <!-- تأكد من أن script.js يحتوي على دالة setupDynamicManifest التي برمجناها -->
-    <script src="script.js?v=1.219" defer></script>
+    <script src="script.js?v=1.220" defer></script>
     
 </head>
 
-    <button id="supervisorFloatBtn" class="supervisor-float-btn" onclick="openSupervisorContact()" style="display:none;">
-    <i class="fab fa-whatsapp"></i>
-</button>
-
-<div id="supervisorContactModal" class="supervisor-contact-modal" style="display:none;">
-    <div class="supervisor-contact-box">
-        <button type="button" class="supervisor-close-btn" onclick="closeSupervisorContact()">×</button>
-        <h3>التواصل مع مشرف الملعب</h3>
-        <p>اختر طريقة التواصل المناسبة</p>
-
-        <a id="supervisorWhatsappBtn" class="supervisor-contact-action whatsapp" target="_blank">
-            <i class="fab fa-whatsapp"></i>
-            إرسال رسالة واتساب
-        </a>
-
-        <a id="supervisorCallBtn" class="supervisor-contact-action call">
-            <i class="fas fa-phone"></i>
-            اتصال مباشر
-        </a>
-    </div>
-</div>
+   
 <body>
     <!-- الجزء التابع لـ Google Tag Manager لضمان التتبع في حال تعطل الجافاسكريبت -->
     <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-NG32N2WN" height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
@@ -1114,5 +1094,26 @@ body.modal-open {
     }
 }
 </style>
+     <button id="supervisorFloatBtn" class="supervisor-float-btn" onclick="openSupervisorContact()" style="display:none;">
+    <i class="fab fa-whatsapp"></i>
+</button>
+
+<div id="supervisorContactModal" class="supervisor-contact-modal" style="display:none;">
+    <div class="supervisor-contact-box">
+        <button type="button" class="supervisor-close-btn" onclick="closeSupervisorContact()">×</button>
+        <h3>التواصل مع مشرف الملعب</h3>
+        <p>اختر طريقة التواصل المناسبة</p>
+
+        <a id="supervisorWhatsappBtn" class="supervisor-contact-action whatsapp" target="_blank">
+            <i class="fab fa-whatsapp"></i>
+            إرسال رسالة واتساب
+        </a>
+
+        <a id="supervisorCallBtn" class="supervisor-contact-action call">
+            <i class="fas fa-phone"></i>
+            اتصال مباشر
+        </a>
+    </div>
+</div>
 </body>
 </html>
