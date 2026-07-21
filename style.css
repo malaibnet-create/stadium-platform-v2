@@ -1262,7 +1262,7 @@ body.modal-open {
         font-size: 19px !important;
     }
 }
-action-buttons {
+.action-buttons {
     width: min(100% - 24px, 760px) !important;
     margin: 18px auto 24px !important;
     padding: 8px !important;
@@ -1279,7 +1279,8 @@ action-buttons {
 }
 .action-buttons .btn-info,
 .action-buttons .btn-map,
-.action-buttons .btn-nearby {
+.action-buttons .btn-nearby,
+.action-buttons .btn-recurring {
     width: 100% !important;
     min-width: 0 !important;
     max-width: none !important;
@@ -1326,17 +1327,19 @@ action-buttons {
     font-size: 1rem !important;
     line-height: 1 !important;
 }
-.action-buttons .btn-info:hover,
-.action-buttons .btn-map:hover,
-.action-buttons .btn-nearby:hover {
+.action-buttons .btn-info,
+.action-buttons .btn-map,
+.action-buttons .btn-nearby,
+.action-buttons .btn-recurring {
     transform: translateY(-2px) !important;
     filter: brightness(1.06) !important;
     box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.24), 0 14px 28px rgba(15, 23, 42, 0.26) !important;
 }
 
-.action-buttons .btn-info:active,
-.action-buttons .btn-map:active,
-.action-buttons .btn-nearby:active {
+.action-buttons .btn-info,
+.action-buttons .btn-map,
+.action-buttons .btn-nearby,
+.action-buttons .btn-recurring {
     transform: translateY(0) scale(0.99) !important;
 }
 
@@ -1351,8 +1354,9 @@ action-buttons {
     }
 
 .action-buttons .btn-info,
-    .action-buttons .btn-map,
-    .action-buttons .btn-nearby {
+.action-buttons .btn-map,
+.action-buttons .btn-nearby,
+.action-buttons .btn-recurring {
         min-height: 48px !important;
         justify-content: flex-start !important;
         padding: 10px 14px !important;
@@ -1361,9 +1365,10 @@ action-buttons {
 }
 
 @media (max-width: 360px) {
-    .action-buttons .btn-info,
-    .action-buttons .btn-map,
-    .action-buttons .btn-nearby {
+.action-buttons .btn-info,
+.action-buttons .btn-map,
+.action-buttons .btn-nearby,
+.action-buttons .btn-recurring {
         font-size: 0.84rem !important;
     }
 }
@@ -1751,23 +1756,7 @@ action-buttons {
 }
 
 .action-buttons .btn-recurring {
-    width: 100% !important;
-    min-width: 0 !important;
-    min-height: 52px !important;
-    padding: 10px 12px !important;
-    border: 1px solid rgba(255, 255, 255, 0.22) !important;
-    border-radius: 14px !important;
-    color: #fff !important;
     background: linear-gradient(135deg, #f59e0b, #d97706) !important;
-    font-family: 'Cairo', sans-serif !important;
-    font-size: 0.92rem !important;
-    font-weight: 800 !important;
-    display: inline-flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    gap: 8px !important;
-    cursor: pointer;
-    box-shadow: inset 0 1px 0 rgba(255,255,255,.18), 0 10px 22px rgba(15,23,42,.2);
 }
 
 .recurring-modal-content {
