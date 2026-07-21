@@ -2223,3 +2223,128 @@ function closeSupervisorContact() {
     const modal = document.getElementById("supervisorContactModal");
     if (modal) modal.style.display = "none";
 }
+
+
+
+
+
+
+function openRecurringModal() {
+    if (window.stadiumStatus === "maintenance") {
+        alert("الملعب في حالة صيانة ولا يمكن الحجز حالياً.");
+        return;
+    }
+
+    const hourSelect = document.getElementById("recurringHour");
+    const startHour = parseInt(window.stadiumData?.openHour ?? 8);
+    const endHour = parseInt(window.stadiumData?.closeHour ?? 23);
+
+    hourSelect.innerHTML = "";
+    for (let hour = startHour; hour < endHour; hour++) {
+        const option = document.createElement("option");
+        option.value = `${hour}:00`;
+        option.textContent = `من ${hour}:00 إلى ${hour + 1}:00`;
+        hourSelect.appendChild(option);
+    }
+
+    document.getElementById("recurringDay").value = new Date().getDay();
+    document.getElementById("recurringModal").style.display = "block";
+}
+
+function closeRecurringModal() {
+    document.getElementById("recurringModal").style.display = "none";
+}
+
+function getFirstRecurringDate(dayIndex, hour) {
+    const date = new Date();
+    date.setHours(0, 0, 0, 0);
+
+    let daysUntil = (dayIndex - date.getDay() + 7) % 7;
+    const currentHour = new Date().getHours();
+
+    // إذا اختار اللاعب يوم اليوم ووقتًا منتهيًا، يبدأ الحجز من الأسبوع القادم.
+    if (daysUntil === 0 && parseInt(hour) <= currentHour) {
+        daysUntil = 7;
+    }
+
+    date.setDate(date.getDate() + daysUntil);
+    return date;
+}
+
+async function submitRecurringBooking() {
+    const dayIndex = parseInt(document.getElementById("recurringDay").value);
+    const hour = document.getElementById("recurringHour").value;
+    const weeks = parseInt(document.getElementById("recurringWeeks").value);
+    const name = document.getElementById("recurringName").value.trim();
+    const phone = document.getElementById("recurringPhone").value.trim();
+    const confirmed = document.getElementById("recurringConfirm").checked;
+    const button = document.getElementById("recurringSubmitBtn");
+    const phoneRegex = /^[0-9]{10,13}$/;
+
+    if (!name || !phone || !hour) {
+        return alert("يرجى إدخال الاسم ورقم الهاتف والموعد.");
+    }
+
+    if (!phoneRegex.test(phone)) {
+        return alert("يرجى إدخال رقم هاتف صحيح بالأرقام فقط.");
+    }
+
+    if (!weeks || weeks < 1 || weeks > 52) {
+        return alert("اختر عددًا من 1 إلى 52 أسبوعًا.");
+    }
+
+    if (!confirmed) {
+        return alert("يرجى تأكيد التعهد بالحضور.");
+    }
+
+    const dayNames = [
+        "الأحد", "الإثنين", "الثلاثاء", "الأربعاء",
+        "الخميس", "الجمعة", "السبت"
+    ];
+
+    const firstDate = getFirstRecurringDate(dayIndex, hour);
+    const bookings = [];
+
+    for (let week = 0; week < weeks; week++) {
+        const date = new Date(firstDate);
+        date.setDate(firstDate.getDate() + (week * 7));
+
+        bookings.push({
+            dayName: dayNames[dayIndex],
+            date: getFormattedDate(date),
+            hour: hour
+        });
+    }
+
+    const originalText = button.innerText;
+    button.disabled = true;
+    button.innerText = "جاري التحقق من المواعيد...";
+
+    try {
+        const response = await fetch(bookingScriptURL, {
+            method: "POST",
+            body: JSON.stringify({
+                stadiumId: stadiumId,
+                name: name,
+                phone: phone,
+                bookings: bookings
+            })
+        });
+
+        const result = await response.json();
+
+        if (result.result !== "success") {
+            return alert("⚠️ " + result.message);
+        }
+
+        closeRecurringModal();
+        initTable();
+        alert(`✅ تم تثبيت ${bookings.length} حجزًا أسبوعيًا بنجاح.`);
+    } catch (error) {
+        console.error(error);
+        alert("تعذر إرسال الحجوزات. يرجى المحاولة مرة أخرى.");
+    } finally {
+        button.disabled = false;
+        button.innerText = originalText;
+    }
+}
