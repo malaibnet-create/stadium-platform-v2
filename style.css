@@ -1745,3 +1745,143 @@ action-buttons {
 .supervisor-contact-action.call {
     background: #2563eb;
 }
+
+.action-buttons {
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+}
+
+.action-buttons .btn-recurring {
+    width: 100% !important;
+    min-width: 0 !important;
+    min-height: 52px !important;
+    padding: 10px 12px !important;
+    border: 1px solid rgba(255, 255, 255, 0.22) !important;
+    border-radius: 14px !important;
+    color: #fff !important;
+    background: linear-gradient(135deg, #f59e0b, #d97706) !important;
+    font-family: 'Cairo', sans-serif !important;
+    font-size: 0.92rem !important;
+    font-weight: 800 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 8px !important;
+    cursor: pointer;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.18), 0 10px 22px rgba(15,23,42,.2);
+}
+
+.recurring-modal-content {
+    width: min(92vw, 480px);
+    max-height: calc(100dvh - 24px);
+    overflow-y: auto;
+    background: #fff;
+    border-radius: 16px;
+}
+
+.recurring-modal-header {
+    position: relative;
+    padding: 16px;
+    text-align: center;
+    color: #fff;
+    background: #d97706;
+}
+
+.recurring-modal-header h3 {
+    margin: 0;
+}
+
+.recurring-modal-header .close {
+    position: absolute;
+    top: 7px;
+    right: 18px;
+    color: #fff;
+    font-size: 30px;
+    cursor: pointer;
+}
+
+.recurring-modal-body {
+    padding: 20px;
+    text-align: right;
+    font-family: 'Cairo', sans-serif;
+}
+
+.recurring-note {
+    margin: 0 0 16px;
+    padding: 10px;
+    color: #92400e;
+    background: #fffbeb;
+    border-right: 4px solid #f59e0b;
+    border-radius: 8px;
+    font-size: .88rem;
+}
+
+.recurring-form-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+}
+
+.recurring-modal-body label {
+    display: block;
+    margin-top: 14px;
+    font-weight: 700;
+}
+
+.recurring-modal-body input,
+.recurring-modal-body select {
+    box-sizing: border-box;
+    width: 100%;
+    margin-top: 5px;
+    padding: 11px;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    font-family: 'Cairo', sans-serif;
+}
+
+.recurring-confirm {
+    display: flex !important;
+    align-items: center;
+    gap: 8px;
+    padding: 10px;
+    background: #f8fafc;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+.recurring-confirm input {
+    width: 20px !important;
+    margin: 0 !important;
+}
+
+.recurring-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.recurring-actions button {
+    flex: 2;
+    padding: 12px;
+    border: 0;
+    border-radius: 8px;
+    color: #fff;
+    background: #d97706;
+    font-family: 'Cairo', sans-serif;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.recurring-actions .recurring-cancel {
+    flex: 1;
+    background: #ef4444;
+}
+
+@media (max-width: 640px) {
+    .action-buttons {
+        grid-template-columns: 1fr !important;
+    }
+
+    .recurring-form-grid {
+        grid-template-columns: 1fr;
+    }
+}
