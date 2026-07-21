@@ -233,9 +233,74 @@
    
 
 
-  
+  <div id="recurringModal" class="modal" style="display:none;">
+    <div class="modal-content recurring-modal-content">
+        <div class="recurring-modal-header">
+            <span class="close" onclick="closeRecurringModal()">&times;</span>
+            <h3>🔁 تثبيت حجز أسبوعي</h3>
+        </div>
+
+        <div class="recurring-modal-body">
+            <p class="recurring-note">
+                اختر اليوم والساعة وعدد الأسابيع. سيتم التحقق من جميع المواعيد قبل تأكيد أي حجز.
+            </p>
+
+            <div class="recurring-form-grid">
+                <label>
+                    اليوم
+                    <select id="recurringDay">
+                        <option value="0">الأحد</option>
+                        <option value="1">الإثنين</option>
+                        <option value="2">الثلاثاء</option>
+                        <option value="3">الأربعاء</option>
+                        <option value="4">الخميس</option>
+                        <option value="5">الجمعة</option>
+                        <option value="6">السبت</option>
+                    </select>
+                </label>
+
+                <label>
+                    الساعة
+                    <select id="recurringHour"></select>
+                </label>
+
+                <label>
+                    عدد الأسابيع
+                    <input id="recurringWeeks" type="number" min="1" max="52" value="4">
+                </label>
+            </div>
+
+            <label>
+                الاسم الكامل
+                <input id="recurringName" type="text" placeholder="مثال: محمد العلوي">
+            </label>
+
+            <label>
+                رقم الهاتف
+                <input id="recurringPhone" type="tel" placeholder="06XXXXXXXX">
+            </label>
+
+            <label class="recurring-confirm">
+                <input id="recurringConfirm" type="checkbox">
+                أتعهد بالحضور في المواعيد المحددة.
+            </label>
+
+            <div class="recurring-actions">
+                <button id="recurringSubmitBtn" type="button" onclick="submitRecurringBooking()">
+                    تأكيد الحجوزات
+                </button>
+                <button type="button" class="recurring-cancel" onclick="closeRecurringModal()">
+                    إلغاء
+                </button>
+            </div>
+        </div>
+    </div>
+</div>   
+
+    
 
 <div id="bookingModal" class="modal">
+    
     <div class="modal-content" style="border-radius: 15px; overflow: hidden; border: none; max-width: 500px; position: relative; background: white;">
         
         <div style="background-color: #1e3a8a; color: white; padding: 15px; position: relative;">
