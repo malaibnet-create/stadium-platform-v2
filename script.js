@@ -1425,7 +1425,7 @@ async function handleAdminAuth(btn) {
 
             // التحقق من حالة الاشتراك
             if (typeof checkSubscriptionStatus === "function") {
-                checkSubscriptionStatus();
+                await checkSubscriptionStatus();
             }
 
             // 3. إظهار أي أيقونات إدارية متفرقة في الصفحة
