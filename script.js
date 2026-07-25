@@ -1434,9 +1434,17 @@ async function handleAdminAuth(btn) {
             });
             
             // 4. تشغيل دالة عرض الإعدادات
-            if (typeof showSettings === "function") {
-                showSettings(); 
-            }
+           if (typeof showSettings === "function") {
+    const settingsTab = document.querySelector(
+        '.admin-nav-item[onclick*="settings"]'
+    );
+
+    if (settingsTab) {
+        settingsTab.classList.add('active-tab');
+    }
+
+    showSettings();
+}
 
         } else {
             alert("❌ كلمة السر غير صحيحة، حاول مرة أخرى.");
