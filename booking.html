@@ -1348,6 +1348,86 @@ body.modal-open {
         font-size: 0.9rem;
     }
 }
+    .cancellation-table-wrap {
+    position: relative;
+    width: 100%;
+    max-height: 450px;
+    overflow-x: auto;
+    overflow-y: auto;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    background: #ffffff;
+    -webkit-overflow-scrolling: touch;
+}
+
+.cancellation-table {
+    width: 100%;
+    min-width: 720px;
+    border-collapse: collapse;
+    font-size: 0.85rem;
+    background: #ffffff;
+    white-space: nowrap;
+}
+
+.cancellation-table th {
+    position: sticky;
+    top: 0;
+    z-index: 3;
+    background: #f8fafc;
+}
+
+.cancellation-table .cancel-action-cell {
+    position: sticky;
+    left: 0;
+    z-index: 4;
+    min-width: 85px;
+    background: #ffffff;
+    box-shadow: 2px 0 5px rgba(15, 23, 42, 0.08);
+}
+
+.cancellation-table thead .cancel-action-cell {
+    background: #f8fafc;
+    z-index: 6;
+}
+
+.cancellation-scroll-hint {
+    display: none;
+    position: sticky;
+    left: 0;
+    z-index: 7;
+    padding: 7px 10px;
+    background: #eff6ff;
+    color: #1e3a8a;
+    text-align: center;
+    font-size: 0.72rem;
+    font-weight: bold;
+    border-bottom: 1px solid #bfdbfe;
+}
+
+@media (max-width: 600px) {
+    .cancellation-table-wrap {
+        max-height: 55vh;
+        border-radius: 8px;
+    }
+
+    .cancellation-table {
+        min-width: 720px;
+        font-size: 0.78rem;
+    }
+
+    .cancellation-scroll-hint {
+        display: block;
+    }
+
+    .cancellation-table th,
+    .cancellation-table td {
+        padding: 10px 7px !important;
+    }
+
+    .cancellation-table .cancel-action-cell {
+        min-width: 82px;
+    }
+}
 </style>
      <button id="supervisorFloatBtn" class="supervisor-float-btn" onclick="openSupervisorContact()" style="display:none;">
     <i class="fab fa-whatsapp"></i>
