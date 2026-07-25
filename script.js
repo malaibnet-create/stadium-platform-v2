@@ -1664,6 +1664,16 @@ function showPaymentOptions() {
     document.getElementById('paymentOptions').style.display = 'block';
     renderUpgradeStadiums();
 }
+
+function toggleTransferDetails() {
+    const method = document.getElementById('payMethod');
+    const instructions = document.getElementById('transferInstructions');
+
+    if (!method || !instructions) return;
+
+    instructions.style.display =
+        method.value === 'Transfer' ? 'block' : 'none';
+}
 // معالجة الدفع النهائي (التواصل عبر واتساب للتأكيد)
 // أضف هذا الجزء أولاً لمراقبة اختيار وسيلة الدفع وإظهار التعليمات تلقائياً
 document.getElementById('payMethod').addEventListener('change', function() {
