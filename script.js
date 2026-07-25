@@ -1779,7 +1779,7 @@ alert(
 );
 
 window.location.href = whatsappUrl;
-
+}
 
 function showPaymentMethods() {
     const content = document.getElementById('adminSectionContent');
