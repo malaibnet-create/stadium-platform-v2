@@ -1652,34 +1652,109 @@ body.modal-open {
     grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
 }
   .related-stadiums-bar {
-    margin: 12px auto 0;
+    width: min(100% - 24px, 760px);
+    margin: 14px auto 4px;
+    padding: 14px;
+    box-sizing: border-box;
+    background: linear-gradient(135deg, #f8fbff, #eef5ff);
+    border: 1px solid #bfdbfe;
+    border-radius: 18px;
+    box-shadow: 0 5px 16px rgba(30, 58, 138, 0.10);
+    direction: rtl;
+}
+
+.related-stadiums-title {
+    margin-bottom: 10px;
+    color: #1e3a8a;
+    text-align: center;
+    font-family: 'Cairo', sans-serif;
+    font-size: 1rem;
+    font-weight: bold;
+}
+
+.related-stadiums-list {
     display: flex;
-    gap: 8px;
     justify-content: center;
+    gap: 10px;
     flex-wrap: wrap;
-    max-width: 680px;
 }
 
 .related-stadium-link {
+    min-width: 145px;
+    padding: 10px 12px;
+    box-sizing: border-box;
     display: inline-flex;
     align-items: center;
-    gap: 6px;
-    padding: 8px 12px;
-    border-radius: 999px;
-    background: #eff6ff;
+    justify-content: center;
+    gap: 7px;
+    flex-wrap: wrap;
+    border: 1px solid #bfdbfe;
+    border-radius: 13px;
+    background: #ffffff;
     color: #1e3a8a;
     text-decoration: none;
     font-family: 'Cairo', sans-serif;
-    font-size: 0.82rem;
-    font-weight: 700;
-    border: 1px solid #bfdbfe;
+    font-size: 0.84rem;
+    font-weight: bold;
+    transition: 0.25s ease;
+}
+
+.related-stadium-link:hover {
+    transform: translateY(-2px);
+    border-color: #2563eb;
+    box-shadow: 0 5px 12px rgba(37, 99, 235, 0.18);
 }
 
 .related-stadium-link.active {
-    background: #1e3a8a;
-    color: white;
+    background: linear-gradient(135deg, #1e3a8a, #2563eb);
+    border-color: #1e3a8a;
+    color: #ffffff;
+    box-shadow: 0 5px 12px rgba(30, 58, 138, 0.30);
 }
 
+.stadium-card-icon {
+    font-size: 1.1rem;
+}
+
+.stadium-card-name {
+    white-space: nowrap;
+}
+
+.related-stadium-link small {
+    width: 100%;
+    text-align: center;
+    color: #dbeafe;
+    font-size: 0.68rem;
+}
+
+.related-stadiums-hint {
+    margin-top: 9px;
+    color: #64748b;
+    text-align: center;
+    font-size: 0.72rem;
+}
+
+@media (max-width: 600px) {
+    .related-stadiums-bar {
+        width: calc(100% - 16px);
+        padding: 11px 8px;
+        border-radius: 15px;
+    }
+
+    .related-stadiums-list {
+        justify-content: flex-start;
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        padding: 3px 2px 8px;
+        scrollbar-width: thin;
+    }
+
+    .related-stadium-link {
+        flex: 0 0 145px;
+        min-width: 145px;
+        font-size: 0.78rem;
+    }
+}
 
 
 .supervisor-float-btn {
