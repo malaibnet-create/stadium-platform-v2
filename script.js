@@ -1658,11 +1658,12 @@ function closePricingModal() {
 }
 
 // إظهار خيارات الدفع عند اختيار الخطة المدفوعة
+
 function showPaymentOptions() {
     document.getElementById('paymentSelection').style.display = 'none';
     document.getElementById('paymentOptions').style.display = 'block';
+    renderUpgradeStadiums();
 }
-
 // معالجة الدفع النهائي (التواصل عبر واتساب للتأكيد)
 // أضف هذا الجزء أولاً لمراقبة اختيار وسيلة الدفع وإظهار التعليمات تلقائياً
 document.getElementById('payMethod').addEventListener('change', function() {
@@ -1674,10 +1675,84 @@ document.getElementById('payMethod').addEventListener('change', function() {
     }
 });
 
+function getUpgradeStadiums() {
+    const related = Array.isArray(window.stadiumData?.related_stadiums)
+        ? window.stadiumData.related_stadiums
+        : [];
+
+    return related.length ? related : [{
+        slug: stadiumId,
+        stadium_name: window.stadiumData?.stadium_name || document.title.split('-')[0].trim()
+    }];
+}
+
+function renderUpgradeStadiums() {
+    const list = document.getElementById('upgradeStadiumList');
+    if (!list) return;
+
+    list.innerHTML = getUpgradeStadiums().map((stadium, index) => `
+        <label class="upgrade-stadium-option">
+            <input
+                type="checkbox"
+                class="upgrade-stadium-checkbox"
+                value="${stadium.slug}"
+                data-name="${stadium.stadium_name}"
+                ${String(stadium.slug) === String(stadiumId) || index === 0 ? 'checked' : ''}
+                onchange="updateUpgradeTotal()">
+
+            <span>${stadium.stadium_name}</span>
+            <small>
+                ${String(stadium.slug) === String(stadiumId) ? 'الملعب الحالي' : 'ملعب تابع'}
+            </small>
+        </label>
+    `).join('');
+
+    updateUpgradeTotal();
+}
+
+function updateUpgradeTotal() {
+    const count = document.querySelectorAll(
+        '.upgrade-stadium-checkbox:checked'
+    ).length;
+
+    const monthly = count > 0 ? 200 + ((count - 1) * 100) : 0;
+    const annual = monthly * 10;
+    const type = document.getElementById('planType')?.value || 'monthly';
+    const total = type === 'annual' ? annual : monthly;
+
+    document.getElementById('upgradeTotalAmount').textContent =
+        `${total.toLocaleString('ar-MA')} د.م`;
+
+    document.getElementById('upgradeTotalDetails').textContent =
+        count
+            ? `${count} ملعب · ${type === 'annual' ? 'سنوي' : 'شهري'}`
+            : 'حدد الملاعب أولاً';
+}
+
+
 function confirmFinalPayment() {
-    const plan = document.getElementById('planType').value == "1500" ? "سنوي (1500 د.م)" : "شهري (200 د.م)";
+    const selected = Array.from(
+        document.querySelectorAll('.upgrade-stadium-checkbox:checked')
+    );
+
+    if (!selected.length) {
+        alert('يرجى اختيار ملعب واحد على الأقل.');
+        return;
+    }
+
+    const count = selected.length;
+    const monthly = 200 + ((count - 1) * 100);
+    const type = document.getElementById('planType').value;
+    const total = type === 'annual' ? monthly * 10 : monthly;
+
+    const plan = type === 'annual'
+        ? `سنوي (${total} د.م)`
+        : `شهري (${total} د.م)`;
+
     const method = document.getElementById('payMethod').value;
-    const stadiumName = document.title.split('-')[0].trim();
+    const stadiumNames = selected
+        .map(item => item.dataset.name)
+        .join('، ');
     
     // 1. التعامل مع البطاقة البنكية (غير جاهزة)
     if (method === "Card") {
@@ -1688,7 +1763,12 @@ function confirmFinalPayment() {
     // 2. التعامل مع التحويل البنكي
     let methodText = "تحويل بنكي";
     
-    const msg = `مرحباً ملاعب NET، أريد ترقية حسابي:\n🏟️ الملعب: ${stadiumName}\n💳 الخطة: ${plan}\n💰 وسيلة الدفع: ${methodText}\n--- (سأقوم بإرسال صورة الوصل الآن)`;
+  const msg = `مرحباً ملاعب NET، أريد ترقية حسابي:
+🏟️ الملاعب: ${stadiumNames}
+📊 عدد الملاعب: ${count}
+💳 الخطة: ${plan}
+💰 وسيلة الدفع: ${method === 'Transfer' ? 'تحويل بنكي' : 'بطاقة بنكية'}
+--- سأرسل صورة الوصل الآن`;
     
     const whatsappUrl = `https://wa.me/2126XXXXXXXX?text=${encodeURIComponent(msg)}`; // ضع رقمك هنا
     
