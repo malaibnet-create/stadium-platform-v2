@@ -1770,7 +1770,7 @@ function confirmFinalPayment() {
 💰 وسيلة الدفع: ${method === 'Transfer' ? 'تحويل بنكي' : 'بطاقة بنكية'}
 --- سأرسل صورة الوصل الآن`;
     
-    const whatsappUrl = `https://wa.me/2126XXXXXXXX?text=${encodeURIComponent(msg)}`; // ضع رقمك هنا
+    const whatsappUrl = `https://wa.me/212779634434?text=${encodeURIComponent(msg)}`; // ضع رقمك هنا
     
     // تنبيه بسيط قبل الانتقال لواتساب
     alert("سيتم الآن توجيهك إلى واتساب.\n\nيرجى إرفاق صورة وصل التحويل في المحادثة لضمان تفعيل الحساب في أقل من ساعة.");
