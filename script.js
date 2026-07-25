@@ -1151,9 +1151,11 @@ async function loadActualCancellations() {
                 <h3 style="margin:0; color:#1e293b; font-size:1.1rem;">❌ إلغاء الحجوزات</h3>
                 <span style="background:#f1f5f9; padding:2px 10px; border-radius:12px; font-size:0.8rem;">${bookings.length} حجز</span>
             </div>
-            
-            <div style="overflow-y:auto; max-height:450px; border:1px solid #e2e8f0; border-radius:8px;">
-                <table style="width:100%; border-collapse: collapse; font-size: 0.85rem; background:white;">
+            <div class="cancellation-table-wrap">
+    <div class="cancellation-scroll-hint">
+        اسحب الجدول يمينًا ويسارًا لرؤية جميع الخانات
+    </div>
+              <table class="cancellation-table">
                     <thead style="position: sticky; top: 0; background:#f8fafc; z-index:10;">
                         <tr>
                             <th style="padding:12px 8px; border-bottom:2px solid #e2e8f0; text-align:right;">اليوم</th>
@@ -1161,7 +1163,9 @@ async function loadActualCancellations() {
                             <th style="padding:12px 8px; border-bottom:2px solid #e2e8f0; text-align:center;">الساعة</th>
                             <th style="padding:12px 8px; border-bottom:2px solid #e2e8f0; text-align:right;">الاسم</th>
                             <th style="padding:12px 8px; border-bottom:2px solid #e2e8f0; text-align:center;">الهاتف</th>
-                            <th style="padding:12px 8px; border-bottom:2px solid #e2e8f0; text-align:center;">إجراء</th>
+                           <th class="cancel-action-cell" style="padding:12px 8px; border-bottom:2px solid #e2e8f0; text-align:center;">
+    إجراء
+</th>
                         </tr>
                     </thead>
                     <tbody>`;
@@ -1178,7 +1182,7 @@ async function loadActualCancellations() {
                     <td style="padding:10px 8px; text-align:center; color:#64748b;">${bk.date}</td>
                     <td style="padding:10px 8px; text-align:center; direction:ltr;">${bk.hour}</td>
                     <td style="padding:10px 8px; font-weight:500;">${bk.name}</td>
-                    <td style="padding:10px 8px; text-align:center;">
+                   <td class="cancel-action-cell" style="padding:10px 8px; text-align:center;">
                         <a href="tel:${bk.phone}" style="text-decoration:none; color:#16a34a; font-weight:bold;">
                             ${bk.phone} 📞
                         </a>
