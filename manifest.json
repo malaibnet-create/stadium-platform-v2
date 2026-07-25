@@ -13,7 +13,7 @@
       "src": "logo_no_background.png",
       "sizes": "512x512",
       "type": "image/png",
-      "purpose": "maskable"
+     "purpose": "any"
     }
   ],
   "start_url": "./index.html",
