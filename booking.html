@@ -66,7 +66,7 @@
             <div class="plan-card premium-card">
                 <div class="popular-tag">الموصى به</div>
                 <h3>الخطة الاحترافية</h3>
-                <div class="price">200 د.م <span>/ شهرياً</span></div>
+              <div class="price">ابتداءً من 200 د.م <span>/ حسب عدد الملاعب</span></div>
                 <ul class="features">
                     <li>⭐ كل مميزات المجانية</li>
                     <li>✅ لوحة تحكم متكاملة</li>
@@ -79,30 +79,44 @@
                     <button class="plan-btn premium-btn" onclick="showPaymentOptions()">اشترك الآن</button>
                 </div>
                 
-               <div id="paymentOptions" style="display: none; margin-top: 15px; text-align: right;">
-    <p style="font-weight: bold; font-size: 0.9rem;">اختر نوع الاشتراك:</p>
-    <select id="planType" style="width: 100%; padding: 8px; margin-bottom: 10px; border-radius: 5px; font-family: 'Cairo';">
-        <option value="200">شهري - 200 د.م</option>
-        <option value="1500">سنوي - 1500 د.م</option>
+      <div id="paymentOptions" style="display:none; margin-top:15px; text-align:right;">
+    <div class="upgrade-selection-card">
+        <h4>اختر الملاعب التي تريد ترقيتها</h4>
+        <p class="upgrade-helper-text">
+            يمكنك تحديد ملعب واحد أو عدة ملاعب من نفس الحساب.
+        </p>
+        <div id="upgradeStadiumList" class="upgrade-stadium-list"></div>
+    </div>
+
+    <label for="planType" class="upgrade-field-label">نوع الاشتراك:</label>
+
+    <select id="planType" onchange="updateUpgradeTotal()" class="upgrade-select">
+        <option value="monthly">شهري</option>
+        <option value="annual">سنوي - خصم شهرين</option>
     </select>
 
-    <p style="font-weight: bold; font-size: 0.9rem;">وسيلة الدفع:</p>
-    <select id="payMethod" onchange="toggleTransferDetails()" style="width: 100%; padding: 8px; margin-bottom: 15px; border-radius: 5px; font-family: 'Cairo';">
+    <div id="upgradeTotalBox" class="upgrade-total-box">
+        <span>المبلغ المطلوب</span>
+        <strong id="upgradeTotalAmount">0 د.م</strong>
+        <small id="upgradeTotalDetails">حدد الملاعب أولاً</small>
+    </div>
+
+    <label for="payMethod" class="upgrade-field-label">وسيلة الدفع:</label>
+
+    <select id="payMethod" onchange="toggleTransferDetails()" class="upgrade-select">
         <option value="Transfer">تحويل بنكي 🏦</option>
         <option value="Card">بطاقة بنكية 💳</option>
     </select>
 
-    <div id="transferInstructions" style="background: #f0fdf4; border: 1px solid #bbf7d0; padding: 12px; border-radius: 8px; margin-bottom: 15px; text-align: right; font-size: 0.85rem;">
-        <p style="color: #166534; font-weight: bold; margin-bottom: 5px;">تفاصيل التحويل البنكي:</p>
-        <p style="margin: 5px 0;"><strong>RIB:</strong> 0000 0000 0000 0000 0000 0000</p>
-        <p style="margin: 5px 0;"><strong>الاسم:</strong> اسمك الكامل أو اسم الشركة</p>
-        <p style="color: #ef4444; font-size: 0.75rem; margin-top: 8px; line-height: 1.4;">
-            * يرجى إرسال صورة وصل التحويل عبر واتساب لتفعيل حسابك فوراً.
-        </p>
+    <div id="transferInstructions">
+        تفاصيل التحويل البنكي الموجودة عندك
     </div>
 
-    <button class="plan-btn premium-btn" onclick="confirmFinalPayment()">مواصلة التفعيل</button>
+    <button class="plan-btn premium-btn" onclick="confirmFinalPayment()">
+        مواصلة التفعيل
+    </button>
 </div>
+
             </div>
         </div>
     </div>
