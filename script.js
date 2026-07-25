@@ -2001,6 +2001,9 @@ function switchAdminTab(tab, evt) {
 
     const clickedItem = evt?.currentTarget || window.event?.currentTarget;
     if (clickedItem) clickedItem.classList.add('active-tab');
+    if (tab !== 'addStadium' && currentAccountStatus !== 'Premium') {
+    shakeUpgradeButton();
+}
 
     const content = document.getElementById('adminSectionContent');
     if (!content) {
