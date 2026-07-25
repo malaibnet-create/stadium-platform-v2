@@ -116,6 +116,91 @@ h2 {
     margin-bottom: 25px;
 }
 
+.upgrade-selection-card {
+    margin: 14px 0;
+    padding: 13px;
+    border: 1px solid #bfdbfe;
+    border-radius: 12px;
+    background: #f8fbff;
+}
+
+.upgrade-selection-card h4 {
+    margin: 0 0 5px;
+    color: #1e3a8a;
+}
+
+.upgrade-helper-text {
+    margin: 0 0 10px;
+    color: #64748b;
+    font-size: .76rem;
+}
+
+.upgrade-stadium-list {
+    display: grid;
+    gap: 8px;
+    max-height: 190px;
+    overflow-y: auto;
+}
+
+.upgrade-stadium-option {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    gap: 8px;
+    padding: 10px;
+    border: 1px solid #dbeafe;
+    border-radius: 9px;
+    background: white;
+    cursor: pointer;
+}
+
+.upgrade-stadium-checkbox {
+    width: 18px;
+    height: 18px;
+    accent-color: #2563eb;
+}
+
+.upgrade-field-label {
+    display: block;
+    margin: 12px 0 5px;
+    color: #334155;
+    font-weight: bold;
+}
+
+.upgrade-select {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    font-family: 'Cairo';
+}
+
+.upgrade-total-box {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 14px 0;
+    padding: 12px;
+    border-right: 4px solid #16a34a;
+    border-radius: 8px;
+    background: #f0fdf4;
+    color: #166534;
+}
+
+.upgrade-total-box strong {
+    font-size: 1.15rem;
+}
+
+@media (max-width: 480px) {
+    .upgrade-total-box {
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .upgrade-total-box small {
+        width: 100%;
+    }
+}
 /* ØªÙˆØ­ÙŠØ¯ ØªÙ†Ø³ÙŠÙ‚ Ø¬Ù…ÙŠØ¹ Ø§Ù„Ø£Ø²Ø±Ø§Ø± Ø§Ù„Ø¹Ù„ÙˆÙŠØ© */
 .btn-membership, .btn-info, .btn-map, .btn-video {
     padding: 12px 20px;
