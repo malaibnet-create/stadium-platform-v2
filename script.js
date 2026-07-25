@@ -329,25 +329,39 @@ return true;
 
 function renderRelatedStadiums(data) {
     const bar = document.getElementById('relatedStadiumsBar');
+
     if (!bar || !data || !Array.isArray(data.related_stadiums) || data.related_stadiums.length <= 1) {
         if (bar) bar.style.display = 'none';
         return;
     }
 
-    bar.innerHTML = data.related_stadiums.map(stadium => {
-        const isActive = stadium.slug === stadiumId;
+    const links = data.related_stadiums.map(stadium => {
+        const isActive = String(stadium.slug) === String(stadiumId);
+
         return `
             <a class="related-stadium-link ${isActive ? 'active' : ''}"
                href="booking.html?id=${encodeURIComponent(stadium.slug)}">
-                <span>⚽</span>
-                <span>${stadium.stadium_name}</span>
+                <span class="stadium-card-icon">⚽</span>
+                <span class="stadium-card-name">${stadium.stadium_name}</span>
+                ${isActive ? '<small>الملعب الحالي</small>' : ''}
             </a>
         `;
     }).join('');
 
-    bar.style.display = 'flex';
-}
+    bar.innerHTML = `
+        <div class="related-stadiums-title">
+            🏟️ ملاعب هذا الحساب
+        </div>
+        <div class="related-stadiums-list">
+            ${links}
+        </div>
+        <div class="related-stadiums-hint">
+            اضغط على أي ملعب للانتقال إليه
+        </div>
+    `;
 
+    bar.style.display = 'block';
+}
 
 
 function initTable(dataFromFetch) {
