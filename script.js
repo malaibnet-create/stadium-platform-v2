@@ -44,8 +44,25 @@
 })();
 
 // 1. الإعدادات والروابط الأساسية
-const settingsScriptURL = 'https://script.google.com/macros/s/AKfycbyDSymZB6Cnn0FWAx4DWoUwSWpH_y7AUYISDpeXnpXcEYRbm4Ool5ScavsXy0MZKKuzig/exec?key=B_Assel_Admin_2026_Sec';
-const bookingScriptURL = 'https://script.google.com/macros/s/AKfycbyDSymZB6Cnn0FWAx4DWoUwSWpH_y7AUYISDpeXnpXcEYRbm4Ool5ScavsXy0MZKKuzig/exec?key=B_Assel_Admin_2026_Sec';
+const APPS_SCRIPT_BASE_URL = 'https://script.google.com/macros/s/AKfycbyDSymZB6Cnn0FWAx4DWoUwSWpH_y7AUYISDpeXnpXcEYRbm4Ool5ScavsXy0MZKKuzig/exec';
+// ضع هنا نفس قيمة MASTER_KEY الموجودة في Script Properties قبل نشر الموقع.
+// هذا حل انتقالي؛ الحماية النهائية تتطلب Backend Proxy.
+const API_KEY = 'MNet_2026_A9x7Kp2Lm8Qv4Zt6SecureKey2026';
+const settingsScriptURL = `${APPS_SCRIPT_BASE_URL}?key=${encodeURIComponent(API_KEY)}`;
+const bookingScriptURL = `${APPS_SCRIPT_BASE_URL}?key=${encodeURIComponent(API_KEY)}`;
+
+function escapeHTML(value) {
+    return String(value ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+}
+
+function getAdminPassHash() {
+    return sessionStorage.getItem('adminPassHash_' + stadiumId) || '';
+}
 
 
 const urlParams = new URLSearchParams(window.location.search);
@@ -728,7 +745,19 @@ function changeWeek(direction) {
     initTable();
 }
 
-function loadExistingBookings() {
+async function loadExistingBookings() {
+    try {
+        const response = await fetch(
+            `${bookingScriptURL}&action=getBookings&id=${encodeURIComponent(stadiumId)}&t=${Date.now()}`
+        );
+        const bookings = await response.json();
+        if (!Array.isArray(bookings)) throw new Error('Invalid bookings response');
+        handleData(bookings);
+    } catch (error) {
+        console.error('Bookings load failed:', error);
+    }
+    return;
+    /* Legacy JSONP code retained only for reference; backend now returns JSON.
     // 1. البحث عن أي سكريبت جلب بيانات قديم تم إنشاؤه سابقاً
     const oldScript = document.getElementById('dataFetchScript');
     
@@ -748,6 +777,7 @@ function loadExistingBookings() {
     
     // 6. إضافة السكريبت إلى الصفحة لبدء جلب البيانات
     document.body.appendChild(script);
+    */
 }
 
 function handleData(bookings) {
@@ -929,7 +959,8 @@ async function saveAdminSettings(event) {
         const dataToSave = {
             action: "adminUpdateSettings",
             id: stadiumId,
-            pass: finalPass,
+            currentPass: getAdminPassHash(),
+            newPass: finalPass,
             stadiumName: document.getElementById('upd_name')?.value || "",
             pDay: document.getElementById('upd_price_day')?.value || "",
             pNight: document.getElementById('upd_price_night')?.value || "",
@@ -1135,7 +1166,11 @@ async function loadActualCancellations() {
             <div class="loader"></div> </div>`;
 
     try {
-        const response = await fetch(`${settingsScriptURL}&action=getAdminBookings&id=${stadiumId}`);
+        const response = await fetch(
+            `${settingsScriptURL}&action=getAdminBookings` +
+            `&id=${encodeURIComponent(stadiumId)}` +
+            `&pass=${encodeURIComponent(getAdminPassHash())}`
+        );
         const bookings = await response.json();
 
         if (bookings.length === 0) {
@@ -1178,13 +1213,13 @@ async function loadActualCancellations() {
 
             html += `
                 <tr style="border-bottom:1px solid #f1f5f9; transition:0.2s;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='transparent'">
-                    <td style="padding:10px 8px; font-weight:bold; color:#1e3a8a;">${dayName}</td>
-                    <td style="padding:10px 8px; text-align:center; color:#64748b;">${bk.date}</td>
-                    <td style="padding:10px 8px; text-align:center; direction:ltr;">${bk.hour}</td>
-                    <td style="padding:10px 8px; font-weight:500;">${bk.name}</td>
+                    <td style="padding:10px 8px; font-weight:bold; color:#1e3a8a;">${escapeHTML(dayName)}</td>
+                    <td style="padding:10px 8px; text-align:center; color:#64748b;">${escapeHTML(bk.date)}</td>
+                    <td style="padding:10px 8px; text-align:center; direction:ltr;">${escapeHTML(bk.hour)}</td>
+                    <td style="padding:10px 8px; font-weight:500;">${escapeHTML(bk.name)}</td>
                    <td class="cancel-action-cell" style="padding:10px 8px; text-align:center;">
-                        <a href="tel:${bk.phone}" style="text-decoration:none; color:#16a34a; font-weight:bold;">
-                            ${bk.phone} 📞
+                        <a href="tel:${encodeURIComponent(String(bk.phone || ''))}" style="text-decoration:none; color:#16a34a; font-weight:bold;">
+                            ${escapeHTML(bk.phone)} 📞
                         </a>
                     </td>
                     <td style="padding:10px 8px; text-align:center;">
@@ -1212,10 +1247,9 @@ async function cancelBooking(rowNumber, btn) {
     if (!confirm("هل أنت متأكد من إلغاء هذا الحجز نهائياً؟")) return;
 
     // 1. جلب الكود السري من حقل تسجيل الدخول الموجود في الصفحة
-    const passwordInput = document.getElementById('adminPassInput');
-    const password = passwordInput ? passwordInput.value.trim() : "";
+        const hashedPass = getAdminPassHash();
 
-    if (!password) {
+        if (!hashedPass) {
         alert("⚠️ خطأ: لم يتم العثور على كود التحقق. يرجى إعادة تسجيل الدخول.");
         return;
     }
@@ -1229,11 +1263,9 @@ async function cancelBooking(rowNumber, btn) {
 
     try {
         // 2. تشفير الكود السري قبل إرساله
-        const hashedPass = await hashString(password);
-
         // 3. إرسال الطلب مع إضافة id و pass (الهاش)
         // أضفنا Timestamp (&_t=...) لضمان جلب بيانات طازجة
-        const url = `${settingsScriptURL}&action=cancelBooking&row=${rowNumber}&id=${stadiumId}&pass=${encodeURIComponent(hashedPass)}&_t=${new Date().getTime()}`;
+        const url = `${settingsScriptURL}&action=cancelBooking&row=${encodeURIComponent(rowNumber)}&id=${encodeURIComponent(stadiumId)}&pass=${encodeURIComponent(hashedPass)}&_t=${Date.now()}`;
         
         const response = await fetch(url);
         const result = await response.text();
@@ -1282,7 +1314,11 @@ async function loadActualStats() {
         </div>`;
 
     try {
-        const response = await fetch(`${settingsScriptURL}&action=getStats&id=${stadiumId}`);
+        const response = await fetch(
+            `${settingsScriptURL}&action=getStats` +
+            `&id=${encodeURIComponent(stadiumId)}` +
+            `&pass=${encodeURIComponent(getAdminPassHash())}`
+        );
         const data = await response.json();
         
         const monthNames = ["يناير", "فبراير", "مارس", "أبريل", "مايو", "يونيو", "يوليو", "أغسطس", "سبتمبر", "أكتوبر", "نوفمبر", "ديسمبر"];
