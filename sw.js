@@ -1,4 +1,4 @@
-const cacheName = 'malaeb-net-v1.92'; // تحديث النسخة لضمان تنشيط التعديلات
+const cacheName = 'malaeb-net-v2-security';
 const assets = [
   './',
   './index.html',
@@ -9,10 +9,29 @@ const assets = [
   './logo_no_background.png'
 ];
 
-// ... (أكواد install و activate تبقى كما هي) ...
+const ASSETS = assets.map(path => new URL(path, self.registration.scope).href);
+
+self.addEventListener('install', event => {
+  event.waitUntil(
+    caches.open(cacheName).then(cache => cache.addAll(ASSETS))
+  );
+  self.skipWaiting();
+});
+
+self.addEventListener('activate', event => {
+  event.waitUntil(
+    caches.keys().then(keys => Promise.all(
+      keys.filter(key => key !== cacheName).map(key => caches.delete(key))
+    ))
+  );
+  self.clients.claim();
+});
 
 self.addEventListener('fetch', e => {
   const url = new URL(e.request.url);
+
+  // لا نعالج POST أو أي طلب يغير البيانات داخل Service Worker.
+  if (e.request.method !== 'GET') return;
 
   // 1. استثناء بيانات جوجل والروابط الخارجية (دائماً من الشبكة)
   if (url.origin !== location.origin || url.href.includes('script.google.com')) {
@@ -43,3 +62,4 @@ self.addEventListener('fetch', e => {
     })
   );
 });
+
