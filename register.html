@@ -135,10 +135,10 @@
 </div>
 
 <script>
-    const APPS_SCRIPT_BASE_URL = 'https://script.google.com/macros/s/AKfycbySK32uLCWnl4WUfEEJilksvCpLjThoD7laPe9xaU-XYLlBtEqp4axk-JQHDXRmubmV/exec';
-    const API_KEY = 'MNet_2026_A9x7Kp2Lm8Qv4Zt6SecureKey2026';
-    const scriptURL = `${APPS_SCRIPT_BASE_URL}?key=${encodeURIComponent(API_KEY)}`;
+  // Cloudflare Worker
+const APPS_SCRIPT_BASE_URL = 'https://dmalaib-api-proxy.malaib-net.workers.dev';
 
+const scriptURL = APPS_SCRIPT_BASE_URL;
     function escapeHTML(value) {
         return String(value ?? '').replace(/[&<>"']/g, ch => ({
             '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;'
