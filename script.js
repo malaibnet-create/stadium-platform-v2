@@ -44,7 +44,7 @@
 })();
 
 // 1. الإعدادات والروابط الأساسية
-const APPS_SCRIPT_BASE_URL = 'https://script.google.com/macros/s/AKfycbythroD56uz0JXopE4CAYN9yX2QEnf3p24o2oQruQHcmx_x8J5bajoQY2xDu-TFrfzW/exec';
+const APPS_SCRIPT_BASE_URL = 'https://script.google.com/macros/s/AKfycbwHnCp_GGuQKMbsSdEHUSh7v3NHdH6M54cPqFc-L7UbLtXpQxQQnhFmtAY5-8Y2Nrs4/exec';
 // ضع هنا نفس قيمة MASTER_KEY الموجودة في Script Properties قبل نشر الموقع.
 // هذا حل انتقالي؛ الحماية النهائية تتطلب Backend Proxy.
 const API_KEY = 'MNet_2026_A9x7Kp2Lm8Qv4Zt6SecureKey2026';
