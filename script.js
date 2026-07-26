@@ -44,12 +44,12 @@
 })();
 
 // 1. الإعدادات والروابط الأساسية
-const APPS_SCRIPT_BASE_URL = 'https://script.google.com/macros/s/AKfycbySK32uLCWnl4WUfEEJilksvCpLjThoD7laPe9xaU-XYLlBtEqp4axk-JQHDXRmubmV/exec';
-// ضع هنا نفس قيمة MASTER_KEY الموجودة في Script Properties قبل نشر الموقع.
-// هذا حل انتقالي؛ الحماية النهائية تتطلب Backend Proxy.
-const API_KEY = 'MNet_2026_A9x7Kp2Lm8Qv4Zt6SecureKey2026';
-const settingsScriptURL = `${APPS_SCRIPT_BASE_URL}?key=${encodeURIComponent(API_KEY)}`;
-const bookingScriptURL = `${APPS_SCRIPT_BASE_URL}?key=${encodeURIComponent(API_KEY)}`;
+// Cloudflare Worker
+const APPS_SCRIPT_BASE_URL = 'https://dmalaib-api-proxy.malaib-net.workers.dev';
+
+// جميع الطلبات تمر عبر Cloudflare Worker
+const settingsScriptURL = APPS_SCRIPT_BASE_URL;
+const bookingScriptURL = APPS_SCRIPT_BASE_URL;
 
 function escapeHTML(value) {
     return String(value ?? '')
