@@ -1,306 +1,843 @@
-<!DOCTYPE html>
-<html lang="ar" dir="rtl">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>إنشاء حساب - منصة ملاعب</title>
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-    <style>
-        :root {
-            --primary-color: #2563eb;
-            --secondary-color: #10b981;
-            --bg-color: #f8fafc;
-        }
-        body {
-            font-family: 'Cairo', sans-serif;
-            background-color: var(--bg-color);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            margin: 0;
-        }
-        .register-container {
-            background: white;
-            padding: 2rem;
-            border-radius: 15px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-            width: 100%;
-            max-width: 450px;
-            text-align: center;
-        }
-        .logo {
-            font-size: 2rem;
-            font-weight: bold;
-            color: var(--primary-color);
-            margin-bottom: 1rem;
-        }
-        .logo span { color: var(--secondary-color); }
-        h2 { margin-bottom: 1.5rem; color: #1e293b; }
-        
-        .form-group {
-            text-align: right;
-            margin-bottom: 1.2rem;
-        }
-        label { display: block; margin-bottom: 0.5rem; font-weight: bold; }
-        input {
-            width: 100%;
-            padding: 12px;
-            border: 1px solid #e2e8f0;
-            border-radius: 8px;
-            box-sizing: border-box;
-            font-family: inherit;
-        }
-        input:focus { border-color: var(--primary-color); outline: none; }
-        
-        .hint { font-size: 0.8rem; color: #64748b; margin-top: 4px; }
-        
-        .btn-submit {
-            background: var(--primary-color);
-            color: white;
-            border: none;
-            padding: 14px;
-            width: 100%;
-            border-radius: 8px;
-            font-size: 1.1rem;
-            font-weight: bold;
-            cursor: pointer;
-            transition: 0.3s;
-        }
-        .btn-submit:hover { background: #1d4ed8; }
-        
-        .footer-links { margin-top: 1.5rem; font-size: 0.9rem; }
-        .footer-links a { color: var(--primary-color); text-decoration: none; }
+// --- الإعدادات العامة ---
+const SHEET_STADIUMS = "Stadiums"; // ورقة الملاعب والتسجيل
+const SHEET_BOOKINGS = "Bookings"; // ورقة الحجوزات
 
-        #otpModal {
-            display: none;
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.5);
-            justify-content: center; align-items: center;
-        }
-        .modal-content {
-            background: white; padding: 2rem; border-radius: 12px; text-align: center;
-        }
-    </style>
-</head>
-<body>
-
-<div class="register-container">
-    <div class="logo">ملاعب<span>.net</span></div>
-    <h2>إنشاء حساب جديد</h2>
-    
-    <form id="registerForm">
-        <div class="form-group">
-            <label>الاسم الكامل</label>
-            <input type="text" id="fullName" placeholder="أدخل اسمك" required>
-        </div>
-        
-        <div class="form-group">
-            <label>البريد الإلكتروني</label>
-            <input type="email" id="email" placeholder="example@mail.com" required>
-        </div>
-        
-       <div class="form-group">
-    <label style="display: block; font-weight: bold;">كلمة المرور</label>
-    <input type="password" id="password" placeholder="********" required style="width: 100%; padding: 10px; margin-top: 5px;">
-    <small style="display: block; color: #d97706; margin-top: 5px; font-size: 0.85rem; line-height: 1.4;">
-        ⚠️ يرجى تذكر الرقم السري جيداً، فهو وسيلتك الوحيدة لدخول لوحة التحكم.
-    </small>
-</div>
-        
-        <div class="form-group">
-            <label>اسم الملعب أو الجمعية</label>
-            <input type="text" id="stadiumName" placeholder="مثلاً: ملعب السعادة" required>
-            <p class="hint">يمكنك تغيير هذا لاحقاً من الإعدادات</p>
-        </div>
-        
-        <button type="button" class="btn-submit" onclick="showOTP()">متابعة لإنشاء الحساب</button>
-    </form>
-
-    <div class="footer-links">
-        لديك حساب بالفعل؟ <a href="login.html">تسجيل الدخول</a>
-    </div>
-</div>
-
-<div id="otpModal">
-    <div class="modal-content">
-        <h3>تأكيد البريد الإلكتروني</h3>
-        <p>لقد أرسلنا رمزاً إلى بريدك، أدخله هنا:</p>
-        <input type="text" id="otpCode" placeholder="- - - -" style="text-align: center; letter-spacing: 10px; font-size: 1.5rem;">
-        <br><br>
-        <button class="btn-submit" onclick="verifyOTP()">تأكيد ودخول</button>
-    </div>
-</div>
-
-<script>
-    const APPS_SCRIPT_BASE_URL = 'https://script.google.com/macros/s/AKfycbythroD56uz0JXopE4CAYN9yX2QEnf3p24o2oQruQHcmx_x8J5bajoQY2xDu-TFrfzW/exec';
-    const API_KEY = 'MNet_2026_A9x7Kp2Lm8Qv4Zt6SecureKey2026';
-    const scriptURL = `${APPS_SCRIPT_BASE_URL}?key=${encodeURIComponent(API_KEY)}`;
-
-    function escapeHTML(value) {
-        return String(value ?? '').replace(/[&<>"']/g, ch => ({
-            '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;'
-        }[ch]));
-    }
-
-  const registerParams = new URLSearchParams(window.location.search);
-const registerMode = registerParams.get('mode');
-const parentSlug = registerParams.get('parent') || "";
-const parentPass = registerParams.get('parentPass') || "";
-const isSubStadiumMode = registerMode === "addSubStadium";
-
-document.addEventListener('DOMContentLoaded', function () {
-    if (!isSubStadiumMode) return;
-
-    const title = document.querySelector('.register-container h2');
-    const submitBtn = document.querySelector('.btn-submit');
-    const footerLinks = document.querySelector('.footer-links');
-
-    if (title) title.innerText = "إضافة ملعب جديد";
-    if (submitBtn) submitBtn.innerText = "متابعة لإضافة الملعب";
-    if (footerLinks) footerLinks.style.display = "none";
-});
-    let generatedOTP = ""; // لتخزين الرمز مؤقتاً
-
-    async function hashString(str) {
-    const encoder = new TextEncoder();
-    const data = encoder.encode(str);
-    const hashBuffer = await crypto.subtle.digest('SHA-256', data);
-    const hashArray = Array.from(new Uint8Array(hashBuffer));
-    return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+function triggerPermissions() {
+  GmailApp.sendEmail(Session.getActiveUser().getEmail(), "تفعيل الصلاحيات", "تم تفعيل البريد بنجاح لجميع العمليات (التسجيل والحجز).");
 }
-    
-    async function showOTP() {
-    const fullName = document.getElementById('fullName').value;
-    const email = document.getElementById('email').value;
-    const stadiumName = document.getElementById('stadiumName').value;
+function findStadiumRowBySlug_(sheet, slug) {
+  var data = sheet.getDataRange().getValues();
 
-    if (!fullName || !email || !stadiumName) {
-        alert("يرجى ملء جميع الخانات");
-        return;
+  for (var i = 1; i < data.length; i++) {
+    if (String(data[i][0]).trim() === String(slug).trim()) {
+      return {
+        rowNumber: i + 1,
+        values: data[i]
+      };
     }
+  }
 
-    const btn = document.querySelector('.btn-submit');
-    btn.innerText = "جاري إرسال الرمز...";
-    btn.disabled = true;
+  return null;
+}
+function getAuthorizedStadiumRow_(sheet, slug, passHash) {
+  var row = findStadiumRowBySlug_(sheet, slug);
 
-    // الخطوة 1: طلب الرمز من جوجل سكريبت مع إضافة المفتاح السري
+  if (!row) return null;
+
+  var storedHash = String(row.values[3] || "").trim();
+  var providedHash = String(passHash || "").trim();
+
+  if (!storedHash || !providedHash || storedHash !== providedHash) {
+    return null;
+  }
+
+  return row;
+}
+
+function cleanText_(value, maxLength) {
+  var text = String(value || "").trim();
+
+  if (text.length > maxLength) {
+    text = text.substring(0, maxLength);
+  }
+
+  if (/^[=+\-@]/.test(text)) {
+    text = "'" + text;
+  }
+
+  return text;
+}
+
+function isValidSlug_(slug) {
+  return /^[a-zA-Z0-9_-]{3,80}$/.test(String(slug || ""));
+}
+
+function isValidHour_(hour) {
+  return /^(?:[01]?\d|2[0-3]):00$/.test(String(hour || ""));
+}
+
+function isValidDate_(date) {
+  return /^\d{2}\/\d{2}\/\d{4}$/.test(String(date || ""));
+}
+
+function getApiKey_() {
+  var key = PropertiesService.getScriptProperties().getProperty("MASTER_KEY");
+  if (!key) throw new Error("MASTER_KEY غير مضبوط في Script Properties");
+  return key;
+}
+
+function jsonResponse_(value) {
+  return ContentService
+    .createTextOutput(JSON.stringify(value))
+    .setMimeType(ContentService.MimeType.JSON);
+}
+
+function getVerifiedOtpEmail_(token) {
+  var raw = CacheService.getScriptCache().get("verified_" + String(token || ""));
+  if (!raw) return null;
+  try { return JSON.parse(raw).email || null; } catch (err) { return null; }
+}
+
+function getRelatedStadiums_(sheet, ownerGroupId) {
+  var data = sheet.getDataRange().getValues();
+  var related = [];
+
+  for (var i = 1; i < data.length; i++) {
+    var rowSlug = data[i][0];
+    var rowName = data[i][4];
+    var rowGroup = data[i][25] || rowSlug;
+
+    if (rowSlug && rowName && String(rowGroup) === String(ownerGroupId)) {
+      related.push({
+        slug: rowSlug,
+        stadium_name: rowName
+      });
+    }
+  }
+
+  return related;
+}
+
+function doGet(e) {
+
+  // --- 1. نظام الحماية الشامل (API Key) ---
+  const MASTER_KEY = getApiKey_();
+  var secureKey = e.parameter.key; 
+
+  if (secureKey !== MASTER_KEY) {
+    return ContentService.createTextOutput("Forbidden: Invalid API Key")
+                        .setMimeType(ContentService.MimeType.TEXT);
+  }
+  var action = e.parameter.action;
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  
+  // تعريف الشيتات في البداية لضمان توفرها في كل الشروط
+  var stadiumSheet = ss.getSheetByName(SHEET_STADIUMS);
+  var bookingSheet = ss.getSheetByName(SHEET_BOOKINGS);
+
+  // --- القسم الأول: الحجوزات (جلب المربعات الحمراء) ---
+  if (!action || action === "getBookings") {
     try {
-        // تم إضافة &key لضمان أن الطلب قادم من موقعك فقط
-        const response = await fetch(`${scriptURL}&action=sendOTP&email=${encodeURIComponent(email)}`);
+      const stadiumId = String(e.parameter.id || "").trim();
+      if (!isValidSlug_(stadiumId)) return jsonResponse_({ error: "Invalid stadium ID" });
+      const data = bookingSheet.getDataRange().getValues();
+      
+      const bookings = data.slice(1)
+        .filter(row => row[0] == stadiumId) 
+        .map(row => {
+          let rawDate = row[2];
+          let formattedDate = "";
+          if (rawDate instanceof Date) {
+            let day = ("0" + rawDate.getDate()).slice(-2);
+            let month = ("0" + (rawDate.getMonth() + 1)).slice(-2);
+            let year = rawDate.getFullYear();
+            formattedDate = day + "/" + month + "/" + year;
+          } else {
+            formattedDate = String(rawDate).trim();
+          }
+          return {
+            date: formattedDate,
+            hour: row[3] ? String(row[3]).trim() : ""
+          };
+        });
+
+      return jsonResponse_(bookings);
         
-        // استخراج النص من الاستجابة (الذي سيكون الهاش المشفر)
-        const result = await response.text();
-        
-        if (result !== "Sent") {
-            alert("فشل إرسال الإيميل. تأكد من صحة البريد أو صلاحيات الوصول.");
-        } else {
-            document.getElementById('otpModal').style.display = 'flex';
-        }
-    } catch (e) {
-        console.error(e);
-        alert("خطأ في الاتصال بالسيرفر.");
-    } finally {
-        btn.innerText = "متابعة لإنشاء الحساب";
-        btn.disabled = false;
+    } catch (err) {
+      return jsonResponse_({ error: "Unable to load bookings" });
     }
-}
+  }
 
-  async function verifyOTP() {
-    const userOTP = document.getElementById('otpCode').value;
-    
-    // تصحيح: يجب تعريف btn داخل هذه الدالة أيضاً
-    const btn = document.querySelector('#otpModal .btn-submit');
-
-    const verifyURL = `${scriptURL}&action=verifyOTP` +
-        `&email=${encodeURIComponent(document.getElementById('email').value.trim())}` +
-        `&otp=${encodeURIComponent(userOTP.trim())}`;
-
-    const verifyResponse = await fetch(verifyURL);
-    const verifyResult = await verifyResponse.json();
-
-    if (verifyResult.result !== "Verified" || !verifyResult.token) {
-        alert("الرمز غير صحيح أو منتهي الصلاحية، حاول مجدداً.");
-        return;
+  // --- القسم الثاني: التسجيل و OTP ---
+  if (action == "sendOTP") {
+    var userEmail = String(e.parameter.email || "").trim().toLowerCase();
+    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(userEmail)) {
+      return ContentService.createTextOutput("Invalid Email");
     }
+    var cache = CacheService.getScriptCache();
+    var rateKey = "otp_rate_" + hashString(userEmail);
+    if (cache.get(rateKey)) return ContentService.createTextOutput("Too Many Requests");
+    cache.put(rateKey, "1", 60);
+    var otp = Utilities.getUuid().replace(/-/g, "").substring(0, 6).toUpperCase();
 
-    // الآن سيعمل هذا الجزء بشكل صحيح
-    btn.innerText = "جاري الحفظ النهائي...";
-    btn.disabled = true;
-
-    const fullName = document.getElementById('fullName').value;
-    const email = document.getElementById('email').value;
-    const password = document.getElementById('password').value;
-    const stadiumName = document.getElementById('stadiumName').value;
-
-    // الرابط النهائي لإرسال البيانات
-   const finalURLObject = new URL(scriptURL);
-   finalURLObject.searchParams.set('action', 'saveData');
-   finalURLObject.searchParams.set('fullName', fullName);
-   finalURLObject.searchParams.set('email', email);
-   finalURLObject.searchParams.set('password', password);
-   finalURLObject.searchParams.set('stadiumName', stadiumName);
-   finalURLObject.searchParams.set('otpToken', verifyResult.token);
-   let finalURL = finalURLObject.toString();
-
-if (isSubStadiumMode) {
-    finalURL += `&parentSlug=${encodeURIComponent(parentSlug)}&parentPass=${encodeURIComponent(parentPass)}`;
-}
     try {
-        // نستخدم fetch بدون no-cors لنتمكن من قراءة الـ slug العشوائي الراجع من جوجل
-        const response = await fetch(finalURL);
-        const resultText = await response.text();
+      var subject = "رمز تأكيد حسابك - منصة ملاعب";
+      var body = "رمز التأكيد الخاص بك هو: " + otp;
+      
+      GmailApp.sendEmail(userEmail, subject, body);
 
-        if (resultText.includes("Success:")) {
-            document.getElementById('otpModal').style.display = 'none';
-            const finalSlug = resultText.split(":")[1]; // استخراج المعرف العشوائي مثل st-xxxx
-            const userLink = "https://abyesb.github.io/stadium-platform-v2/booking.html?id=" + finalSlug;
+      // التعديل الأمني هنا: نرسل الرمز مشفراً للمتصفح
+      // الموقع سيستلم الهاش ويقارنه بما يدخله المستخدم
+      cache.put("otp_" + hashString(userEmail), JSON.stringify({
+        hash: hashString(otp),
+        attempts: 0,
+        email: userEmail
+      }), 300);
+      return ContentService.createTextOutput("Sent").setMimeType(ContentService.MimeType.TEXT);
 
-            // استبدال محتوى الصفحة بواجهة النجاح الجميلة
-            document.querySelector('.register-container').innerHTML = `
-                <div style="padding: 10px;">
-                   <h2 style="color: var(--secondary-color);">${isSubStadiumMode ? 'تمت إضافة الملعب بنجاح!' : 'تم إنشاء الحساب بنجاح!'}</h2>
-                    <p>أهلاً بك <b>${escapeHTML(fullName)}</b> في منصتنا.</p>
-                    <hr style="border: 0.5px solid #eee; margin: 20px 0;">
-                    
-                    <p style="font-size: 0.9rem; color: #64748b;">رابط صفحة الحجز الخاصة بملعبك:</p>
-                    <div style="background: #f1f5f9; padding: 10px; border-radius: 8px; word-break: break-all; font-size: 0.85rem; margin-bottom: 10px;">
-                        ${userLink}
-                    </div>
-                    
-                    <button onclick="navigator.clipboard.writeText('${userLink}'); alert('تم نسخ الرابط!')" 
-                            style="background: #64748b; color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer; margin-bottom: 20px;">
-                        نسخ الرابط
-                    </button>
-
-                    <div id="qrcode" style="display: flex; justify-content: center; margin-bottom: 15px;"></div>
-                    <p class="hint">صور الشاشة أو احفظ رمز QR لوضعه في مدخل الملعب</p>
-
-                    <button onclick="window.location.href='dashboard.html?id=${finalSlug}'" 
-                            class="btn-submit" style="margin-top: 20px;">
-                        الدخول للوحة التحكم
-                    </button>
-                </div>
-            `;
-
-            // توليد رمز QR فوراً
-            new QRCode(document.getElementById("qrcode"), {
-                text: userLink,
-                width: 160,
-                height: 160
-            });
-
-        } else {
-            alert("حدث خطأ أثناء الحفظ في السيرفر.");
-            btn.disabled = false;
-        }
-    } catch (e) {
-        alert("خطأ في الاتصال. تأكد من تحديث النشر (Deployment) في Google Script.");
-        btn.disabled = false;
+    } catch(err) {
+       return ContentService.createTextOutput("Error").setMimeType(ContentService.MimeType.TEXT);
     }
+  }
+
+  if (action == "verifyOTP") {
+    var otpEmail = String(e.parameter.email || "").trim().toLowerCase();
+    var otpValue = String(e.parameter.otp || "").trim().toUpperCase();
+    var otpKey = "otp_" + hashString(otpEmail);
+    var otpRaw = CacheService.getScriptCache().get(otpKey);
+    if (!otpRaw) return ContentService.createTextOutput("Expired");
+    var otpData = JSON.parse(otpRaw);
+    otpData.attempts = Number(otpData.attempts || 0) + 1;
+    if (otpData.attempts > 5) {
+      CacheService.getScriptCache().remove(otpKey);
+      return ContentService.createTextOutput("Too Many Attempts");
+    }
+    if (hashString(otpValue) !== otpData.hash) {
+      CacheService.getScriptCache().put(otpKey, JSON.stringify(otpData), 300);
+      return ContentService.createTextOutput("Invalid OTP");
+    }
+    var verifiedToken = Utilities.getUuid();
+    CacheService.getScriptCache().put(
+      "verified_" + verifiedToken,
+      JSON.stringify({ email: otpEmail }),
+      600
+    );
+    CacheService.getScriptCache().remove(otpKey);
+    return jsonResponse_({ result: "Verified", token: verifiedToken });
+  }
+
+   
+  if (action == "adminAuth") { // تم تغيير verifyAdmin إلى adminAuth
+    var slug = e.parameter.id;
+    var passInput = e.parameter.pass;
+    
+    var data = stadiumSheet.getDataRange().getValues();
+    var resultStatus = "fail";
+
+    for (var i = 1; i < data.length; i++) {
+      if (data[i][0] == slug) {
+        // تحويل القيمة لنص لضمان المطابقة الصحيحة
+        if (String(data[i][3]).trim() === String(passInput).trim()) { 
+          resultStatus = "Success"; // حرف S كبير ليتطابق مع (result.trim() === "Success") في موقعك
+          break; 
+        }
+      }
+    }
+
+    // الرد بنص بسيط لسهولة التحقق في script.js
+    return ContentService.createTextOutput(resultStatus)
+      .setMimeType(ContentService.MimeType.TEXT);
+  }
+
+  // جلب الحجوزات للإدارة
+  if (action == "getAdminBookings") {
+    var stadiumId = e.parameter.id;
+    if (!getAuthorizedStadiumRow_(stadiumSheet, stadiumId, e.parameter.pass)) {
+      return ContentService.createTextOutput("Unauthorized");
+    }
+    var rows = bookingSheet.getDataRange().getValues();
+    var list = [];
+    for (var i = 1; i < rows.length; i++) {
+      if (rows[i][0] == stadiumId) {
+        list.push({
+          row: i + 1,
+          name: rows[i][4],
+          date: (rows[i][2] instanceof Date) ? Utilities.formatDate(rows[i][2], ss.getSpreadsheetTimeZone(), "dd/MM/yyyy") : rows[i][2],
+          hour: rows[i][3],
+          phone: rows[i][5]
+        });
+      }
+    }
+    return ContentService.createTextOutput(JSON.stringify(list)).setMimeType(ContentService.MimeType.JSON);
+  }
+
+  // --- 3. إلغاء حجز مؤمن (يتطلب كود المسؤول) ---
+  if (action == "cancelBooking") {
+    var rowNumber = e.parameter.row;
+    var slug = e.parameter.id;
+    var passInput = e.parameter.pass; // الهاش المشفر المرسل من الموقع
+
+    var data = stadiumSheet.getDataRange().getValues();
+    var isAuthorized = false;
+
+    // التحقق من صحة الكود السري للملعب المحدد
+    for (var i = 1; i < data.length; i++) {
+      if (data[i][0] == slug) {
+        if (String(data[i][3]).trim() === String(passInput).trim()) {
+          isAuthorized = true;
+          break;
+        }
+      }
+    }
+
+    if (!isAuthorized) {
+      return ContentService.createTextOutput("Unauthorized").setMimeType(ContentService.MimeType.TEXT);
+    }
+
+    try {
+      var targetRow = parseInt(rowNumber, 10);
+      var bookingData = bookingSheet.getDataRange().getValues();
+      if (!Number.isInteger(targetRow) || targetRow < 2 || targetRow > bookingData.length ||
+          String(bookingData[targetRow - 1][0]).trim() !== String(slug).trim()) {
+        return ContentService.createTextOutput("Invalid Booking Row");
+      }
+      bookingSheet.deleteRow(targetRow);
+      return ContentService.createTextOutput("CancelSuccess").setMimeType(ContentService.MimeType.TEXT);
+    } catch(err) {
+      return ContentService.createTextOutput("Error").setMimeType(ContentService.MimeType.TEXT);
+    }
+  }
+
+  // --- 4. جلب الإحصائيات المتقدمة (القراءة من الملخص الثابت فقط) ---
+  if (action == "getStats") {
+    var stadiumId = e.parameter.id;
+    if (!getAuthorizedStadiumRow_(stadiumSheet, stadiumId, e.parameter.pass)) {
+      return ContentService.createTextOutput("Unauthorized");
+    }
+    var statsSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Stats_Summary");
+  
+    // التأكد من وجود الورقة، وإذا لم توجد ننشئ مصفوفة فارغة لتجنب الخطأ
+    var rows = statsSheet ? statsSheet.getDataRange().getValues() : [];
+  
+    // 1. تجهيز مصفوفة لشهور السنة الـ 12 بقيم افتراضية (أصفار)
+    var stats = [];
+    for (var m = 1; m <= 12; m++) {
+    stats.push({ month: m, hours: 0, income: 0 });
+   }
+
+     // 2. قراءة البيانات المسجلة في Stats_Summary فقط
+     // نبدأ من i=1 لتجاوز سطر العناوين
+    for (var i = 1; i < rows.length; i++) {
+      if (rows[i][0] == stadiumId) {
+        var month = parseInt(rows[i][1]);
+       if (month >= 1 && month <= 12) {
+          stats[month - 1].hours = parseFloat(rows[i][2]) || 0;
+         stats[month - 1].income = parseFloat(rows[i][3]) || 0;
+        }
+      }
+    }
+
+    return ContentService.createTextOutput(JSON.stringify({ 
+    year: new Date().getFullYear(), 
+     monthlyStats: stats 
+    })).setMimeType(ContentService.MimeType.JSON);
+  }
+ // --- 5. تحديث الإعدادات المتقدمة (لوحة التحكم) ---
+  if (action == "adminUpdateSettings") {
+    var slug = e.parameter.id;
+    if (!getAuthorizedStadiumRow_(stadiumSheet, slug, e.parameter.currentPass)) {
+      return ContentService.createTextOutput("Unauthorized");
+    }
+    var data = stadiumSheet.getDataRange().getValues();
+    for (var i = 1; i < data.length; i++) {
+      if (data[i][0] == slug) {
+        var r = i + 1;
+        if (e.parameter.newPass) {
+           if (!/^[a-f0-9]{64}$/.test(String(e.parameter.newPass))) {
+             return ContentService.createTextOutput("Invalid Password");
+           }
+           stadiumSheet.getRange(r, 4).setValue(e.parameter.newPass); 
+        }
+        stadiumSheet.getRange(r, 5).setValue(cleanText_(e.parameter.stadiumName, 120));
+       stadiumSheet.getRange(r, 8).setValue(cleanText_(e.parameter.org, 120));
+       stadiumSheet.getRange(r, 9).setValue(Number(e.parameter.pDay) || 0);
+       stadiumSheet.getRange(r, 10).setValue(Number(e.parameter.pNight) || 0);
+       stadiumSheet.getRange(r, 11).setValue(cleanText_(e.parameter.phone, 30));
+       stadiumSheet.getRange(r, 12).setValue(cleanText_(e.parameter.loc, 300));
+       stadiumSheet.getRange(r, 13).setValue(cleanText_(e.parameter.fb, 300));
+       stadiumSheet.getRange(r, 14).setValue(cleanText_(e.parameter.insta, 300));
+       stadiumSheet.getRange(r, 15).setValue(cleanText_(e.parameter.logo, 500));
+       stadiumSheet.getRange(r, 16).setValue(cleanText_(e.parameter.img1, 500));
+       stadiumSheet.getRange(r, 17).setValue(cleanText_(e.parameter.img2, 500));
+       stadiumSheet.getRange(r, 18).setValue(cleanText_(e.parameter.img3, 500));
+       stadiumSheet.getRange(r, 22).setValue(e.parameter.openHour); // العمود V
+        stadiumSheet.getRange(r, 23).setValue(e.parameter.closeHour); // العمود W
+       if (e.parameter.status) {
+        stadiumSheet.getRange(r, 21).setValue(e.parameter.status);
+       }
+        return ContentService.createTextOutput("Success").setMimeType(ContentService.MimeType.TEXT);
+      }
+    }
+  }
+
+ 
+  // --- 6. حفظ البيانات الأولية عند التسجيل ---
+  if (action == "saveData") {
+   try {
+     var email = String(e.parameter.email || "").trim().toLowerCase();
+     var otpEmail = getVerifiedOtpEmail_(e.parameter.otpToken);
+     if (!otpEmail || otpEmail !== email) {
+       return ContentService.createTextOutput("OTP Required");
+     }
+     CacheService.getScriptCache().remove("verified_" + String(e.parameter.otpToken));
+     var stadiumName = cleanText_(e.parameter.stadiumName || "stadium", 120);
+     var parentSlug = (e.parameter.parentSlug || "").trim();
+     var parentPass = (e.parameter.parentPass || "").trim();
+
+      var randomID = Utilities.getUuid().replace(/-/g, "").substring(0, 16);
+     var finalSlug = "st-" + randomID;
+     var hashedPassword = hashString(e.parameter.password);
+
+     var ownerGroupId = finalSlug;
+     var parentRow = null;
+
+     if (parentSlug) {
+       parentRow = findStadiumRowBySlug_(stadiumSheet, parentSlug);
+
+       if (!parentRow) {
+        return ContentService.createTextOutput("Parent Not Found").setMimeType(ContentService.MimeType.TEXT);
+       }
+
+       if (String(parentRow.values[3]).trim() !== String(parentPass).trim()) {
+        return ContentService.createTextOutput("Unauthorized Parent").setMimeType(ContentService.MimeType.TEXT);
+       }
+
+       ownerGroupId = parentRow.values[25] || parentSlug;
+       stadiumSheet.getRange(parentRow.rowNumber, 26).setValue(ownerGroupId);
+      }
+
+     var newRow = new Array(27).fill("");
+     newRow[0] = finalSlug;
+      newRow[1] = cleanText_(e.parameter.fullName, 120);
+      newRow[2] = email;
+     newRow[3] = hashedPassword;
+      newRow[4] = stadiumName;
+     newRow[5] = "verified";
+      newRow[6] = "verified";
+     newRow[25] = ownerGroupId;
+     newRow[26] = parentSlug || "";
+
+     stadiumSheet.appendRow(newRow);
+
+     return ContentService.createTextOutput("Success:" + finalSlug).setMimeType(ContentService.MimeType.TEXT);
+    } catch(err) {
+    return ContentService.createTextOutput("Save Error: " + err.message).setMimeType(ContentService.MimeType.TEXT);
+    }
+  }
+  // --- 7. تحديث الإعدادات (الملف الشخصي) ---
+  if (action == "updateSettings") {
+    try {
+      var slug = e.parameter.slug;
+      if (!getAuthorizedStadiumRow_(stadiumSheet, slug, e.parameter.pass)) {
+        return ContentService.createTextOutput("Unauthorized");
+      }
+      var data = stadiumSheet.getDataRange().getValues();
+      for (var i = 1; i < data.length; i++) {
+        if (data[i][0] == slug) {
+          var row = i + 1;
+          stadiumSheet.getRange(row, 5).setValue(cleanText_(e.parameter.stadiumName, 120));
+          stadiumSheet.getRange(row, 8).setValue(cleanText_(e.parameter.org, 120));
+          stadiumSheet.getRange(row, 9).setValue(Number(e.parameter.pDay) || 0);
+          stadiumSheet.getRange(row, 10).setValue(Number(e.parameter.pNight) || 0);
+          stadiumSheet.getRange(row, 11).setValue(cleanText_(e.parameter.phone, 30));
+          stadiumSheet.getRange(row, 12).setValue(cleanText_(e.parameter.loc, 300));
+          stadiumSheet.getRange(row, 13).setValue(cleanText_(e.parameter.fb, 300));
+          stadiumSheet.getRange(row, 14).setValue(cleanText_(e.parameter.insta, 300));
+          stadiumSheet.getRange(row, 24).setValue(e.parameter.lat); // عمود X
+          stadiumSheet.getRange(row, 25).setValue(e.parameter.lng); // عمود Y
+         
+          return ContentService.createTextOutput("Update Success").setMimeType(ContentService.MimeType.TEXT);
+        }
+      }
+      return ContentService.createTextOutput("Slug Not Found").setMimeType(ContentService.MimeType.TEXT);
+    } catch(err) {
+      return ContentService.createTextOutput("Update Error").setMimeType(ContentService.MimeType.TEXT);
+    }
+  }
+
+  if (action == "forgotPassword") {
+    var slug = e.parameter.id;
+    var emailInput = String(e.parameter.email || "").trim().toLowerCase();
+    var resetCache = CacheService.getScriptCache();
+    var resetRateKey = "reset_rate_" + hashString(slug + "|" + emailInput);
+    if (resetCache.get(resetRateKey)) {
+      return ContentService.createTextOutput("Too Many Requests");
+    }
+    resetCache.put(resetRateKey, "1", 60);
+    var data = stadiumSheet.getDataRange().getValues();
+    
+    for (var i = 1; i < data.length; i++) {
+      if (data[i][0] == slug) {
+        if (data[i][2] == emailInput) {
+          
+          // 1. توليد كلمة مرور مؤقتة جديدة عشوائية
+          var tempPass = Utilities.getUuid().replace(/-/g, "").substring(0, 12);
+          
+          // 2. تشفير الكلمة الجديدة وحفظها في الشيت (العمود الرابع - إندكس 3)
+          var hashedTempPass = hashString(tempPass);
+          stadiumSheet.getRange(i + 1, 4).setValue(hashedTempPass);
+          
+          // 3. إرسال الكلمة المؤقتة (النصية) للإيميل
+          var message = "لقد طلبت استعادة كلمة المرور.\n\n" +
+                        "كلمة المرور المؤقتة الخاصة بك هي: " + tempPass + "\n" +
+                        "يرجى تسجيل الدخول وتغييرها فوراً من الإعدادات.";
+          
+          GmailApp.sendEmail(emailInput, "استعادة كلمة المرور - منصة ملاعب", message);
+          
+          return ContentService.createTextOutput("Sent").setMimeType(ContentService.MimeType.TEXT);
+        } else {
+          return ContentService.createTextOutput("EmailMismatch").setMimeType(ContentService.MimeType.TEXT);
+        }
+      }
+    }
+    return ContentService.createTextOutput("NotFound").setMimeType(ContentService.MimeType.TEXT);
+  }
+   
+
+  // --- إضافة: جلب كافة الملاعب لعرض القريبة منها ---
+  if (action == "getAllStadiums") {
+    var data = stadiumSheet.getDataRange().getValues();
+    var stadiums = [];
+    
+    for (var i = 1; i < data.length; i++) {
+      // نتأكد فقط من جلب الملاعب التي تحتوي على إحداثيات (العمود X والعمود Y)
+      if (data[i][23] && data[i][24]) { 
+        stadiums.push({
+          slug: data[i][0],          // العمود A
+          stadium_name: data[i][4],  // العمود E
+          lat: parseFloat(data[i][23]), // العمود X (إندكس 23)
+          lng: parseFloat(data[i][24])  // العمود Y (إندكس 24)
+        });
+      }
+    }
+    return ContentService.createTextOutput(JSON.stringify(stadiums))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+  if (action == "deleteStadiumAccount") {
+    var slug = e.parameter.id;
+    var passInput = e.parameter.pass;
+
+   var data = stadiumSheet.getDataRange().getValues();
+   var targetRow = -1;
+
+   for (var i = 1; i < data.length; i++) {
+     if (data[i][0] == slug) {
+       if (String(data[i][3]).trim() === String(passInput).trim()) {
+         targetRow = i + 1;
+       } else {
+        return ContentService.createTextOutput("Unauthorized")
+          .setMimeType(ContentService.MimeType.TEXT);
+       }
+       break;
+     }
+   }
+
+    if (targetRow === -1) {
+     return ContentService.createTextOutput("NotFound")
+      .setMimeType(ContentService.MimeType.TEXT);
+    }
+
+   var bookingRows = bookingSheet.getDataRange().getValues();
+   for (var b = bookingRows.length - 1; b >= 1; b--) {
+     if (bookingRows[b][0] == slug) {
+       bookingSheet.deleteRow(b + 1);
+      }
+    }
+
+   stadiumSheet.deleteRow(targetRow);
+
+   return ContentService.createTextOutput("DeleteSuccess")
+    .setMimeType(ContentService.MimeType.TEXT);
+  }
+
+  // --- 8. جلب بيانات الملعب لصفحة الحجز ---
+  if (action == "getStadiumDetails") {
+   var slug = e.parameter.id;
+   var data = stadiumSheet.getDataRange().getValues();
+    for (var i = 1; i < data.length; i++) {
+      if (data[i][0] == slug) {
+        if (!data[i][4]) {
+          return ContentService.createTextOutput("NotFound")
+            .setMimeType(ContentService.MimeType.TEXT);
+        }
+        var details = {
+          stadium_name: data[i][4], 
+          org: data[i][7], 
+         price_day: data[i][8],
+         price_night: data[i][9], 
+         phone: data[i][10], 
+         location: data[i][11],
+          fb: data[i][12], 
+         insta: data[i][13],
+         logo_url: data[i][14], 
+         img1: data[i][15],     
+         img2: data[i][16],     
+          img3: data[i][17],
+         accountType: data[i][18] || "Free", // العمود S (الترتيب 19، إندكس 18)
+         expiryDate: data[i][19] || "",      // العمود T (الترتيب 20، إندكس 19)
+          status: data[i][20] || "open" ,      // العمود U (الترتيب 21، إندكس 20)
+          openHour: data[i][21] || 8,  // العمود V (إندكس 21)
+          closeHour: data[i][22] || 23, // العمود W (إندكس 22)
+          lat: data[i][23] || "", // العمود X (إندكس 23)
+          lng: data[i][24] || "",  // العمود Y (إندكس 24)
+          slug: data[i][0],
+          owner_group_id: data[i][25] || data[i][0],
+          parent_stadium_slug: data[i][26] || "",
+          related_stadiums: getRelatedStadiums_(stadiumSheet, data[i][25] || data[i][0])
+        };
+        return ContentService.createTextOutput(JSON.stringify(details)).setMimeType(ContentService.MimeType.JSON);
+      }
+    }
+    return ContentService.createTextOutput("NotFound").setMimeType(ContentService.MimeType.TEXT);
+  }
+
+  // رد نهائي في حال لم يتطابق أي أكشن داخل doGet
+  return ContentService.createTextOutput("No Action Found").setMimeType(ContentService.MimeType.TEXT);
+
+} // إغلاق دالة doGet بالكامل هنا
+// --- القسم الثالث: تسجيل حجز جديد (POST) ---
+
+function hashString(str) {
+  var signature = Utilities.computeDigest(Utilities.DigestAlgorithm.SHA_256, str);
+  var hash = "";
+  for (var i = 0; i < signature.length; i++) {
+    var byte = signature[i];
+    if (byte < 0) byte += 256;
+    var byteStr = byte.toString(16);
+   if (byteStr.length == 1) byteStr = "0" + byteStr;
+   hash += byteStr;
+  }
+  return hash;
 }
-</script>
-</body>
-</html>
+
+// --- القسم الثالث: تسجيل حجز جديد (doPost) ---
+function doPost(e) {
+  var lock = LockService.getScriptLock();
+
+  try {
+    lock.waitLock(10000);
+
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const sheet = ss.getSheetByName(SHEET_BOOKINGS);
+    const stadiumSheet = ss.getSheetByName(SHEET_STADIUMS);
+    const params = JSON.parse(e.postData.contents);
+    const stadiumId = String(params.stadiumId || "").trim();
+
+    // يدعم الحجز العادي القديم والحجز الأسبوعي الجديد.
+    const bookings = Array.isArray(params.bookings)
+      ? params.bookings
+      : [{
+          dayName: params.dayName,
+          date: params.date,
+          hour: params.hour
+        }];
+
+    if (!isValidSlug_(stadiumId) || !findStadiumRowBySlug_(stadiumSheet, stadiumId)) {
+      throw new Error("الملعب غير موجود");
+    }
+
+    if (bookings.length === 0 || bookings.length > 20) {
+      throw new Error("بيانات الحجز غير مكتملة.");
+    }
+
+    var safeName = cleanText_(params.name, 100);
+    var safePhone = cleanText_(params.phone, 30);
+    if (!safeName || !/^[0-9+()\- ]{6,30}$/.test(safePhone)) {
+      throw new Error("بيانات العميل غير صالحة");
+    }
+
+    const rows = sheet.getDataRange().getValues();
+    const usedSlots = new Set();
+
+    for (let i = 1; i < rows.length; i++) {
+      const sheetDate = rows[i][2] instanceof Date
+        ? Utilities.formatDate(rows[i][2], ss.getSpreadsheetTimeZone(), "dd/MM/yyyy")
+        : String(rows[i][2]).trim();
+
+      usedSlots.add(
+        String(rows[i][0]).trim() + "|" +
+        sheetDate + "|" +
+        String(rows[i][3]).trim()
+      );
+    }
+
+    const requestedSlots = new Set();
+    const conflicts = [];
+
+    bookings.forEach(function(booking) {
+      const date = String(booking.date || "").trim();
+      const hour = String(booking.hour || "").trim();
+      const key = stadiumId + "|" + date + "|" + hour;
+
+      if (!date || !hour) {
+        throw new Error("أحد مواعيد الحجز غير صالح.");
+      }
+
+      if (!isValidDate_(date) || !isValidHour_(hour)) {
+        throw new Error("صيغة التاريخ أو الساعة غير صالحة.");
+      }
+
+      if (usedSlots.has(key) || requestedSlots.has(key)) {
+        conflicts.push(date + " - " + hour);
+      }
+
+      requestedSlots.add(key);
+    });
+
+    // لا يضيف أي صف إذا وُجد تعارض في أسبوع واحد.
+    if (conflicts.length > 0) {
+      return ContentService
+        .createTextOutput(JSON.stringify({
+          result: "error",
+          message: "هذه المواعيد محجوزة بالفعل: " + conflicts.join("، ")
+        }))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+
+    const newRows = bookings.map(function(booking) {
+      return [
+        stadiumId,
+        String(booking.dayName).trim(),
+        String(booking.date).trim(),
+        String(booking.hour).trim(),
+        safeName,
+        "'" + safePhone,
+        "مؤكد"
+      ];
+    });
+
+    const range = sheet.getRange(
+      sheet.getLastRow() + 1,
+      1,
+      newRows.length,
+      newRows[0].length
+    );
+
+    range.setNumberFormat("@");
+    range.setValues(newRows);
+
+    return ContentService
+      .createTextOutput(JSON.stringify({
+        result: "success",
+        count: newRows.length
+      }))
+      .setMimeType(ContentService.MimeType.JSON);
+
+  } catch (err) {
+    return ContentService
+      .createTextOutput(JSON.stringify({
+        result: "error",
+        message: err.toString()
+      }))
+      .setMimeType(ContentService.MimeType.JSON);
+
+  } finally {
+    lock.releaseLock();
+  }
+}
+/**
+* دالة أرشفة الحجوزات المنتهية وتحديث الإحصائيات
+* تُشغل يدوياً أو عبر Trigger يومي
+*/
+function archiveAndSyncStats() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const bookingSheet = ss.getSheetByName("Bookings");
+  const archiveSheet = ss.getSheetByName("Archive");
+  const stadiumSheet = ss.getSheetByName("Stadiums");
+  const statsSheet = ss.getSheetByName("Stats_Summary");
+
+  if (!bookingSheet || !archiveSheet || !stadiumSheet || !statsSheet) {
+    Logger.log("خطأ: إحدى الأوراق المطلوبة غير موجودة.");
+    return;
+  }
+
+  const data = bookingSheet.getDataRange().getValues();
+  const stadiumData = stadiumSheet.getDataRange().getValues();
+  
+  // تاريخ اليوم في تمام الساعة 00:00:00 للمقارنة العادلة
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  let weeklyData = {}; 
+
+  // المسح من الأسفل للأعلى لضمان عدم تأثر أرقام الصفوف عند الحذف
+  for (let i = data.length - 1; i >= 1; i--) {
+    let rawDate = data[i][2];
+    let bookingDate;
+
+    // محاولة تحويل التاريخ مهما كان تنسيقه (نصي أو كائن تاريخ)
+    if (rawDate instanceof Date) {
+      bookingDate = new Date(rawDate);
+    } else {
+      // إذا كان التاريخ نصاً بتنسيق dd/mm/yyyy
+      let parts = String(rawDate).split('/');
+      if (parts.length === 3) {
+        bookingDate = new Date(parts[2], parts[1] - 1, parts[0]);
+      }
+    }
+
+    // إذا كان التاريخ صالحاً وأقل من تاريخ اليوم
+    if (bookingDate && !isNaN(bookingDate.getTime()) && bookingDate < today) {
+      let sId = data[i][0]; // ID الملعب
+      let month = bookingDate.getMonth() + 1;
+      
+      // استخراج الساعة بشكل آمن (يتعامل مع "20:00" أو الرقم 20)
+      let rawHour = data[i][3];
+      let hour = parseInt(String(rawHour).split(':')[0]);
+
+      // جلب الأسعار للملعب من ورقة الملاعب
+      let pDay = 0, pNight = 0;
+      for (let j = 1; j < stadiumData.length; j++) {
+        if (stadiumData[j][0] == sId) {
+          pDay = parseFloat(stadiumData[j][8]) || 0;  // العمود I
+          pNight = parseFloat(stadiumData[j][9]) || 0; // العمود J
+          break;
+        }
+      }
+
+      // حساب الدخل (ليلي من 18 مساءً أو قبل 7 صباحاً)
+      let income = (hour >= 18 || hour < 7) ? pNight : pDay;
+
+      // تجميع البيانات في الذاكرة لتحديث Stats_Summary لاحقاً
+      let key = sId + "_" + month;
+      if (!weeklyData[key]) weeklyData[key] = { hours: 0, income: 0 };
+      weeklyData[key].hours += 1;
+      weeklyData[key].income += income;
+
+      // 1. النقل للأرشيف
+      archiveSheet.appendRow(data[i]);
+      
+      // 2. الحذف من صفحة الحجوزات الأصلية
+      bookingSheet.deleteRow(i + 1);
+      Logger.log("تمت أرشفة حجز الملعب: " + sId + " بتاريخ: " + rawDate);
+    }
+  }
+
+  // 3. تحديث ورقة Stats_Summary بالأرقام المجمعة
+  if (Object.keys(weeklyData).length > 0) {
+    updatePermanentStats(weeklyData, statsSheet);
+  }
+}
+
+/**
+ * تحديث الإحصائيات الدائمة في ورقة Stats_Summary
+ */
+function updatePermanentStats(weeklyData, statsSheet) {
+  let sheetData = statsSheet.getDataRange().getValues();
+  
+  for (let key in weeklyData) {
+    let parts = key.split("_");
+    let sId = parts[0];
+    let month = parts[1];
+    let found = false;
+
+    // البحث عن سطر موجود لنفس الملعب ونفس الشهر
+    for (let row = 1; row < sheetData.length; row++) {
+      if (sheetData[row][0] == sId && sheetData[row][1] == month) {
+        let currentHours = parseFloat(sheetData[row][2]) || 0;
+        let currentIncome = parseFloat(sheetData[row][3]) || 0;
+        
+        // تحديث القيم (القديم + الجديد)
+        statsSheet.getRange(row + 1, 3).setValue(currentHours + weeklyData[key].hours);
+        statsSheet.getRange(row + 1, 4).setValue(currentIncome + weeklyData[key].income);
+        found = true;
+        break;
+      }
+    }
+
+    // إذا لم يوجد سطر سابق، ننشئ سطراً جديداً
+    if (!found) {
+      statsSheet.appendRow([sId, month, weeklyData[key].hours, weeklyData[key].income]);
+    }
+  }
+}
