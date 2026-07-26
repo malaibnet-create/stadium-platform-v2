@@ -135,7 +135,15 @@
 </div>
 
 <script>
-    const scriptURL = 'https://script.google.com/macros/s/AKfycbyDSymZB6Cnn0FWAx4DWoUwSWpH_y7AUYISDpeXnpXcEYRbm4Ool5ScavsXy0MZKKuzig/exec?key=B_Assel_Admin_2026_Sec';
+    const APPS_SCRIPT_BASE_URL = 'https://script.google.com/macros/s/AKfycbyDSymZB6Cnn0FWAx4DWoUwSWpH_y7AUYISDpeXnpXcEYRbm4Ool5ScavsXy0MZKKuzig/exec';
+    const API_KEY = 'REPLACE_WITH_MASTER_KEY';
+    const scriptURL = `${APPS_SCRIPT_BASE_URL}?key=${encodeURIComponent(API_KEY)}`;
+
+    function escapeHTML(value) {
+        return String(value ?? '').replace(/[&<>"']/g, ch => ({
+            '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;'
+        }[ch]));
+    }
 
   const registerParams = new URLSearchParams(window.location.search);
 const registerMode = registerParams.get('mode');
@@ -186,11 +194,9 @@ document.addEventListener('DOMContentLoaded', function () {
         // استخراج النص من الاستجابة (الذي سيكون الهاش المشفر)
         const result = await response.text();
         
-        if (result === "Error" || result === "Unauthorized") {
+        if (result !== "Sent") {
             alert("فشل إرسال الإيميل. تأكد من صحة البريد أو صلاحيات الوصول.");
         } else {
-            // الآن generatedOTP سيخزن "الهاش" القادم من السكريبت وليس الرقم الصافي
-            generatedOTP = result.trim(); 
             document.getElementById('otpModal').style.display = 'flex';
         }
     } catch (e) {
@@ -208,11 +214,15 @@ document.addEventListener('DOMContentLoaded', function () {
     // تصحيح: يجب تعريف btn داخل هذه الدالة أيضاً
     const btn = document.querySelector('#otpModal .btn-submit');
 
-    // تشفير ما كتبه المستخدم للمقارنة مع الهاش المستلم من جوجل
-    const hashedUserOTP = await hashString(userOTP.trim());
+    const verifyURL = `${scriptURL}&action=verifyOTP` +
+        `&email=${encodeURIComponent(document.getElementById('email').value.trim())}` +
+        `&otp=${encodeURIComponent(userOTP.trim())}`;
 
-    if (hashedUserOTP !== generatedOTP) {
-        alert("الرمز غير صحيح، حاول مجدداً.");
+    const verifyResponse = await fetch(verifyURL);
+    const verifyResult = await verifyResponse.json();
+
+    if (verifyResult.result !== "Verified" || !verifyResult.token) {
+        alert("الرمز غير صحيح أو منتهي الصلاحية، حاول مجدداً.");
         return;
     }
 
@@ -226,7 +236,14 @@ document.addEventListener('DOMContentLoaded', function () {
     const stadiumName = document.getElementById('stadiumName').value;
 
     // الرابط النهائي لإرسال البيانات
-   let finalURL = `${scriptURL}&action=saveData&fullName=${encodeURIComponent(fullName)}&email=${encodeURIComponent(email)}&password=${encodeURIComponent(password)}&stadiumName=${encodeURIComponent(stadiumName)}&otp=${userOTP}`;
+   const finalURLObject = new URL(scriptURL);
+   finalURLObject.searchParams.set('action', 'saveData');
+   finalURLObject.searchParams.set('fullName', fullName);
+   finalURLObject.searchParams.set('email', email);
+   finalURLObject.searchParams.set('password', password);
+   finalURLObject.searchParams.set('stadiumName', stadiumName);
+   finalURLObject.searchParams.set('otpToken', verifyResult.token);
+   let finalURL = finalURLObject.toString();
 
 if (isSubStadiumMode) {
     finalURL += `&parentSlug=${encodeURIComponent(parentSlug)}&parentPass=${encodeURIComponent(parentPass)}`;
@@ -245,7 +262,7 @@ if (isSubStadiumMode) {
             document.querySelector('.register-container').innerHTML = `
                 <div style="padding: 10px;">
                    <h2 style="color: var(--secondary-color);">${isSubStadiumMode ? 'تمت إضافة الملعب بنجاح!' : 'تم إنشاء الحساب بنجاح!'}</h2>
-                    <p>أهلاً بك <b>${fullName}</b> في منصتنا.</p>
+                    <p>أهلاً بك <b>${escapeHTML(fullName)}</b> في منصتنا.</p>
                     <hr style="border: 0.5px solid #eee; margin: 20px 0;">
                     
                     <p style="font-size: 0.9rem; color: #64748b;">رابط صفحة الحجز الخاصة بملعبك:</p>
