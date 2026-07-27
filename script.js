@@ -60,6 +60,21 @@ function escapeHTML(value) {
         .replace(/'/g, '&#039;');
 }
 
+function safeHttpUrl(value, allowedHosts = []) {
+    try {
+        const url = new URL(String(value || '').trim());
+        if (url.protocol !== 'https:') return '';
+        if (allowedHosts.length && !allowedHosts.includes(url.hostname)) return '';
+        return url.href;
+    } catch {
+        return '';
+    }
+}
+
+function safeExternalHref(value, allowedHosts = []) {
+    return safeHttpUrl(value, allowedHosts);
+}
+
 function getAdminPassHash() {
     return sessionStorage.getItem('adminPassHash_' + stadiumId) || '';
 }
@@ -241,18 +256,20 @@ setupSupervisorContact(data.phone, data.stadium_name);
             // 5. زر الموقع
          const locBtn = document.getElementById('btnLocation');
             if(locBtn) {
-                if (data.location && data.location.trim() !== "" && data.location.startsWith('http')) {
+                const safeLocation = safeExternalHref(data.location, ['maps.google.com', 'www.google.com', 'goo.gl', 'maps.app.goo.gl']);
+                if (safeLocation) {
                     locBtn.style.opacity = "1";
                     locBtn.onclick = (e) => {
                         e.preventDefault();
-                        window.open(data.location, '_blank');
+                        window.open(safeLocation, '_blank', 'noopener,noreferrer');
                     };
                 } else if (data.lat && data.lng) { 
                     // إذا لم يوجد رابط ولكن توجد إحداثيات، نفتح الموقع بناءً عليها
                     locBtn.style.opacity = "1";
                     locBtn.onclick = (e) => {
                         e.preventDefault();
-                        window.open(`https://www.google.com/maps?q=${data.lat},${data.lng}`, '_blank');
+                        const mapsUrl = `https://www.google.com/maps?q=${encodeURIComponent(data.lat)},${encodeURIComponent(data.lng)}`;
+                        window.open(mapsUrl, '_blank', 'noopener,noreferrer');
                     };
                 } else {
                     locBtn.style.opacity = "0.5";
@@ -268,7 +285,12 @@ setupSupervisorContact(data.phone, data.stadium_name);
                 const el = document.getElementById(id);
                 if (el) {
                     if (link && link.trim() !== "" && link !== "#") {
-                        el.href = link;
+                        const safeLink = safeExternalHref(link);
+                        if (!safeLink) {
+                            el.style.display = "none";
+                            return;
+                        }
+                        el.href = safeLink;
                         el.style.display = "inline-flex";
                     } else {
                         el.style.display = "none";
@@ -306,12 +328,20 @@ setupSupervisorContact(data.phone, data.stadium_name);
                 swiperWrapper.innerHTML = ''; 
 
                 imagesToDisplay.forEach((imgUrl) => {
-                    swiperWrapper.innerHTML += `
-                        <div class="swiper-slide">
-                            <img src="${imgUrl}" 
-                                 onerror="this.src='${defaultImages[0]}'"
-                                 style="width:100%; height:100%; object-fit:cover; display:block;">
-                        </div>`;
+                    const safeImageUrl = safeHttpUrl(imgUrl);
+                    if (!safeImageUrl) return;
+                    const slide = document.createElement('div');
+                    slide.className = 'swiper-slide';
+                    const image = document.createElement('img');
+                    image.src = safeImageUrl;
+                    image.alt = 'صورة الملعب';
+                    image.style.cssText = 'width:100%; height:100%; object-fit:cover; display:block;';
+                    image.addEventListener('error', () => {
+                        image.onerror = null;
+                        image.src = defaultImages[0];
+                    }, { once: true });
+                    slide.appendChild(image);
+                    swiperWrapper.appendChild(slide);
                 });
 
                 if (window.mySwiper) window.mySwiper.destroy(true, true);
@@ -359,7 +389,7 @@ function renderRelatedStadiums(data) {
             <a class="related-stadium-link ${isActive ? 'active' : ''}"
                href="booking.html?id=${encodeURIComponent(stadium.slug)}">
                 <span class="stadium-card-icon">⚽</span>
-                <span class="stadium-card-name">${stadium.stadium_name}</span>
+                <span class="stadium-card-name">${escapeHTML(stadium.stadium_name)}</span>
                 ${isActive ? '<small>الملعب الحالي</small>' : ''}
             </a>
         `;
@@ -785,7 +815,9 @@ function handleData(bookings) {
     
     bookings.forEach(b => {
         // نبحث عن المربع الذي يطابق التاريخ والساعة القادمين من الشيت
-        const slot = document.querySelector(`[data-date="${b.date}"][data-hour="${b.hour}"]`);
+        const slot = Array.from(document.querySelectorAll('.slot')).find(el =>
+            el.dataset.date === String(b.date) && el.dataset.hour === String(b.hour)
+        );
         
         if (slot) {
             slot.innerText = "محجوز";
@@ -1027,31 +1059,31 @@ async function loadActualSettings() {
     <div style="display: flex; flex-direction: column; gap: 15px; font-family: 'Cairo', sans-serif; text-align: right; direction: rtl;">
         
         <label><b>اسم الملعب:</b></label>
-        <input type="text" id="upd_name" class="admin-input" value="${data.stadium_name}">
+        <input type="text" id="upd_name" class="admin-input" value="${escapeHTML(data.stadium_name)}">
         
         <label><b>اسم المؤسسة/المسؤول:</b></label>
-        <input type="text" id="upd_org" class="admin-input" value="${data.org || ''}">
+        <input type="text" id="upd_org" class="admin-input" value="${escapeHTML(data.org || '')}">
 
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
             <div>
                 <label><b>سعر النهار:</b></label>
-                <input type="number" id="upd_price_day" class="admin-input" value="${data.price_day}">
+                <input type="number" id="upd_price_day" class="admin-input" value="${escapeHTML(data.price_day)}">
             </div>
             <div>
                 <label><b>سعر الليل:</b></label>
-                <input type="number" id="upd_price_night" class="admin-input" value="${data.price_night}">
+                <input type="number" id="upd_price_night" class="admin-input" value="${escapeHTML(data.price_night)}">
             </div>
         </div>
 
         <label><b>رقم الهاتف (واتساب):</b></label>
-        <input type="text" id="upd_phone" class="admin-input" value="${data.phone}">
+        <input type="text" id="upd_phone" class="admin-input" value="${escapeHTML(data.phone)}">
 
         <div class="admin-field">
             <label style="display: flex; align-items: center; gap: 8px;">
                 <b>موقع الملعب (Google Maps):</b>
                 <span onclick="showMapHelp()" style="cursor: pointer; background: #1e3a8a; color: white; width: 18px; height: 18px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 12px;" title="كيف أحصل على الرابط؟">؟</span>
             </label>
-            <input type="text" id="upd_loc" class="admin-input" value="${data.location || ''}" placeholder="ضع رابط الخريطة هنا">
+            <input type="text" id="upd_loc" class="admin-input" value="${escapeHTML(data.location || '')}" placeholder="ضع رابط الخريطة هنا">
         </div>
 
         <div style="background: #f8fafc; padding: 12px; border-radius: 10px; border: 1px solid #e2e8f0;">
@@ -1059,25 +1091,25 @@ async function loadActualSettings() {
                 <b>روابط الصور (الشعار والسلايدر):</b>
                 <span onclick="showImageHelp()" style="cursor: pointer; background: #2563eb; color: white; width: 18px; height: 18px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 12px;">؟</span>
             </label>
-            <p style="font-size: 11px; color: #64748b; margin: 5px 0;">ارفع الصور على <a href="https://postimages.org/" target="_blank" style="color:#22c55e; font-weight:bold; text-decoration:none;">Postimages.org</a> وانسخ "الرابط المباشر".</p>
+            <p style="font-size: 11px; color: #64748b; margin: 5px 0;">ارفع الصور على <a href="https://postimages.org/" target="_blank" rel="noopener noreferrer" style="color:#22c55e; font-weight:bold; text-decoration:none;">Postimages.org</a> وانسخ "الرابط المباشر".</p>
             
             <label style="font-size: 12px; display:block; margin-top:10px;">رابط اللوجو:</label>
-            <input type="text" id="upd_logo" class="admin-input" value="${data.logo_url || ''}" placeholder="رابط اللوجو المباشر (Direct Link)" style="margin-bottom:8px;">
+            <input type="text" id="upd_logo" class="admin-input" value="${escapeHTML(data.logo_url || '')}" placeholder="رابط اللوجو المباشر (Direct Link)" style="margin-bottom:8px;">
             
             <label style="font-size: 12px; display:block;">صور السلايدر (1، 2، 3):</label>
-            <input type="text" id="upd_img1" class="admin-input" value="${data.img1 || ''}" placeholder="رابط صورة السلايدر 1" style="margin-bottom:5px;">
-            <input type="text" id="upd_img2" class="admin-input" value="${data.img2 || ''}" placeholder="رابط صورة السلايدر 2" style="margin-bottom:5px;">
-            <input type="text" id="upd_img3" class="admin-input" value="${data.img3 || ''}" placeholder="رابط صورة السلايدر 3">
+            <input type="text" id="upd_img1" class="admin-input" value="${escapeHTML(data.img1 || '')}" placeholder="رابط صورة السلايدر 1" style="margin-bottom:5px;">
+            <input type="text" id="upd_img2" class="admin-input" value="${escapeHTML(data.img2 || '')}" placeholder="رابط صورة السلايدر 2" style="margin-bottom:5px;">
+            <input type="text" id="upd_img3" class="admin-input" value="${escapeHTML(data.img3 || '')}" placeholder="رابط صورة السلايدر 3">
         </div>
 
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
             <div>
                 <label><b>فيسبوك:</b></label>
-                <input type="text" id="upd_fb" class="admin-input" value="${data.fb || ''}" placeholder="facebook.com/page">
+                <input type="text" id="upd_fb" class="admin-input" value="${escapeHTML(data.fb || '')}" placeholder="facebook.com/page">
             </div>
             <div>
                 <label><b>إنستغرام:</b></label>
-                <input type="text" id="upd_insta" class="admin-input" value="${data.insta || ''}" placeholder="instagram.com/user">
+                <input type="text" id="upd_insta" class="admin-input" value="${escapeHTML(data.insta || '')}" placeholder="instagram.com/user">
             </div>
         </div>
 
@@ -2079,17 +2111,17 @@ async function findNearbyStadiums() {
                 const card = `
                     <div class="stadium-card">
                         <div class="stadium-info">
-                            <h4 style="margin-bottom:2px;">${stadium.stadium_name}</h4>
+                            <h4 style="margin-bottom:2px;">${escapeHTML(stadium.stadium_name)}</h4>
                             <span class="distance-tag" style="background:#e0f2fe; color:#0369a1;">
                                 🚗 يبعد ${stadium.distance.toFixed(1)} كلم عنك
                             </span>
                         </div>
                         <div class="btn-group" style="margin-top:12px; display:flex; gap:8px;">
-                            <a href="https://www.google.com/maps?q=${stadium.lat},${stadium.lng}"
-                               target="_blank" class="btn-action btn-map" style="background:#10b981; flex:1; text-align:center; padding:10px; border-radius:8px; color:white; text-decoration:none; font-size:0.85rem;">
+                            <a href="https://www.google.com/maps?q=${encodeURIComponent(stadium.lat)},${encodeURIComponent(stadium.lng)}"
+                               target="_blank" rel="noopener noreferrer" class="btn-action btn-map" style="background:#10b981; flex:1; text-align:center; padding:10px; border-radius:8px; color:white; text-decoration:none; font-size:0.85rem;">
                                🗺️ الخريطة
                             </a>
-                            <a href="booking.html?id=${stadium.slug}" 
+                            <a href="booking.html?id=${encodeURIComponent(stadium.slug)}" 
                                class="btn-action btn-book" style="background:#2563eb; flex:1; text-align:center; padding:10px; border-radius:8px; color:white; text-decoration:none; font-size:0.85rem;">
                                📅 حجز الآن
                             </a>
