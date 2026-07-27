@@ -3,264 +3,335 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>إعدادات الملعب - لوحة التحكم</title>
+    <meta name="referrer" content="strict-origin-when-cross-origin">
+    <title>إنشاء حساب - منصة ملاعب</title>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <style>
-        :root { --primary: #2563eb; --bg: #f1f5f9; }
-        body { font-family: 'Cairo', sans-serif; background: var(--bg); padding: 20px; }
-        .container { max-width: 600px; margin: auto; background: white; padding: 25px; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
-        h2 { color: var(--primary); border-bottom: 2px solid #eee; padding-bottom: 10px; }
-        .section { margin-bottom: 20px; text-align: right; }
-        label { display: block; font-weight: bold; margin-bottom: 8px; font-size: 0.9rem; }
-        input, select { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
-        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
-        .btn-save { width: 100%; background: var(--primary); color: white; border: none; padding: 15px; border-radius: 8px; font-size: 1.1rem; cursor: pointer; margin-top: 20px; }
+        :root {
+            --primary-color: #2563eb;
+            --secondary-color: #10b981;
+            --bg-color: #f8fafc;
+        }
+        body {
+            font-family: 'Cairo', sans-serif;
+            background-color: var(--bg-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+        .register-container {
+            background: white;
+            padding: 2rem;
+            border-radius: 15px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 450px;
+            text-align: center;
+        }
+        .logo {
+            font-size: 2rem;
+            font-weight: bold;
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+        }
+        .logo span { color: var(--secondary-color); }
+        h2 { margin-bottom: 1.5rem; color: #1e293b; }
+        
+        .form-group {
+            text-align: right;
+            margin-bottom: 1.2rem;
+        }
+        label { display: block; margin-bottom: 0.5rem; font-weight: bold; }
+        input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            box-sizing: border-box;
+            font-family: inherit;
+        }
+        input:focus { border-color: var(--primary-color); outline: none; }
+        
+        .hint { font-size: 0.8rem; color: #64748b; margin-top: 4px; }
+        
+        .btn-submit {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 14px;
+            width: 100%;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        .btn-submit:hover { background: #1d4ed8; }
+        
+        .footer-links { margin-top: 1.5rem; font-size: 0.9rem; }
+        .footer-links a { color: var(--primary-color); text-decoration: none; }
+
+        #otpModal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5);
+            justify-content: center; align-items: center;
+        }
+        .modal-content {
+            background: white; padding: 2rem; border-radius: 12px; text-align: center;
+        }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <h2>⚙️ إعدادات ملعبك</h2>
+<div class="register-container">
+    <div class="logo">ملاعب<span>.net</span></div>
+    <h2>إنشاء حساب جديد</h2>
     
-    <form id="settingsForm">
-        <div class="section">
-            <label>اسم الملعب التجاري</label>
-            <input type="text" id="stadiumName" placeholder="مثلاً: ملعب نجوم بوعسل">
+    <form id="registerForm">
+        <div class="form-group">
+            <label>الاسم الكامل</label>
+            <input type="text" id="fullName" placeholder="أدخل اسمك" required>
         </div>
-
-        <div class="section">
-            <label>الجمعية أو الجهة المشرفة</label>
-            <input type="text" id="organization" placeholder="اسم الجمعية المسؤولة">
-        </div>
-
-        <div class="section">
-            <label>ثمن الحجز بالساعة (للفرد)</label>
-            <div class="grid">
-                <input type="number" id="priceDay" placeholder="نهاراً (درهم)">
-                <input type="number" id="priceNight" placeholder="ليلاً - مع الأضواء (درهم)">
-            </div>
-        </div>
-
-        <div class="section">
-            <label>رقم هاتف المشرف (المكلف بالملعب)</label>
-            <input type="tel" id="managerPhone" placeholder="06xxxxxxxx">
-        </div>
-
-<div class="section">
-    <label style="display: flex; align-items: center; gap: 8px; font-weight: bold;">
-        موقع الملعب (رابط الخريطة)
-        <span onclick="showMapInstructions()" style="cursor: pointer; background: #1e3a8a; color: white; width: 18px; height: 18px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 12px;" title="كيف أحصل على الرابط؟">؟</span>
-    </label>
-    
-    <div style="display: flex; gap: 5px; margin-top: 5px;">
-        <input type="text" id="location" placeholder="ضع رابط Google Maps هنا" style="flex: 1; padding: 10px; border: 1px solid #ddd; border-radius: 8px;">
         
-        <!-- الزر السحري لجلب الإحداثيات -->
-        <button type="button" onclick="detectCoordinates()" style="background: #10b981; color: white; border: none; border-radius: 8px; padding: 0 15px; cursor: pointer; font-size: 1.1rem; display: flex; align-items: center; justify-content: center;" title="حدد إحداثيات موقعك الحالي">
-            📍
-        </button>
-    </div>
-
-    <!-- حقول مخفية لتخزين أرقام الطول والعرض -->
-    <input type="hidden" id="lat">
-    <input type="hidden" id="lng">
-    
-    <div id="coordSuccess" style="display: none; background: #ecfdf5; color: #065f46; padding: 8px; border-radius: 6px; margin-top: 8px; font-size: 0.8rem; border: 1px solid #a7f3d0;">
-        ✅ تم التقاط إحداثيات الملعب بنجاح لتفعيل خاصية "الملاعب القريبة".
-    </div>
-
-    <small style="display: block; color: #666; margin-top: 5px; font-size: 0.85rem;">
-        💡 <strong>هام:</strong> ضع الرابط أولاً، ثم اضغط على 📍 وأنت <b>داخل الملعب</b> ليتمكن اللاعبون من العثور عليك عبر خاصية المسافة.
+        <div class="form-group">
+            <label>البريد الإلكتروني</label>
+            <input type="email" id="email" placeholder="example@mail.com" required>
+        </div>
+        
+       <div class="form-group">
+    <label style="display: block; font-weight: bold;">كلمة المرور</label>
+    <input type="password" id="password" placeholder="********" required style="width: 100%; padding: 10px; margin-top: 5px;">
+    <small style="display: block; color: #d97706; margin-top: 5px; font-size: 0.85rem; line-height: 1.4;">
+        ⚠️ يرجى تذكر الرقم السري جيداً، فهو وسيلتك الوحيدة لدخول لوحة التحكم.
     </small>
 </div>
-           <div class="section">
-    <label style="display: block; font-weight: bold; margin-bottom: 8px;">روابط التواصل الاجتماعي</label>
-    <div class="grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-        <div>
-            <input type="text" id="fbLink" placeholder="مثال: facebook.com/stadium.name" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px;">
-            <small style="color: #666; font-size: 0.75rem; display: block; margin-top: 4px;">رابط صفحة الفيسبوك</small>
+        
+        <div class="form-group">
+            <label>اسم الملعب أو الجمعية</label>
+            <input type="text" id="stadiumName" placeholder="مثلاً: ملعب السعادة" required>
+            <p class="hint">يمكنك تغيير هذا لاحقاً من الإعدادات</p>
         </div>
-        <div>
-            <input type="text" id="instaLink" placeholder="مثال: instagram.com/stadium.name" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px;">
-            <small style="color: #666; font-size: 0.75rem; display: block; margin-top: 4px;">رابط حساب الإنستغرام</small>
-        </div>
+        
+        <button type="button" class="btn-submit" onclick="showOTP()">متابعة لإنشاء الحساب</button>
+    </form>
+
+    <div class="footer-links">
+        لديك حساب بالفعل؟ <a href="index.html">العودة إلى الصفحة الرئيسية</a>
     </div>
-    <p style="background: #fdfaf1; color: #856404; padding: 8px; border-radius: 6px; font-size: 0.8rem; margin-top: 10px; border: 1px dashed #e5e7eb;">
-        💡 <strong>نصيحة:</strong> اذهب إلى صفحتك وانسخ الرابط من شريط العنوان في المتصفح لضمان عمله بشكل صحيح.
-    </p>
 </div>
 
-        <button type="button" class="btn-save" onclick="saveSettings()">حفظ التغييرات ونشر الصفحة</button>
-    </form>
+<div id="otpModal">
+    <div class="modal-content">
+        <h3>تأكيد البريد الإلكتروني</h3>
+        <p>لقد أرسلنا رمزاً إلى بريدك، أدخله هنا:</p>
+        <input type="text" id="otpCode" placeholder="- - - -" style="text-align: center; letter-spacing: 10px; font-size: 1.5rem;">
+        <br><br>
+        <button class="btn-submit" onclick="verifyOTP()">تأكيد ودخول</button>
+    </div>
 </div>
 
 <script>
-// دالة تعليمات الرابط (القديمة كما هي)
-function showMapInstructions() {
-    alert(
-      "كيفية الحصول على الرابط الصحيح:\n" +
-      "1. افتح تطبيق Google Maps وابحث عن ملعبك.\n" +
-      "2. اضغط على زر 'مشاركة' (Share).\n" +
-      "3. اختر 'نسخ الرابط' (Copy link).\n" +
-      "4. قم بلصق الرابط هنا.\n\n" +
-      "شكل الرابط يجب أن يبدأ بـ https://maps.app.goo.gl/... أو https://goo.gl/maps/..."
-    );
-}
-
-
-  // 1. إعداد المتغيرات الأساسية
   // Cloudflare Worker
 const APPS_SCRIPT_BASE_URL = 'https://dmalaib-api-proxy.malaib-net.workers.dev';
 
 const scriptURL = APPS_SCRIPT_BASE_URL;
-
-const urlParams = new URLSearchParams(window.location.search);
-const slug = urlParams.get('id');
-    // 2. دالة لجلب البيانات الحالية فور فتح الصفحة
-    async function loadCurrentData() {
-        if (!slug) {
-            alert("خطأ: لم يتم العثور على معرف الملعب.");
-            return;
-        }
-
-        try {
-            const response = await fetch(`${scriptURL}&action=getStadiumDetails&id=${encodeURIComponent(slug)}`);
-            const data = await response.json();
-
-            if (data !== "NotFound") {
-                // تعبئة الخانات بالبيانات الموجودة مسبقاً في الشيت
-                document.getElementById('stadiumName').value = data.stadium_name || "";
-                document.getElementById('organization').value = data.org || "";
-                document.getElementById('priceDay').value = data.price_day || "";
-                document.getElementById('priceNight').value = data.price_night || "";
-                document.getElementById('managerPhone').value = data.phone || "";
-                document.getElementById('location').value = data.location || "";
-                document.getElementById('fbLink').value = data.fb || "";
-                document.getElementById('instaLink').value = data.insta || "";
-            }
-        } catch (e) {
-            console.log("لا توجد بيانات سابقة أو حدث خطأ في الجلب.");
-        }
+    function escapeHTML(value) {
+        return String(value ?? '').replace(/[&<>"']/g, ch => ({
+            '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;'
+        }[ch]));
     }
 
-    // تشغيل الجلب التلقائي عند فتح الصفحة
-    loadCurrentData();
+  const registerParams = new URLSearchParams(window.location.search);
+const registerMode = registerParams.get('mode');
+const parentSlug = registerParams.get('parent') || "";
+const parentPass = registerParams.get('parentPass') || "";
+const isSubStadiumMode = registerMode === "addSubStadium";
 
-  // 3. دالة حفظ البيانات الجديدة المعدلة
-    async function saveSettings() {
-        const btn = document.querySelector('.btn-save');
-        
-        // تجميع البيانات من الخانات
-        const stadiumName = document.getElementById('stadiumName').value;
-        const org = document.getElementById('organization').value;
-        const pDay = document.getElementById('priceDay').value;
-        const pNight = document.getElementById('priceNight').value;
-        const phone = document.getElementById('managerPhone').value;
-        const loc = document.getElementById('location').value;
-        const fb = document.getElementById('fbLink').value;
-        const insta = document.getElementById('instaLink').value;
+document.addEventListener('DOMContentLoaded', function () {
+    if (!isSubStadiumMode) return;
 
-        // جلب الإحداثيات من الحقول المخفية (التي تملأ عند الضغط على زر 📍)
-        const lat = document.getElementById('lat') ? document.getElementById('lat').value : "";
-        const lng = document.getElementById('lng') ? document.getElementById('lng').value : "";
+    const title = document.querySelector('.register-container h2');
+    const submitBtn = document.querySelector('.btn-submit');
+    const footerLinks = document.querySelector('.footer-links');
 
-        if (!stadiumName || !phone) {
-            alert("يرجى كتابة اسم الملعب ورقم الهاتف على الأقل.");
-            return;
-        }
+    if (title) title.innerText = "إضافة ملعب جديد";
+    if (submitBtn) submitBtn.innerText = "متابعة لإضافة الملعب";
+    if (footerLinks) footerLinks.style.display = "none";
+});
+    let generatedOTP = ""; // لتخزين الرمز مؤقتاً
 
-        // تنبيه بسيط إذا نسى الضغط على زر الموقع (اختياري)
-        if (!lat || !lng) {
-            const confirmNoLoc = confirm("لم يتم تحديد إحداثيات الموقع عبر زر (📍). هل تريد الاستمرار بحفظ الرابط فقط؟ (لن يظهر الملعب في خاصية الملاعب القريبة بدونها)");
-            if (!confirmNoLoc) return;
-        }
-
-        btn.innerText = "جاري الحفظ والتحميل...";
-        btn.disabled = true;
-
-        // بناء الرابط الخاص بالأمر updateSettings مع إضافة lat و lng
-        const adminPass = sessionStorage.getItem('adminPassHash_' + slug) || '';
-        if (!adminPass) {
-            alert('يرجى تسجيل الدخول من لوحة الإدارة أولًا.');
-            return;
-        }
-
-        const finalUpdateURL = `${scriptURL}&action=updateSettings` + 
-                             `&slug=${encodeURIComponent(slug)}` +
-                             `&pass=${encodeURIComponent(adminPass)}` +
-                             `&stadiumName=${encodeURIComponent(stadiumName)}` +
-                             `&org=${encodeURIComponent(org)}` +
-                             `&pDay=${encodeURIComponent(pDay)}` +
-                             `&pNight=${encodeURIComponent(pNight)}` +
-                             `&phone=${encodeURIComponent(phone)}` +
-                             `&loc=${encodeURIComponent(loc)}` +
-                             `&fb=${encodeURIComponent(fb)}` +
-                             `&insta=${encodeURIComponent(insta)}` +
-                             `&lat=${encodeURIComponent(lat)}` + 
-                             `&lng=${encodeURIComponent(lng)}`;
-
-        try {
-            const response = await fetch(finalUpdateURL);
-            const result = await response.text();
-
-            if (result === "Update Success") {
-                alert("✅ تم حفظ الإعدادات بنجاح! سيتم توجيهك الآن لمشاهدة صفحة الحجز الخاصة بملعبك.");
-                
-                // تفعيل التوجيه التلقائي لصفحة الحجز مع إرسال المعرف (slug)
-                window.location.href = "booking.html?id=" + slug;
-                
-            } else {
-                alert("❌ حدث خطأ في قاعدة البيانات: " + result);
-            }
-        } catch (e) {
-            console.error(e);
-            alert("❌ خطأ في الاتصال بالسيرفر، تأكد من أن رابط السكريبت صحيح.");
-        } finally {
-            btn.innerText = "حفظ التغييرات ونشر الصفحة";
-            btn.disabled = false;
-        }
-    }
-function detectCoordinates() {
-    if (navigator.geolocation) {
-        // إعدادات لزيادة الدقة
-        const options = {
-            enableHighAccuracy: true, // تفعيل الدقة العالية (استخدام GPS)
-            timeout: 10000,           // انتظار الإشارة لمدة 10 ثوانٍ كحد أقصى
-            maximumAge: 0             // عدم استخدام موقع قديم مخزن في الذاكرة
-        };
-
-        // إظهار رسالة انتظار للمستخدم (اختياري)
-        const btn = document.querySelector('button[onclick="detectCoordinates()"]');
-        btn.innerText = "⏳";
-
-        navigator.geolocation.getCurrentPosition(function(position) {
-            document.getElementById('lat').value = position.coords.latitude;
-            document.getElementById('lng').value = position.coords.longitude;
-            
-            // إظهار رسالة النجاح
-            document.getElementById('coordSuccess').style.display = 'block';
-            
-            // تغيير لون الزر ليعرف أنه تم بنجاح
-            btn.style.background = "#059669";
-            btn.innerHTML = "✅";
-            
-            alert("تم تحديد إحداثيات ملعبك بدقة عالية!");
-        }, function(error) {
-            // إعادة شكل الزر الأصلي في حال الفشل
-            btn.innerHTML = "📍";
-            
-            let msg = "فشل الحصول على الموقع.";
-            if(error.code === 1) msg = "يرجى السماح للمتصفح بالوصول للموقع (Permission Denied).";
-            else if(error.code === 3) msg = "استغرق الهاتف وقتاً طويلاً لتحديد الموقع، حاول مرة أخرى في مكان مفتوح.";
-            
-            alert(msg);
-        }, options); // تمرير الإعدادات هنا
-    } else {
-        alert("متصفحك لا يدعم خاصية تحديد الموقع.");
-    }
+    async function hashString(str) {
+    const encoder = new TextEncoder();
+    const data = encoder.encode(str);
+    const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
 }
     
-</script>
+    async function showOTP() {
+    const fullName = document.getElementById('fullName').value;
+    const email = document.getElementById('email').value;
+    const stadiumName = document.getElementById('stadiumName').value;
 
+    if (!fullName || !email || !stadiumName) {
+        alert("يرجى ملء جميع الخانات");
+        return;
+    }
+
+    const btn = document.querySelector('.btn-submit');
+    btn.innerText = "جاري إرسال الرمز...";
+    btn.disabled = true;
+
+    // الخطوة 1: طلب الرمز من جوجل سكريبت مع إضافة المفتاح السري
+    try {
+        // تم إضافة &key لضمان أن الطلب قادم من موقعك فقط
+        const response = await fetch(`${scriptURL}&action=sendOTP&email=${encodeURIComponent(email)}`);
+        
+        // استخراج النص من الاستجابة (الذي سيكون الهاش المشفر)
+        const result = (await response.text()).trim();
+        
+        if (result !== "Sent") {
+            alert("فشل إرسال الإيميل. تأكد من صحة البريد أو صلاحيات الوصول.");
+        } else {
+            document.getElementById('otpModal').style.display = 'flex';
+        }
+    } catch (e) {
+        console.error(e);
+        alert("خطأ في الاتصال بالسيرفر.");
+    } finally {
+        btn.innerText = "متابعة لإنشاء الحساب";
+        btn.disabled = false;
+    }
+}
+
+  async function verifyOTP() {
+    const userOTP = document.getElementById('otpCode').value;
+    
+    // تصحيح: يجب تعريف btn داخل هذه الدالة أيضاً
+    const btn = document.querySelector('#otpModal .btn-submit');
+
+    const verifyURL = `${scriptURL}&action=verifyOTP` +
+        `&email=${encodeURIComponent(document.getElementById('email').value.trim())}` +
+        `&otp=${encodeURIComponent(userOTP.trim())}`;
+
+    let verifyResult;
+    try {
+        const verifyResponse = await fetch(verifyURL);
+        const rawVerifyResult = await verifyResponse.text();
+        try {
+            verifyResult = JSON.parse(rawVerifyResult);
+        } catch {
+            verifyResult = { result: "Error", message: rawVerifyResult.trim() };
+        }
+    } catch (error) {
+        console.error("OTP verification failed:", error);
+        alert("تعذر الاتصال بخادم التحقق. حاول مرة أخرى.");
+        return;
+    }
+
+    if (verifyResult.result !== "Verified" || !verifyResult.token) {
+        alert(verifyResult.message || "الرمز غير صحيح أو منتهي الصلاحية، حاول مجدداً.");
+        return;
+    }
+
+    // الآن سيعمل هذا الجزء بشكل صحيح
+    btn.innerText = "جاري الحفظ النهائي...";
+    btn.disabled = true;
+
+    const fullName = document.getElementById('fullName').value;
+    const email = document.getElementById('email').value;
+    const password = document.getElementById('password').value;
+    const stadiumName = document.getElementById('stadiumName').value;
+
+    // الرابط النهائي لإرسال البيانات
+   const finalURLObject = new URL(scriptURL);
+   finalURLObject.searchParams.set('action', 'saveData');
+   finalURLObject.searchParams.set('fullName', fullName);
+   finalURLObject.searchParams.set('email', email);
+   finalURLObject.searchParams.set('password', password);
+   finalURLObject.searchParams.set('stadiumName', stadiumName);
+   finalURLObject.searchParams.set('otpToken', verifyResult.token);
+   let finalURL = finalURLObject.toString();
+
+if (isSubStadiumMode) {
+    finalURL += `&parentSlug=${encodeURIComponent(parentSlug)}&parentPass=${encodeURIComponent(parentPass)}`;
+}
+    try {
+        // نستخدم fetch بدون no-cors لنتمكن من قراءة الـ slug العشوائي الراجع من جوجل
+        const response = await fetch(finalURL);
+        const resultText = await response.text();
+
+        if (resultText.includes("Success:")) {
+            document.getElementById('otpModal').style.display = 'none';
+            const finalSlug = resultText.split(":")[1]?.trim(); // استخراج المعرف العشوائي مثل st-xxxx
+            if (!finalSlug || !/^[a-zA-Z0-9_-]{2,100}$/.test(finalSlug)) {
+                throw new Error('Invalid stadium identifier returned by server');
+            }
+            const userLink = new URL(
+                `booking.html?id=${encodeURIComponent(finalSlug)}`,
+                window.location.href
+            ).href;
+
+            // استبدال محتوى الصفحة بواجهة النجاح الجميلة
+            document.querySelector('.register-container').innerHTML = `
+                <div style="padding: 10px;">
+                   <h2 style="color: var(--secondary-color);">${isSubStadiumMode ? 'تمت إضافة الملعب بنجاح!' : 'تم إنشاء الحساب بنجاح!'}</h2>
+                    <p>أهلاً بك <b>${escapeHTML(fullName)}</b> في منصتنا.</p>
+                    <hr style="border: 0.5px solid #eee; margin: 20px 0;">
+                    
+                    <p style="font-size: 0.9rem; color: #64748b;">رابط صفحة الحجز الخاصة بملعبك:</p>
+                    <div style="background: #f1f5f9; padding: 10px; border-radius: 8px; word-break: break-all; font-size: 0.85rem; margin-bottom: 10px;">
+                        ${userLink}
+                    </div>
+                    
+                    <button id="copyUserLinkBtn"
+                            style="background: #64748b; color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer; margin-bottom: 20px;">
+                        نسخ الرابط
+                    </button>
+
+                    <div id="qrcode" style="display: flex; justify-content: center; margin-bottom: 15px;"></div>
+                    <p class="hint">صور الشاشة أو احفظ رمز QR لوضعه في مدخل الملعب</p>
+
+                    <button id="openDashboardBtn"
+                            class="btn-submit" style="margin-top: 20px;">
+                        الدخول للوحة التحكم
+                    </button>
+                </div>
+            `;
+
+            document.getElementById('copyUserLinkBtn')?.addEventListener('click', async () => {
+                try {
+                    await navigator.clipboard.writeText(userLink);
+                    alert('تم نسخ الرابط!');
+                } catch {
+                    alert('تعذر نسخ الرابط تلقائياً. انسخه يدوياً.');
+                }
+            });
+            document.getElementById('openDashboardBtn')?.addEventListener('click', () => {
+                window.location.href = `dashboard.html?id=${encodeURIComponent(finalSlug)}`;
+            });
+
+            // توليد رمز QR فوراً
+            new QRCode(document.getElementById("qrcode"), {
+                text: userLink,
+                width: 160,
+                height: 160
+            });
+
+        } else {
+            alert("حدث خطأ أثناء الحفظ في السيرفر.");
+            btn.disabled = false;
+        }
+    } catch (e) {
+        alert("خطأ في الاتصال. تأكد من تحديث النشر (Deployment) في Google Script.");
+        btn.disabled = false;
+    }
+}
+</script>
 </body>
 </html>
