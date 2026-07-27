@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="referrer" content="strict-origin-when-cross-origin">
     <title>إنشاء حساب - منصة ملاعب</title>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
@@ -267,7 +268,10 @@ if (isSubStadiumMode) {
 
         if (resultText.includes("Success:")) {
             document.getElementById('otpModal').style.display = 'none';
-            const finalSlug = resultText.split(":")[1]; // استخراج المعرف العشوائي مثل st-xxxx
+            const finalSlug = resultText.split(":")[1]?.trim(); // استخراج المعرف العشوائي مثل st-xxxx
+            if (!finalSlug || !/^[a-zA-Z0-9_-]{2,100}$/.test(finalSlug)) {
+                throw new Error('Invalid stadium identifier returned by server');
+            }
             const userLink = new URL(
                 `booking.html?id=${encodeURIComponent(finalSlug)}`,
                 window.location.href
@@ -285,7 +289,7 @@ if (isSubStadiumMode) {
                         ${userLink}
                     </div>
                     
-                    <button onclick="navigator.clipboard.writeText('${userLink}'); alert('تم نسخ الرابط!')" 
+                    <button id="copyUserLinkBtn"
                             style="background: #64748b; color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer; margin-bottom: 20px;">
                         نسخ الرابط
                     </button>
@@ -293,12 +297,24 @@ if (isSubStadiumMode) {
                     <div id="qrcode" style="display: flex; justify-content: center; margin-bottom: 15px;"></div>
                     <p class="hint">صور الشاشة أو احفظ رمز QR لوضعه في مدخل الملعب</p>
 
-                    <button onclick="window.location.href='dashboard.html?id=${finalSlug}'" 
+                    <button id="openDashboardBtn"
                             class="btn-submit" style="margin-top: 20px;">
                         الدخول للوحة التحكم
                     </button>
                 </div>
             `;
+
+            document.getElementById('copyUserLinkBtn')?.addEventListener('click', async () => {
+                try {
+                    await navigator.clipboard.writeText(userLink);
+                    alert('تم نسخ الرابط!');
+                } catch {
+                    alert('تعذر نسخ الرابط تلقائياً. انسخه يدوياً.');
+                }
+            });
+            document.getElementById('openDashboardBtn')?.addEventListener('click', () => {
+                window.location.href = `dashboard.html?id=${encodeURIComponent(finalSlug)}`;
+            });
 
             // توليد رمز QR فوراً
             new QRCode(document.getElementById("qrcode"), {
