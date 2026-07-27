@@ -1,4 +1,4 @@
-const cacheName = 'malaeb-net-v2-security';
+const cacheName = 'malaeb-net-v3-security';
 const assets = [
   './',
   './index.html',
@@ -57,9 +57,14 @@ self.addEventListener('fetch', e => {
 
   // 3. استراتيجية الملفات الثابتة (Cache First, then Network)
   e.respondWith(
-    caches.match(e.request).then(response => {
-      return response || fetch(e.request);
+    caches.match(e.request).then(async response => {
+      if (response) return response;
+      const networkResponse = await fetch(e.request);
+      if (networkResponse.ok && e.request.url.startsWith(location.origin)) {
+        const cache = await caches.open(cacheName);
+        await cache.put(e.request, networkResponse.clone());
+      }
+      return networkResponse;
     })
   );
 });
-
