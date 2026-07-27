@@ -190,7 +190,7 @@ document.addEventListener('DOMContentLoaded', function () {
     // الخطوة 1: طلب الرمز من جوجل سكريبت مع إضافة المفتاح السري
     try {
         // تم إضافة &key لضمان أن الطلب قادم من موقعك فقط
-        const response = await fetch(`${scriptURL}&action=sendOTP&email=${encodeURIComponent(email)}`);
+        const response = await fetch(`${scriptURL}?action=sendOTP&email=${encodeURIComponent(email)}`);
         
         // استخراج النص من الاستجابة (الذي سيكون الهاش المشفر)
         const result = (await response.text()).trim();
@@ -215,7 +215,7 @@ document.addEventListener('DOMContentLoaded', function () {
     // تصحيح: يجب تعريف btn داخل هذه الدالة أيضاً
     const btn = document.querySelector('#otpModal .btn-submit');
 
-    const verifyURL = `${scriptURL}&action=verifyOTP` +
+    const verifyURL = `${scriptURL}?action=verifyOTP` +
         `&email=${encodeURIComponent(document.getElementById('email').value.trim())}` +
         `&otp=${encodeURIComponent(userOTP.trim())}`;
 
