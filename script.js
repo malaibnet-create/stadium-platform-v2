@@ -646,6 +646,7 @@ async function submitFinalBooking() {
         for (const slot of selectedSlots) {
             const response = await fetch(bookingScriptURL, {
                 method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     stadiumId: stadiumId,
                     dayName: slot.dayName,
