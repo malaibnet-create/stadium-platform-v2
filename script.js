@@ -169,7 +169,7 @@ async function loadStadiumDynamicDetails() {
     if (tableBody) tableBody.innerHTML = '<tr><td colspan="8" style="text-align:center; padding:20px;">جاري تحميل المواعيد...</td></tr>';
 
     try {
-        const response = await fetch(`${settingsScriptURL}&action=getStadiumDetails&id=${stadiumId}`);
+        const response = await fetch(`${settingsScriptURL}?action=getStadiumDetails&id=${encodeURIComponent(stadiumId)}`);
 const responseText = await response.text();
 
 if (responseText.trim() === "NotFound") {
@@ -778,7 +778,7 @@ function changeWeek(direction) {
 async function loadExistingBookings() {
     try {
         const response = await fetch(
-            `${bookingScriptURL}&action=getBookings&id=${encodeURIComponent(stadiumId)}&t=${Date.now()}`
+            `${bookingScriptURL}?action=getBookings&id=${encodeURIComponent(stadiumId)}&t=${Date.now()}`
         );
         const bookings = await response.json();
         if (!Array.isArray(bookings)) throw new Error('Invalid bookings response');
@@ -803,7 +803,7 @@ async function loadExistingBookings() {
     script.id = 'dataFetchScript'; 
     
     // 5. ربط المصدر بالرابط الخاص بك مع إضافة بصمة زمنية لمنع التخزين المؤقت (Cache)
-    script.src = `${bookingScriptURL}&action=getBookings&id=${stadiumId}&callback=handleData&t=${new Date().getTime()}`;
+    script.src = `${bookingScriptURL}?action=getBookings&id=${encodeURIComponent(stadiumId)}&callback=handleData&t=${new Date().getTime()}`;
     
     // 6. إضافة السكريبت إلى الصفحة لبدء جلب البيانات
     document.body.appendChild(script);
@@ -1046,7 +1046,7 @@ async function loadActualSettings() {
 
     try {
         // جلب البيانات الحالية للملعب لملء الحقول تلقائياً
-        const response = await fetch(`${settingsScriptURL}&action=getStadiumDetails&id=${stadiumId}`);
+        const response = await fetch(`${settingsScriptURL}?action=getStadiumDetails&id=${encodeURIComponent(stadiumId)}`);
         const data = await response.json();
 
         if (data === "NotFound") {
@@ -1199,7 +1199,7 @@ async function loadActualCancellations() {
 
     try {
         const response = await fetch(
-            `${settingsScriptURL}&action=getAdminBookings` +
+            `${settingsScriptURL}?action=getAdminBookings` +
             `&id=${encodeURIComponent(stadiumId)}` +
             `&pass=${encodeURIComponent(getAdminPassHash())}`
         );
@@ -1297,7 +1297,7 @@ async function cancelBooking(rowNumber, btn) {
         // 2. تشفير الكود السري قبل إرساله
         // 3. إرسال الطلب مع إضافة id و pass (الهاش)
         // أضفنا Timestamp (&_t=...) لضمان جلب بيانات طازجة
-        const url = `${settingsScriptURL}&action=cancelBooking&row=${encodeURIComponent(rowNumber)}&id=${encodeURIComponent(stadiumId)}&pass=${encodeURIComponent(hashedPass)}&_t=${Date.now()}`;
+        const url = `${settingsScriptURL}?action=cancelBooking&row=${encodeURIComponent(rowNumber)}&id=${encodeURIComponent(stadiumId)}&pass=${encodeURIComponent(hashedPass)}&_t=${Date.now()}`;
         
         const response = await fetch(url);
         const result = await response.text();
@@ -1347,7 +1347,7 @@ async function loadActualStats() {
 
     try {
         const response = await fetch(
-            `${settingsScriptURL}&action=getStats` +
+            `${settingsScriptURL}?action=getStats` +
             `&id=${encodeURIComponent(stadiumId)}` +
             `&pass=${encodeURIComponent(getAdminPassHash())}`
         );
@@ -1477,7 +1477,7 @@ async function handleAdminAuth(btn) {
         const hashedPassword = await hashString(password);
         
         // نرسل hashedPassword بدلاً من password
-        const response = await fetch(`${settingsScriptURL}&action=adminAuth&id=${stadiumId}&pass=${encodeURIComponent(hashedPassword)}`);
+        const response = await fetch(`${settingsScriptURL}?action=adminAuth&id=${encodeURIComponent(stadiumId)}&pass=${encodeURIComponent(hashedPassword)}`);
         const result = await response.text();
 
         console.log("استجابة السيرفر:", result);
@@ -1551,7 +1551,7 @@ async function handleForgotPassword() {
     alert("جاري إرسال الكود إلى بريدك... يرجى الانتظار");
 
     try {
-        const response = await fetch(`${settingsScriptURL}&action=forgotPassword&id=${stadiumId}&email=${email}`);
+        const response = await fetch(`${settingsScriptURL}?action=forgotPassword&id=${encodeURIComponent(stadiumId)}&email=${encodeURIComponent(email)}`);
         const result = await response.text();
 
         if (result.trim() === "Sent") {
@@ -1628,7 +1628,7 @@ async function checkSubscriptionStatus() {
     const upgradeOptions = document.getElementById('upgradeOptions');
 
     try {
-        const response = await fetch(`${settingsScriptURL}&action=getStadiumDetails&id=${stadiumId}`);
+        const response = await fetch(`${settingsScriptURL}?action=getStadiumDetails&id=${encodeURIComponent(stadiumId)}`);
         const data = await response.json();
         
         // التعديل هنا: نستخدم accountType بدلاً من status
@@ -2080,7 +2080,7 @@ async function findNearbyStadiums() {
 
         try {
             // جلب البيانات من السيرفر
-           const response = await fetch(`${bookingScriptURL}&action=getAllStadiums`);
+           const response = await fetch(`${bookingScriptURL}?action=getAllStadiums`);
             const allStadiums = await response.json();
 
             // 1. حساب المسافة لكل ملعب وتخزينها في المصفوفة
