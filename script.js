@@ -79,9 +79,108 @@ function getAdminPassHash() {
     return sessionStorage.getItem('adminPassHash_' + stadiumId) || '';
 }
 
+let ownerStadiums = [];
+
+async function adminPost(action, extra = {}) {
+    const pass = getAdminPassHash();
+    if (!stadiumId || !pass) throw new Error('جلسة لوحة التحكم غير صالحة');
+
+    const response = await fetch(`${bookingScriptURL}?action=${encodeURIComponent(action)}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+        body: JSON.stringify({
+            action,
+            id: stadiumId,
+            pass,
+            ...extra
+        })
+    });
+
+    const text = await response.text();
+    let result = text;
+    try { result = JSON.parse(text); } catch (_) { /* Apps Script may return plain text. */ }
+
+    if (!response.ok) {
+        const message = typeof result === 'object' && result?.message ? result.message : text;
+        throw new Error(message || `HTTP ${response.status}`);
+    }
+    if (result && typeof result === 'object' && result.result === 'error') {
+        throw new Error(result.message || 'تعذر تنفيذ الطلب');
+    }
+    return result;
+}
+
+function renderOwnerStadiumSwitcher() {
+    const container = document.getElementById('ownerStadiumSwitcher');
+    if (!container) return;
+
+    if (!ownerStadiums.length) {
+        container.innerHTML = '';
+        return;
+    }
+
+    container.innerHTML = `
+        <div class="owner-stadium-switcher-title">ملاعب حسابك</div>
+        <div class="owner-stadium-list">
+            ${ownerStadiums.map(stadium => `
+                <button type="button" class="owner-stadium-option ${stadium.slug === stadiumId ? 'active' : ''}" data-owner-stadium="${escapeHTML(stadium.slug)}">
+                    <span class="owner-stadium-option-name">${escapeHTML(stadium.stadium_name)}</span>
+                    <small>${stadium.slug === stadiumId ? 'مفتوح الآن' : 'فتح الإعدادات'}</small>
+                </button>
+            `).join('')}
+            <button type="button" class="owner-stadium-option owner-stadium-add" data-owner-add-stadium="true">
+                <span class="owner-stadium-option-name">+ إضافة ملعب جديد</span>
+                <small>باستخدام الحساب نفسه</small>
+            </button>
+        </div>
+    `;
+
+    container.querySelectorAll('[data-owner-stadium]').forEach(button => {
+        button.addEventListener('click', () => switchAdminStadium(button.dataset.ownerStadium));
+    });
+    container.querySelector('[data-owner-add-stadium]')?.addEventListener('click', openAddStadiumRegistration);
+}
+
+async function loadOwnerStadiums() {
+    const container = document.getElementById('ownerStadiumSwitcher');
+    if (container) container.innerHTML = '<div class="owner-stadium-loading">جاري تحميل ملاعب الحساب...</div>';
+
+    try {
+        const result = await adminPost('getOwnerStadiums');
+        ownerStadiums = Array.isArray(result?.stadiums) ? result.stadiums : [];
+        renderOwnerStadiumSwitcher();
+    } catch (error) {
+        console.error('Owner stadiums load failed:', error);
+        if (container) container.innerHTML = '<div class="owner-stadium-error">تعذر تحميل ملاعب الحساب</div>';
+    }
+}
+
+async function switchAdminStadium(newSlug) {
+    if (!newSlug || newSlug === stadiumId) return;
+
+    const ownerPassHash = getAdminPassHash();
+    stadiumId = newSlug;
+    if (ownerPassHash) sessionStorage.setItem('adminPassHash_' + stadiumId, ownerPassHash);
+    localStorage.setItem('lastVisitedStadiumId', stadiumId);
+
+    const url = new URL(window.location.href);
+    url.searchParams.set('id', stadiumId);
+    window.history.replaceState({}, '', url.toString());
+
+    renderOwnerStadiumSwitcher();
+    try {
+        await loadStadiumDynamicDetails();
+        await checkSubscriptionStatus();
+        showSettings();
+    } catch (error) {
+        console.error('Stadium switch failed:', error);
+        alert('تعذر فتح إعدادات الملعب المختار.');
+    }
+}
+
 
 const urlParams = new URLSearchParams(window.location.search);
-const stadiumId = urlParams.get('id'); 
+let stadiumId = urlParams.get('id'); 
 
 // تحديث الـ ID في التخزين المحلي فوراً بمجرد الدخول من رابط يحتوي عليه
 if (stadiumId) {
@@ -1025,6 +1124,9 @@ async function saveAdminSettings(event) {
         const result = await response.text();
 
         if (result.trim() === "Success") {
+            if (finalPass) {
+                sessionStorage.setItem('adminPassHash_' + stadiumId, finalPass);
+            }
             alert("✅ تم تحديث بيانات الملعب بنجاح!");
             location.reload(); 
         } else {
@@ -1517,6 +1619,7 @@ async function handleAdminAuth(btn) {
     }
 
     showSettings();
+    await loadOwnerStadiums();
 }
 
         } else {
@@ -1568,7 +1671,16 @@ async function handleForgotPassword() {
     }
 } // هذا القوس ضروري جداً لإغلاق الدالة
 function closeAdminPanel() {
-    document.getElementById('adminPanel').style.display = 'none';
+    const panel = document.getElementById('adminPanel');
+    if (panel) panel.style.display = 'none';
+
+    // بعد اختيار ملعب من لوحة التحكم، أعد فتح الواجهة العامة للملعب المختار.
+    const target = stadiumId;
+    if (target) {
+        const url = new URL('booking.html', window.location.href);
+        url.searchParams.set('id', target);
+        window.location.href = url.toString();
+    }
 }
 function showBookingTicket(stadiumName, date, time, stadiumUrl) {
     // 1. استخراج اسم اليوم بطريقة آمنة
@@ -2212,7 +2324,7 @@ function switchAdminTab(tab, evt) {
 }
 
 
-async function openAddStadiumRegistration() {
+async function legacyAddStadiumRegistration() {
     if (!stadiumId) {
         alert("تعذر معرفة الملعب الحالي.");
         return;
@@ -2229,7 +2341,6 @@ async function openAddStadiumRegistration() {
     const registerUrl = new URL("register.html", window.location.href);
     registerUrl.searchParams.set("mode", "addSubStadium");
     registerUrl.searchParams.set("parent", stadiumId);
-    registerUrl.searchParams.set("parentPass", parentPassHash);
     registerUrl.searchParams.set("_", Date.now());
 
     window.location.href = registerUrl.toString();
@@ -2238,6 +2349,98 @@ async function openAddStadiumRegistration() {
 
 
 
+// لوحة إنشاء ملعب جديد ضمن حساب المالك نفسه.
+async function openAddStadiumRegistration() {
+    if (!stadiumId) return;
+
+    const content = document.getElementById('adminSectionContent');
+    if (!content) return;
+
+    content.innerHTML = `
+        <section class="owner-add-stadium-form" dir="rtl">
+            <div class="owner-form-heading">
+                <h3>إضافة ملعب جديد</h3>
+                <p>سيُضاف الملعب إلى حسابك ويمكنك فتح إعداداته من القائمة نفسها.</p>
+            </div>
+            <div class="owner-form-grid">
+                <label>اسم الملعب *<input id="add_stadium_name" maxlength="120" required></label>
+                <label>اسم المؤسسة<input id="add_stadium_org" maxlength="120"></label>
+                <label>هاتف الحجز<input id="add_stadium_phone" maxlength="30"></label>
+                <label>الموقع<input id="add_stadium_loc" maxlength="300"></label>
+                <label>سعر النهار<input id="add_stadium_pday" type="number" min="0" step="0.01"></label>
+                <label>سعر الليل<input id="add_stadium_pnight" type="number" min="0" step="0.01"></label>
+                <label>ساعة الفتح<input id="add_stadium_open" type="number" min="0" max="23" value="8"></label>
+                <label>ساعة الإغلاق<input id="add_stadium_close" type="number" min="0" max="23" value="23"></label>
+                <label>رابط فيسبوك<input id="add_stadium_fb" type="url"></label>
+                <label>رابط إنستغرام<input id="add_stadium_insta" type="url"></label>
+                <label>رابط الشعار<input id="add_stadium_logo" type="url"></label>
+                <label>رابط الصورة 1<input id="add_stadium_img1" type="url"></label>
+                <label>رابط الصورة 2<input id="add_stadium_img2" type="url"></label>
+                <label>رابط الصورة 3<input id="add_stadium_img3" type="url"></label>
+            </div>
+            <div class="owner-form-actions">
+                <button type="button" class="btn-primary" onclick="createStadiumFromDashboard(this)">إنشاء الملعب</button>
+                <button type="button" class="btn-secondary" onclick="showSettings()">إلغاء</button>
+            </div>
+        </section>
+    `;
+}
+
+async function createStadiumFromDashboard(button) {
+    const name = document.getElementById('add_stadium_name')?.value.trim();
+    if (!name) {
+        alert('أدخل اسم الملعب أولاً.');
+        return;
+    }
+
+    const originalText = button?.innerText || 'إنشاء الملعب';
+    if (button) {
+        button.disabled = true;
+        button.innerText = 'جاري الإنشاء...';
+    }
+
+    const field = id => document.getElementById(id)?.value.trim() || '';
+    try {
+        const result = await adminPost('createStadium', {
+            stadiumName: name,
+            org: field('add_stadium_org'),
+            phone: field('add_stadium_phone'),
+            loc: field('add_stadium_loc'),
+            pDay: field('add_stadium_pday'),
+            pNight: field('add_stadium_pnight'),
+            openHour: field('add_stadium_open') || '8',
+            closeHour: field('add_stadium_close') || '23',
+            fb: field('add_stadium_fb'),
+            insta: field('add_stadium_insta'),
+            logo: field('add_stadium_logo'),
+            img1: field('add_stadium_img1'),
+            img2: field('add_stadium_img2'),
+            img3: field('add_stadium_img3')
+        });
+
+        const responseText = String(result || '');
+        if (!responseText.startsWith('Success:')) {
+            throw new Error(responseText || 'تعذر إنشاء الملعب');
+        }
+
+        const newSlug = responseText.substring('Success:'.length).trim();
+        if (!newSlug) throw new Error('لم يُرجع الخادم معرف الملعب الجديد');
+
+        const ownerPassHash = getAdminPassHash();
+        sessionStorage.setItem('adminPassHash_' + newSlug, ownerPassHash);
+        await loadOwnerStadiums();
+        await switchAdminStadium(newSlug);
+        alert('تم إنشاء الملعب وفتحه بنجاح.');
+    } catch (error) {
+        console.error('Create stadium failed:', error);
+        alert('تعذر إنشاء الملعب: ' + (error.message || 'خطأ غير معروف'));
+    } finally {
+        if (button) {
+            button.disabled = false;
+            button.innerText = originalText;
+        }
+    }
+}
 
 function showCourtsManagement() {
     const content = document.getElementById('adminSectionContent');
