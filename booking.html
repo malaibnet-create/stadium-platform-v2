@@ -26,12 +26,12 @@
     
     <!-- إضافة إصدار (Version) للملفات لضمان تحديث الكاش عند المستخدمين -->
     <meta name="referrer" content="strict-origin-when-cross-origin">
-    <link rel="stylesheet" href="style.css?v=4-security">
+    <link rel="stylesheet" href="style.css?v=3-security">
     
     <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
     
     <!-- تأكد من أن script.js يحتوي على دالة setupDynamicManifest التي برمجناها -->
-    <script src="script.js?v=4-security" defer></script>
+    <script src="script.js?v=3-security" defer></script>
     
 </head>
 
@@ -504,6 +504,8 @@
             <span onclick="closeAdminPanel()" class="admin-close-btn">&times;</span>
         </div>
 
+        <div id="ownerStadiumSwitcher" class="owner-stadium-switcher" aria-live="polite"></div>
+
         <div class="admin-nav-bar">
             <div class="admin-nav-item" onclick="switchAdminTab('settings', event)">
                 <div class="nav-icon">⚙️</div>
@@ -543,6 +545,37 @@
 </div>
 
 <style>
+.owner-stadium-switcher {
+  margin: 16px 24px 0;
+  padding: 14px;
+  border: 1px solid #dbe5f0;
+  border-radius: 14px;
+  background: #f8fafc;
+  direction: rtl;
+}
+.owner-stadium-switcher-title { margin-bottom: 10px; color: #1e3a8a; font-weight: 700; }
+.owner-stadium-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 10px; }
+.owner-stadium-option {
+  display: flex; min-height: 62px; flex-direction: column; justify-content: center; gap: 4px;
+  padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 10px;
+  background: #fff; color: #0f172a; cursor: pointer; text-align: right;
+  transition: border-color .2s, box-shadow .2s, background .2s;
+}
+.owner-stadium-option:hover, .owner-stadium-option.active { border-color: #2563eb; background: #eff6ff; box-shadow: 0 3px 10px rgba(37,99,235,.12); }
+.owner-stadium-option small, .owner-stadium-loading, .owner-stadium-error { color: #64748b; font-size: .8rem; }
+.owner-stadium-option.active small { color: #166534; }
+.owner-stadium-add { border-style: dashed; color: #1d4ed8; }
+.owner-add-stadium-form { margin: 24px; padding: 20px; border: 1px solid #dbe5f0; border-radius: 14px; background: #fff; }
+.owner-form-heading h3 { margin: 0 0 6px; color: #1e3a8a; }
+.owner-form-heading p { margin: 0 0 18px; color: #64748b; }
+.owner-form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.owner-form-grid label { display: flex; flex-direction: column; gap: 6px; color: #334155; font-weight: 600; }
+.owner-form-grid input { width: 100%; box-sizing: border-box; padding: 10px; border: 1px solid #cbd5e1; border-radius: 8px; font: inherit; }
+.owner-form-actions { display: flex; gap: 10px; margin-top: 18px; }
+.owner-form-actions button { padding: 10px 18px; border: 0; border-radius: 8px; cursor: pointer; font: inherit; }
+.owner-form-actions .btn-primary { background: #2563eb; color: #fff; }
+.owner-form-actions .btn-secondary { background: #e2e8f0; color: #334155; }
+@media (max-width: 700px) { .owner-stadium-switcher, .owner-add-stadium-form { margin-left: 12px; margin-right: 12px; } .owner-form-grid { grid-template-columns: 1fr; } }
 
         /* تأثير الاهتزاز */
 @keyframes shakeMe {
