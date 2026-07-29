@@ -1086,7 +1086,8 @@ async function saveAdminSettings(event) {
 
     try {
         // 1. جلب كلمة المرور وتشفيرها
-        const rawPass = document.getElementById('upd_pass')?.value || "";
+        // يجب أن يطابق الكود الذي يدخله المستخدم لاحقًا في تسجيل الدخول.
+        const rawPass = document.getElementById('upd_pass')?.value.trim() || "";
         let finalPass = "";
         
         if (rawPass) {
@@ -1124,6 +1125,8 @@ async function saveAdminSettings(event) {
         Object.keys(dataToSave).forEach(key => {
             finalUrl.searchParams.set(key, dataToSave[key]);
         });
+        // منع Cloudflare/المتصفح من إعادة استخدام استجابة قديمة لطلب تغيير الكود.
+        finalUrl.searchParams.set('_t', Date.now());
 
         // 4. إرسال الطلب
         const response = await fetch(finalUrl.toString());
@@ -1131,7 +1134,13 @@ async function saveAdminSettings(event) {
 
         if (result.trim() === "Success") {
             if (finalPass) {
-                sessionStorage.setItem('adminPassHash_' + stadiumId, finalPass);
+                const ownedSlugs = new Set([
+                    stadiumId,
+                    ...(Array.isArray(ownerStadiums) ? ownerStadiums.map(item => item.slug) : [])
+                ]);
+                ownedSlugs.forEach(slug => {
+                    if (slug) sessionStorage.setItem('adminPassHash_' + slug, finalPass);
+                });
             }
             alert("✅ تم تحديث بيانات الملعب بنجاح!");
             location.reload(); 
@@ -1586,7 +1595,9 @@ async function handleAdminAuth(btn) {
         const hashedPassword = await hashString(password);
         
         // نرسل hashedPassword بدلاً من password
-        const response = await fetch(`${settingsScriptURL}?action=adminAuth&id=${encodeURIComponent(stadiumId)}&pass=${encodeURIComponent(hashedPassword)}`);
+        const response = await fetch(`${settingsScriptURL}?action=adminAuth&id=${encodeURIComponent(stadiumId)}&pass=${encodeURIComponent(hashedPassword)}&_t=${Date.now()}`, {
+            cache: 'no-store'
+        });
         const result = await response.text();
 
         console.log("استجابة السيرفر:", result);
@@ -1661,10 +1672,20 @@ async function handleForgotPassword() {
     alert("جاري إرسال الكود إلى بريدك... يرجى الانتظار");
 
     try {
-        const response = await fetch(`${settingsScriptURL}?action=forgotPassword&id=${encodeURIComponent(stadiumId)}&email=${encodeURIComponent(email)}`);
+        const response = await fetch(`${settingsScriptURL}?action=forgotPassword&id=${encodeURIComponent(stadiumId)}&email=${encodeURIComponent(email)}&_t=${Date.now()}`, {
+            cache: 'no-store'
+        });
         const result = await response.text();
 
         if (result.trim() === "Sent") {
+            // منع استخدام جلسة قديمة بعد طلب إعادة التعيين.
+            const resetSlugs = new Set([
+                stadiumId,
+                ...(Array.isArray(ownerStadiums) ? ownerStadiums.map(item => item.slug) : [])
+            ]);
+            resetSlugs.forEach(slug => {
+                if (slug) sessionStorage.removeItem('adminPassHash_' + slug);
+            });
             alert("✅ تم إرسال كود الدخول إلى بريدك الإلكتروني بنجاح.");
         } else if (result.trim() === "EmailMismatch") {
             alert("❌ هذا البريد غير مطابق للبريد المسجل لهذا الملعب.");
@@ -1795,6 +1816,58 @@ function shakeUpgradeButton() {
     } else {
         console.error("لم يتم العثور على زر mainUpgradeBtn");
     }
+}
+
+// نفس آلية تحديد الموقع الموجودة في dashboard.html، وتعمل أيضًا مع نموذج الإضافة الديناميكي.
+function detectCoordinates() {
+    const latInput = document.getElementById('add_stadium_lat') || document.getElementById('lat');
+    const lngInput = document.getElementById('add_stadium_lng') || document.getElementById('lng');
+    const successMessage = document.getElementById('add_stadium_coordSuccess') || document.getElementById('coordSuccess');
+    const button = document.querySelector('[data-detect-coordinates]') ||
+        document.querySelector('button[onclick="detectCoordinates()"]');
+
+    if (!navigator.geolocation) {
+        alert('متصفحك لا يدعم تحديد الموقع.');
+        return;
+    }
+
+    if (!latInput || !lngInput) {
+        alert('تعذر العثور على حقول الإحداثيات. افتح نموذج إضافة الملعب من جديد.');
+        return;
+    }
+
+    const originalText = button?.innerHTML || '📍';
+    if (button) {
+        button.disabled = true;
+        button.innerHTML = '⏳';
+    }
+
+    navigator.geolocation.getCurrentPosition(
+        position => {
+            latInput.value = position.coords.latitude;
+            lngInput.value = position.coords.longitude;
+            if (successMessage) successMessage.style.display = 'block';
+            if (button) {
+                button.disabled = false;
+                button.style.background = '#059669';
+                button.innerHTML = '✅';
+            }
+            alert('تم تحديد إحداثيات ملعبك بدقة عالية.');
+        },
+        error => {
+            if (button) {
+                button.disabled = false;
+                button.style.background = '#10b981';
+                button.innerHTML = originalText;
+            }
+            let message = 'فشل الحصول على الموقع.';
+            if (error.code === 1) message = 'يرجى السماح للمتصفح بالوصول إلى موقعك.';
+            if (error.code === 2) message = 'تعذر تحديد الموقع الحالي. حاول في مكان مفتوح.';
+            if (error.code === 3) message = 'استغرق تحديد الموقع وقتًا طويلًا. حاول مرة أخرى.';
+            alert(message);
+        },
+        { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+    );
 }
 
 // تعديل دوال الأزرار
@@ -2395,11 +2468,11 @@ async function openAddStadiumRegistration() {
                 <label>موقع الملعب (رابط الخريطة)</label>
                 <div class="owner-location-row">
                     <input id="add_stadium_loc" maxlength="300" placeholder="ضع رابط Google Maps هنا">
-                    <button type="button" onclick="detectCoordinates()" title="حدد إحداثيات موقعك الحالي">📍</button>
+                    <button type="button" data-detect-coordinates onclick="detectCoordinates()" title="حدد إحداثيات موقعك الحالي">📍</button>
                 </div>
-                <input type="hidden" id="lat">
-                <input type="hidden" id="lng">
-                <div id="coordSuccess" class="owner-coord-success" style="display:none;">✅ تم التقاط إحداثيات الملعب بنجاح.</div>
+                <input type="hidden" id="add_stadium_lat">
+                <input type="hidden" id="add_stadium_lng">
+                <div id="add_stadium_coordSuccess" class="owner-coord-success" style="display:none;">✅ تم التقاط إحداثيات الملعب بنجاح.</div>
                 <small>ضع رابط الخريطة أولاً، ثم اضغط 📍 وأنت داخل الملعب لتفعيل خاصية الملاعب القريبة.</small>
             </div>
             <div class="owner-form-section">
@@ -2407,19 +2480,6 @@ async function openAddStadiumRegistration() {
                 <div class="owner-form-grid owner-social-grid">
                     <input id="add_stadium_fb" type="url" placeholder="رابط صفحة فيسبوك">
                     <input id="add_stadium_insta" type="url" placeholder="رابط حساب إنستغرام">
-                </div>
-            </div>
-            <div class="owner-form-section owner-extra-fields">
-                <label>ساعات العمل</label>
-                <div class="owner-form-grid owner-price-grid">
-                    <label>ساعة الفتح<input id="add_stadium_open" type="number" min="0" max="23" value="8"></label>
-                    <label>ساعة الإغلاق<input id="add_stadium_close" type="number" min="0" max="23" value="23"></label>
-                </div>
-                <label>رابط الشعار<input id="add_stadium_logo" type="url" placeholder="رابط مباشر للصورة"></label>
-                <div class="owner-form-grid owner-social-grid">
-                    <input id="add_stadium_img1" type="url" placeholder="رابط الصورة 1">
-                    <input id="add_stadium_img2" type="url" placeholder="رابط الصورة 2">
-                    <input id="add_stadium_img3" type="url" placeholder="رابط الصورة 3">
                 </div>
             </div>
             <div class="owner-form-actions">
@@ -2452,16 +2512,10 @@ async function createStadiumFromDashboard(button) {
             loc: field('add_stadium_loc'),
             pDay: field('add_stadium_pday'),
             pNight: field('add_stadium_pnight'),
-            lat: field('lat'),
-            lng: field('lng'),
-            openHour: field('add_stadium_open') || '8',
-            closeHour: field('add_stadium_close') || '23',
+            lat: field('add_stadium_lat'),
+            lng: field('add_stadium_lng'),
             fb: field('add_stadium_fb'),
-            insta: field('add_stadium_insta'),
-            logo: field('add_stadium_logo'),
-            img1: field('add_stadium_img1'),
-            img2: field('add_stadium_img2'),
-            img3: field('add_stadium_img3')
+            insta: field('add_stadium_insta')
         });
 
         const responseText = String(result || '');
