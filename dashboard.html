@@ -180,15 +180,15 @@ if (slug && !/^[a-zA-Z0-9_-]{2,100}$/.test(slug)) {
             if (!confirmNoLoc) return;
         }
 
-        btn.innerText = "جاري الحفظ والتحميل...";
-        btn.disabled = true;
-
         // بناء الرابط الخاص بالأمر updateSettings مع إضافة lat و lng
         const adminPass = sessionStorage.getItem('adminPassHash_' + slug) || '';
         if (!adminPass) {
             alert('يرجى تسجيل الدخول من لوحة الإدارة أولًا.');
             return;
         }
+
+        btn.innerText = "جاري الحفظ والتحميل...";
+        btn.disabled = true;
 
         const finalUpdateURL = `${scriptURL}?action=updateSettings` + 
                              `&slug=${encodeURIComponent(slug)}` +
@@ -202,14 +202,15 @@ if (slug && !/^[a-zA-Z0-9_-]{2,100}$/.test(slug)) {
                              `&fb=${encodeURIComponent(fb)}` +
                              `&insta=${encodeURIComponent(insta)}` +
                              `&lat=${encodeURIComponent(lat)}` + 
-                             `&lng=${encodeURIComponent(lng)}`;
+                             `&lng=${encodeURIComponent(lng)}` +
+                             `&_t=${Date.now()}`;
 
         try {
             const response = await fetch(finalUpdateURL);
             const result = await response.text();
 
-            if (result === "Update Success") {
-                alert("✅ تم حفظ الإعدادات بنجاح! سيتم توجيهك الآن لمشاهدة صفحة الحجز الخاصة بملعبك.");
+            if (result.trim() === "Update Success") {
+                alert("✅ تمت العملية بنجاح! تهانينا على إنشاء واجهة ملعبك، سيتم فتحها الآن.");
                 
                 // تفعيل التوجيه التلقائي لصفحة الحجز مع إرسال المعرف (slug)
                 window.location.href = "booking.html?id=" + encodeURIComponent(slug);
