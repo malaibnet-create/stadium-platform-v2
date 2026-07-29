@@ -128,17 +128,12 @@ function renderOwnerStadiumSwitcher() {
                     <small>${stadium.slug === stadiumId ? 'مفتوح الآن' : 'فتح الإعدادات'}</small>
                 </button>
             `).join('')}
-            <button type="button" class="owner-stadium-option owner-stadium-add" data-owner-add-stadium="true">
-                <span class="owner-stadium-option-name">+ إضافة ملعب جديد</span>
-                <small>باستخدام الحساب نفسه</small>
-            </button>
         </div>
     `;
 
     container.querySelectorAll('[data-owner-stadium]').forEach(button => {
         button.addEventListener('click', () => switchAdminStadium(button.dataset.ownerStadium));
     });
-    container.querySelector('[data-owner-add-stadium]')?.addEventListener('click', openAddStadiumRegistration);
 }
 
 async function loadOwnerStadiums() {
@@ -160,6 +155,15 @@ async function switchAdminStadium(newSlug) {
 
     const ownerPassHash = getAdminPassHash();
     stadiumId = newSlug;
+    // لا نسمح ببقاء إعدادات الملعب السابق ظاهرة أثناء تحميل الملعب الجديد.
+    currentAccountStatus = "Free";
+    const section = document.getElementById('adminSectionContent');
+    if (section) section.innerHTML = '';
+    const statusDisplay = document.getElementById('accountStatusDisplay');
+    if (statusDisplay) statusDisplay.innerHTML = '';
+    const upgradeOptions = document.getElementById('upgradeOptions');
+    if (upgradeOptions) upgradeOptions.style.display = 'none';
+
     if (ownerPassHash) sessionStorage.setItem('adminPassHash_' + stadiumId, ownerPassHash);
     localStorage.setItem('lastVisitedStadiumId', stadiumId);
 
@@ -168,6 +172,8 @@ async function switchAdminStadium(newSlug) {
     window.history.replaceState({}, '', url.toString());
 
     renderOwnerStadiumSwitcher();
+    document.querySelectorAll('.admin-nav-item').forEach(item => item.classList.remove('active-tab'));
+    document.querySelector('.admin-nav-item[onclick*="settings"]')?.classList.add('active-tab');
     try {
         await loadStadiumDynamicDetails();
         await checkSubscriptionStatus();
@@ -1794,6 +1800,8 @@ function shakeUpgradeButton() {
 // تعديل دوال الأزرار
 function showSettings() {
     if (currentAccountStatus !== "Premium") {
+        const content = document.getElementById('adminSectionContent');
+        if (content) content.innerHTML = '';
         shakeUpgradeButton(); // هز زر الاشتراك بدلاً من فتح الإعدادات
         return;
     }
@@ -2301,8 +2309,12 @@ function switchAdminTab(tab, evt) {
     const clickedItem = evt?.currentTarget || window.event?.currentTarget;
     if (clickedItem) clickedItem.classList.add('active-tab');
     if (tab !== 'addStadium' && currentAccountStatus !== 'Premium') {
-    shakeUpgradeButton();
-}
+        shakeUpgradeButton();
+        document.querySelector('.admin-nav-item[onclick*="settings"]')?.classList.add('active-tab');
+        const lockedContent = document.getElementById('adminSectionContent');
+        if (lockedContent) lockedContent.innerHTML = '';
+        return;
+    }
 
     const content = document.getElementById('adminSectionContent');
     if (!content) {
@@ -2357,29 +2369,61 @@ async function openAddStadiumRegistration() {
     if (!content) return;
 
     content.innerHTML = `
-        <section class="owner-add-stadium-form" dir="rtl">
+        <section class="owner-add-stadium-form owner-dashboard-form" dir="rtl">
             <div class="owner-form-heading">
                 <h3>إضافة ملعب جديد</h3>
-                <p>سيُضاف الملعب إلى حسابك ويمكنك فتح إعداداته من القائمة نفسها.</p>
+                <p>أدخل معلومات الملعب كما تظهر في صفحة إعدادات الداشبورد.</p>
             </div>
-            <div class="owner-form-grid">
-                <label>اسم الملعب *<input id="add_stadium_name" maxlength="120" required></label>
-                <label>اسم المؤسسة<input id="add_stadium_org" maxlength="120"></label>
-                <label>هاتف الحجز<input id="add_stadium_phone" maxlength="30"></label>
-                <label>الموقع<input id="add_stadium_loc" maxlength="300"></label>
-                <label>سعر النهار<input id="add_stadium_pday" type="number" min="0" step="0.01"></label>
-                <label>سعر الليل<input id="add_stadium_pnight" type="number" min="0" step="0.01"></label>
-                <label>ساعة الفتح<input id="add_stadium_open" type="number" min="0" max="23" value="8"></label>
-                <label>ساعة الإغلاق<input id="add_stadium_close" type="number" min="0" max="23" value="23"></label>
-                <label>رابط فيسبوك<input id="add_stadium_fb" type="url"></label>
-                <label>رابط إنستغرام<input id="add_stadium_insta" type="url"></label>
-                <label>رابط الشعار<input id="add_stadium_logo" type="url"></label>
-                <label>رابط الصورة 1<input id="add_stadium_img1" type="url"></label>
-                <label>رابط الصورة 2<input id="add_stadium_img2" type="url"></label>
-                <label>رابط الصورة 3<input id="add_stadium_img3" type="url"></label>
+
+            <div class="owner-form-section">
+                <label>اسم الملعب التجاري *<input id="add_stadium_name" maxlength="120" required placeholder="مثلاً: ملعب نجوم بوعسل"></label>
+            </div>
+            <div class="owner-form-section">
+                <label>الجمعية أو الجهة المشرفة<input id="add_stadium_org" maxlength="120" placeholder="اسم الجمعية أو الجهة المسؤولة"></label>
+            </div>
+            <div class="owner-form-section">
+                <label>ثمن الحجز بالساعة</label>
+                <div class="owner-form-grid owner-price-grid">
+                    <input id="add_stadium_pday" type="number" min="0" step="0.01" placeholder="نهاراً (درهم)">
+                    <input id="add_stadium_pnight" type="number" min="0" step="0.01" placeholder="ليلاً - مع الأضواء (درهم)">
+                </div>
+            </div>
+            <div class="owner-form-section">
+                <label>رقم هاتف المشرف أو المكلف بالملعب<input id="add_stadium_phone" type="tel" maxlength="30" placeholder="06xxxxxxxx"></label>
+            </div>
+            <div class="owner-form-section">
+                <label>موقع الملعب (رابط الخريطة)</label>
+                <div class="owner-location-row">
+                    <input id="add_stadium_loc" maxlength="300" placeholder="ضع رابط Google Maps هنا">
+                    <button type="button" onclick="detectCoordinates()" title="حدد إحداثيات موقعك الحالي">📍</button>
+                </div>
+                <input type="hidden" id="lat">
+                <input type="hidden" id="lng">
+                <div id="coordSuccess" class="owner-coord-success" style="display:none;">✅ تم التقاط إحداثيات الملعب بنجاح.</div>
+                <small>ضع رابط الخريطة أولاً، ثم اضغط 📍 وأنت داخل الملعب لتفعيل خاصية الملاعب القريبة.</small>
+            </div>
+            <div class="owner-form-section">
+                <label>روابط التواصل الاجتماعي</label>
+                <div class="owner-form-grid owner-social-grid">
+                    <input id="add_stadium_fb" type="url" placeholder="رابط صفحة فيسبوك">
+                    <input id="add_stadium_insta" type="url" placeholder="رابط حساب إنستغرام">
+                </div>
+            </div>
+            <div class="owner-form-section owner-extra-fields">
+                <label>ساعات العمل</label>
+                <div class="owner-form-grid owner-price-grid">
+                    <label>ساعة الفتح<input id="add_stadium_open" type="number" min="0" max="23" value="8"></label>
+                    <label>ساعة الإغلاق<input id="add_stadium_close" type="number" min="0" max="23" value="23"></label>
+                </div>
+                <label>رابط الشعار<input id="add_stadium_logo" type="url" placeholder="رابط مباشر للصورة"></label>
+                <div class="owner-form-grid owner-social-grid">
+                    <input id="add_stadium_img1" type="url" placeholder="رابط الصورة 1">
+                    <input id="add_stadium_img2" type="url" placeholder="رابط الصورة 2">
+                    <input id="add_stadium_img3" type="url" placeholder="رابط الصورة 3">
+                </div>
             </div>
             <div class="owner-form-actions">
-                <button type="button" class="btn-primary" onclick="createStadiumFromDashboard(this)">إنشاء الملعب</button>
+                <button type="button" class="btn-primary" onclick="createStadiumFromDashboard(this)">إنشاء ملعب جديد</button>
                 <button type="button" class="btn-secondary" onclick="showSettings()">إلغاء</button>
             </div>
         </section>
@@ -2408,6 +2452,8 @@ async function createStadiumFromDashboard(button) {
             loc: field('add_stadium_loc'),
             pDay: field('add_stadium_pday'),
             pNight: field('add_stadium_pnight'),
+            lat: field('lat'),
+            lng: field('lng'),
             openHour: field('add_stadium_open') || '8',
             closeHour: field('add_stadium_close') || '23',
             fb: field('add_stadium_fb'),
@@ -2428,8 +2474,8 @@ async function createStadiumFromDashboard(button) {
 
         const ownerPassHash = getAdminPassHash();
         sessionStorage.setItem('adminPassHash_' + newSlug, ownerPassHash);
-        await loadOwnerStadiums();
         await switchAdminStadium(newSlug);
+        await loadOwnerStadiums();
         alert('تم إنشاء الملعب وفتحه بنجاح.');
     } catch (error) {
         console.error('Create stadium failed:', error);
