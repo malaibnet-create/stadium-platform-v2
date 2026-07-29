@@ -552,11 +552,14 @@
   border-radius: 14px;
   background: #f8fafc;
   direction: rtl;
+  max-height: 150px;
+  overflow-y: auto;
+  flex: 0 0 auto;
 }
 .owner-stadium-switcher-title { margin-bottom: 10px; color: #1e3a8a; font-weight: 700; }
 .owner-stadium-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 10px; }
 .owner-stadium-option {
-  display: flex; min-height: 62px; flex-direction: column; justify-content: center; gap: 4px;
+  display: flex; min-height: 52px; flex-direction: column; justify-content: center; gap: 4px;
   padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 10px;
   background: #fff; color: #0f172a; cursor: pointer; text-align: right;
   transition: border-color .2s, box-shadow .2s, background .2s;
@@ -564,8 +567,28 @@
 .owner-stadium-option:hover, .owner-stadium-option.active { border-color: #2563eb; background: #eff6ff; box-shadow: 0 3px 10px rgba(37,99,235,.12); }
 .owner-stadium-option small, .owner-stadium-loading, .owner-stadium-error { color: #64748b; font-size: .8rem; }
 .owner-stadium-option.active small { color: #166534; }
-.owner-stadium-add { border-style: dashed; color: #1d4ed8; }
+.admin-nav-bar {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  background: #ffffff;
+}
 .owner-add-stadium-form { margin: 24px; padding: 20px; border: 1px solid #dbe5f0; border-radius: 14px; background: #fff; }
+.owner-dashboard-form { text-align: right; }
+.owner-form-section { margin-bottom: 18px; text-align: right; }
+.owner-form-section > label,
+.owner-form-section label { display: block; margin-bottom: 7px; color: #334155; font-weight: 700; }
+.owner-form-section input { width: 100%; box-sizing: border-box; padding: 11px 12px; border: 1px solid #cbd5e1; border-radius: 8px; font: inherit; background: #fff; }
+.owner-form-section small { display: block; margin-top: 7px; color: #64748b; font-size: .78rem; line-height: 1.6; }
+.owner-price-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.owner-social-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.owner-location-row { display: flex; gap: 6px; }
+.owner-location-row input { flex: 1; }
+.owner-location-row button { min-width: 52px; border: 0; border-radius: 8px; background: #10b981; color: #fff; cursor: pointer; font-size: 1.15rem; }
+.owner-coord-success { margin-top: 8px; padding: 8px; border: 1px solid #a7f3d0; border-radius: 6px; background: #ecfdf5; color: #065f46; font-size: .8rem; }
+.owner-extra-fields { padding: 14px; border: 1px solid #e2e8f0; border-radius: 10px; background: #f8fafc; }
+.owner-extra-fields > label { margin-top: 10px; }
+.owner-extra-fields > label:first-child { margin-top: 0; }
 .owner-form-heading h3 { margin: 0 0 6px; color: #1e3a8a; }
 .owner-form-heading p { margin: 0 0 18px; color: #64748b; }
 .owner-form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
@@ -575,7 +598,7 @@
 .owner-form-actions button { padding: 10px 18px; border: 0; border-radius: 8px; cursor: pointer; font: inherit; }
 .owner-form-actions .btn-primary { background: #2563eb; color: #fff; }
 .owner-form-actions .btn-secondary { background: #e2e8f0; color: #334155; }
-@media (max-width: 700px) { .owner-stadium-switcher, .owner-add-stadium-form { margin-left: 12px; margin-right: 12px; } .owner-form-grid { grid-template-columns: 1fr; } }
+@media (max-width: 700px) { .owner-stadium-switcher, .owner-add-stadium-form { margin-left: 12px; margin-right: 12px; } .owner-form-grid, .owner-price-grid, .owner-social-grid { grid-template-columns: 1fr; } }
 
         /* تأثير الاهتزاز */
 @keyframes shakeMe {
@@ -1165,7 +1188,7 @@ body.modal-open {
 
 .admin-nav-bar {
     display: grid !important;
-    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+    grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
     gap: 4px !important;
     overflow-x: hidden !important;
     padding: 10px 6px !important;
