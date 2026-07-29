@@ -1,4 +1,4 @@
-const cacheName = 'malaeb-net-v3-security';
+const cacheName = 'malaeb-net-v4-security';
 const assets = [
   './',
   './index.html',
