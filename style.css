@@ -1669,6 +1669,15 @@ body.modal-open {
     font-family: 'Cairo', sans-serif;
 }
 
+/* صفحة الملعب المحذوف للزائر: لا تسمح بإظهار أدوات الحجز أو زر التواصل */
+body.missing-stadium-page .action-buttons,
+body.missing-stadium-page .booking-table-scroll,
+body.missing-stadium-page .week-navigation,
+body.missing-stadium-page #relatedStadiumsBar,
+body.missing-stadium-page #supervisorFloatBtn {
+    display: none !important;
+}
+
 .missing-stadium-card {
     background: rgba(255, 255, 255, 0.96);
     border: 1px solid rgba(226, 232, 240, 0.9);
