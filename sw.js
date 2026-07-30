@@ -1,4 +1,4 @@
-aconst cacheName = 'malaeb-net-v5-reminders';
+aconst cacheName = 'malaeb-net-v6-reminders';
 const assets = [
   './',
   './index.html',
