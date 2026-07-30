@@ -1947,22 +1947,57 @@ document.getElementById('payMethod').addEventListener('change', function() {
     }
 });
 
-function getUpgradeStadiums() {
+function isPremiumStadium(stadium) {
+    return String(stadium?.accountType || '').trim().toLowerCase() === 'premium';
+}
+
+async function getUpgradeStadiums() {
     const related = Array.isArray(window.stadiumData?.related_stadiums)
         ? window.stadiumData.related_stadiums
         : [];
 
-    return related.length ? related : [{
+    const candidates = related.length ? related : [{
         slug: stadiumId,
-        stadium_name: window.stadiumData?.stadium_name || document.title.split('-')[0].trim()
+        stadium_name: window.stadiumData?.stadium_name || document.title.split('-')[0].trim(),
+        accountType: window.stadiumData?.accountType || 'Free'
     }];
+
+    // related_stadiums في بعض إصدارات الـ API تحتوي الاسم والمعرّف فقط،
+    // لذلك نجلب حالة الاشتراك لكل ملعب قبل عرض خيارات الدفع.
+    const enriched = await Promise.all(candidates.map(async stadium => {
+        if (String(stadium.slug) === String(stadiumId) && window.stadiumData) {
+            return { ...stadium, accountType: window.stadiumData.accountType || stadium.accountType || 'Free' };
+        }
+
+        try {
+            const response = await fetch(
+                `${settingsScriptURL}?action=getStadiumDetails&id=${encodeURIComponent(stadium.slug)}&_t=${Date.now()}`
+            );
+            const details = await response.json();
+            return { ...stadium, accountType: details?.accountType || stadium.accountType || 'Free' };
+        } catch (error) {
+            console.warn('تعذر قراءة حالة اشتراك الملعب:', stadium.slug, error);
+            return stadium;
+        }
+    }));
+
+    return enriched.filter(stadium => !isPremiumStadium(stadium));
 }
 
-function renderUpgradeStadiums() {
+async function renderUpgradeStadiums() {
     const list = document.getElementById('upgradeStadiumList');
     if (!list) return;
 
-    list.innerHTML = getUpgradeStadiums().map((stadium, index) => `
+    list.innerHTML = '<p class="upgrade-helper-text">جاري التحقق من حالة الاشتراك...</p>';
+    const availableStadiums = await getUpgradeStadiums();
+
+    if (!availableStadiums.length) {
+        list.innerHTML = '<p class="upgrade-helper-text">جميع ملاعب حسابك مشتركة بالفعل في Premium.</p>';
+        updateUpgradeTotal();
+        return;
+    }
+
+    list.innerHTML = availableStadiums.map((stadium, index) => `
         <label class="upgrade-stadium-option">
             <input
                 type="checkbox"
@@ -2603,6 +2638,23 @@ async function confirmDeleteAccount() {
     try {
         const hashedPassword = await hashString(pass);
 
+        // نحفظ أول ملعب متبقٍ في الحساب قبل حذف الملعب الحالي.
+        // ترتيب getOwnerStadiums هو ترتيب الصفوف، وبالتالي يبقى الملعب الأساسي
+        // (الأول إنشاءً) هو الوجهة بعد حذف ملعب آخر.
+        let fallbackStadiumId = '';
+        try {
+            const ownerResponse = await fetch(
+                `${settingsScriptURL}?action=getOwnerStadiums&id=${encodeURIComponent(stadiumId)}&pass=${encodeURIComponent(hashedPassword)}&_t=${Date.now()}`
+            );
+            const ownerResult = await ownerResponse.json();
+            const remaining = Array.isArray(ownerResult?.stadiums)
+                ? ownerResult.stadiums.filter(item => String(item.slug) !== String(stadiumId))
+                : [];
+            fallbackStadiumId = remaining[0]?.slug || '';
+        } catch (ownerError) {
+            console.warn('تعذر تحديد الملعب البديل قبل الحذف:', ownerError);
+        }
+
         const url = new URL(settingsScriptURL);
         url.searchParams.set("action", "deleteStadiumAccount");
         url.searchParams.set("id", stadiumId);
@@ -2613,7 +2665,14 @@ async function confirmDeleteAccount() {
 
         if (result.trim() === "DeleteSuccess") {
             alert("تم حذف الحساب بنجاح.");
-            window.location.href = "index.html";
+            sessionStorage.removeItem('adminPassHash_' + stadiumId);
+            if (fallbackStadiumId) {
+                localStorage.setItem('lastVisitedStadiumId', fallbackStadiumId);
+                window.location.href = "booking.html?id=" + encodeURIComponent(fallbackStadiumId);
+            } else {
+                localStorage.removeItem('lastVisitedStadiumId');
+                window.location.href = "register.html";
+            }
         } else if (result.trim() === "Unauthorized") {
             alert("الرقم السري غير صحيح.");
         } else {
@@ -2629,11 +2688,15 @@ async function confirmDeleteAccount() {
 
 function showMissingStadiumLanding() {
     window.stadiumMissing = true;
+    document.body.classList.add('missing-stadium-page');
 
     const tableWrap = document.querySelector(".booking-table-scroll");
     const weekNav = document.querySelector(".week-navigation");
     const actionButtons = document.querySelector(".action-buttons");
     const footer = document.querySelector(".site-footer");
+    const supervisorButton = document.getElementById('supervisorFloatBtn');
+    const relatedBar = document.getElementById('relatedStadiumsBar');
+    const mainContainer = document.querySelector('.container');
     const title = document.getElementById("displayStadiumName");
     const org = document.getElementById("displayOrg");
     const location = document.getElementById("displayLocation");
@@ -2642,6 +2705,12 @@ function showMissingStadiumLanding() {
     if (weekNav) weekNav.style.display = "none";
     if (actionButtons) actionButtons.style.display = "none";
     if (footer) footer.style.display = "none";
+    if (supervisorButton) supervisorButton.style.display = "none";
+    if (relatedBar) relatedBar.style.display = "none";
+    if (mainContainer) {
+        mainContainer.style.opacity = '1';
+        mainContainer.style.transition = 'none';
+    }
 
     if (title) title.innerText = "هذا الملعب غير متوفر حاليًا";
     if (org) org.innerText = "";
