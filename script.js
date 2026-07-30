@@ -740,6 +740,13 @@ async function submitFinalBooking() {
         return alert("يرجى إدخال رقم هاتف صحيح (أرقام فقط بدون حروف أو رموز).");
     }
 
+    let notificationsAllowed = false;
+    try {
+        notificationsAllowed = await requestNotificationPermission_();
+    } catch (error) {
+        console.warn("Could not enable notifications:", error);
+    }
+
     // إظهار رسالة انتظار
     const btn = document.getElementById('finalConfirmBtn');
     const originalText = btn.innerText;
@@ -784,7 +791,6 @@ async function submitFinalBooking() {
                 slot.element.style.pointerEvents = "none";
                 slot.element.onclick = null;
 
-                scheduleNotification(slot.date, slot.hour);
             }
         });
 
@@ -799,6 +805,12 @@ async function submitFinalBooking() {
 
         const currentStadiumName = document.title.split('-')[0] || "ملعب بوعسل";
         const stadiumUrl = window.location.href;
+
+        if (notificationsAllowed) {
+            selectedSlots.forEach(slot => {
+                scheduleNotification(slot.date, slot.hour, currentStadiumName);
+            });
+        }
 
         // استدعاء دالة التذكرة (التي تتولى عرض التذكرة وخيار الواتساب)
         showBookingTicket(currentStadiumName, firstSlot.date, timeRange, stadiumUrl);
@@ -1002,51 +1014,162 @@ setInterval(() => {
     }
 }, 15000);
 
-async function scheduleNotification(bookingDate, bookingHour) {
-    if (!("Notification" in window)) {
-        console.log("هذا المتصفح لا يدعم التنبيهات.");
-        return;
+const LOCAL_REMINDERS_KEY = "malaeb-local-reminders-v1";
+let localReminderTimerId = null;
+
+async function requestNotificationPermission_() {
+    if (!("Notification" in window) || !("serviceWorker" in navigator)) {
+        return false;
+    }
+
+    if (Notification.permission === "granted") {
+        await navigator.serviceWorker.register("./sw.js");
+        return true;
+    }
+
+    if (Notification.permission !== "default") {
+        return false;
     }
 
     const permission = await Notification.requestPermission();
-    if (permission !== "granted") return;
+    if (permission !== "granted") {
+        return false;
+    }
 
-    const [day, month, year] = bookingDate.split('/');
-    const [hour] = bookingHour.split(':');
-    const playTime = new Date(year, month - 1, day, parseInt(hour), 0, 0);
-    const now = new Date();
+    await navigator.serviceWorker.register("./sw.js");
+    return true;
+}
 
-    navigator.serviceWorker.ready.then(reg => {
-        reg.showNotification("✅ تم الحجز بنجاح", {
-            body: `موعدك في يوم ${bookingDate} الساعة ${bookingHour}. ننتظرك!`,
-            icon: "logo_no_background.png",
-            badge: "logo_no_background.png",
-            vibrate: [100, 50, 100],
-            tag: 'booking-confirmed'
-        });
+function parseBookingDateTime_(bookingDate, bookingHour) {
+    const dateParts = String(bookingDate).split("/").map(Number);
+    const timeParts = String(bookingHour).split(":").map(Number);
+
+    if (dateParts.length !== 3 || timeParts.length !== 2) {
+        return null;
+    }
+
+    const [day, month, year] = dateParts;
+    const [hour, minute] = timeParts;
+    const value = new Date(year, month - 1, day, hour, minute, 0, 0);
+
+    return value.getFullYear() === year &&
+        value.getMonth() === month - 1 &&
+        value.getDate() === day &&
+        value.getHours() === hour &&
+        value.getMinutes() === minute
+        ? value
+        : null;
+}
+
+function loadLocalReminders_() {
+    try {
+        const reminders = JSON.parse(localStorage.getItem(LOCAL_REMINDERS_KEY) || "[]");
+        return Array.isArray(reminders) ? reminders : [];
+    } catch (error) {
+        console.warn("Could not load local reminders:", error);
+        return [];
+    }
+}
+
+function saveLocalReminders_(reminders) {
+    localStorage.setItem(LOCAL_REMINDERS_KEY, JSON.stringify(reminders));
+}
+
+function scheduleNotification(bookingDate, bookingHour, stadiumName) {
+    const playTime = parseBookingDateTime_(bookingDate, bookingHour);
+    if (!playTime || playTime <= new Date()) {
+        return;
+    }
+
+    const id = `${stadiumId}|${playTime.toISOString()}`;
+    const reminders = loadLocalReminders_().filter(reminder => reminder.id !== id);
+    reminders.push({
+        id,
+        stadiumName,
+        bookingDate,
+        bookingHour,
+        playTime: playTime.getTime(),
+        sentFiveHours: false,
+        sentOneHour: false
     });
+    saveLocalReminders_(reminders);
+    processLocalReminders_();
+}
 
-    const setReminder = (hoursBefore, message, tag) => {
-        const notifyTime = new Date(playTime.getTime() - (hoursBefore * 60 * 60 * 1000));
-        if (notifyTime > now) {
-            const delay = notifyTime.getTime() - now.getTime();
-            setTimeout(() => {
-                navigator.serviceWorker.ready.then(reg => {
-                    reg.showNotification("⚽ ملاعب NET", {
-                        body: message,
-                        icon: "logo_no_background.png",
-                        badge: "logo_no_background.png",
-                        vibrate: [200, 100, 200],
-                        tag: tag,
-                        requireInteraction: true
-                    });
-                });
-            }, delay);
+async function processLocalReminders_() {
+    if (Notification.permission !== "granted") {
+        return;
+    }
+
+    const now = Date.now();
+    const reminders = loadLocalReminders_();
+    const activeReminders = [];
+    const registration = await navigator.serviceWorker.ready;
+
+    for (const reminder of reminders) {
+        if (reminder.playTime <= now) {
+            continue;
         }
-    };
 
-    setReminder(5, `تذكير: تبقى 5 ساعات على موعد مباراتك (${bookingHour}).`, 'reminder-5h');
-    setReminder(1, `عجل يا بطل! تبقى ساعة واحدة فقط على انطلاق المباراة. ننتظرك!`, 'reminder-1h');
+        const fiveHoursBefore = reminder.playTime - 5 * 60 * 60 * 1000;
+        const oneHourBefore = reminder.playTime - 60 * 60 * 1000;
+
+        if (!reminder.sentFiveHours && now >= fiveHoursBefore && now < oneHourBefore) {
+            await registration.showNotification("⚽ ملاعب NET", {
+                body: `تذكير: تبقى 5 ساعات على موعدك في ${reminder.stadiumName} الساعة ${reminder.bookingHour}.`,
+                icon: "logo_no_background.png",
+                badge: "logo_no_background.png",
+                tag: `${reminder.id}-5h`,
+                requireInteraction: true
+            });
+            reminder.sentFiveHours = true;
+        }
+
+        if (!reminder.sentOneHour && now >= oneHourBefore) {
+            await registration.showNotification("⚽ ملاعب NET", {
+                body: `تذكير: تبقى ساعة واحدة على موعدك في ${reminder.stadiumName} الساعة ${reminder.bookingHour}.`,
+                icon: "logo_no_background.png",
+                badge: "logo_no_background.png",
+                tag: `${reminder.id}-1h`,
+                requireInteraction: true
+            });
+            reminder.sentOneHour = true;
+        }
+
+        activeReminders.push(reminder);
+    }
+
+    saveLocalReminders_(activeReminders);
+}
+
+function initializeLocalReminders_() {
+    if (!("Notification" in window) || !("serviceWorker" in navigator)) {
+        return;
+    }
+
+    navigator.serviceWorker.register("./sw.js")
+        .then(() => {
+            processLocalReminders_().catch(error => {
+                console.warn("Could not process local reminders:", error);
+            });
+        })
+        .catch(error => {
+            console.warn("Could not register service worker:", error);
+        });
+
+    if (localReminderTimerId === null) {
+        localReminderTimerId = window.setInterval(() => {
+            processLocalReminders_().catch(error => {
+                console.warn("Could not process local reminders:", error);
+            });
+        }, 60 * 1000);
+    }
+}
+
+if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", initializeLocalReminders_);
+} else {
+    initializeLocalReminders_();
 }
 
 // --- كود PWA (يجب أن يكون مستقلاً تماماً في الخارج) ---
