@@ -165,14 +165,6 @@ document.addEventListener('DOMContentLoaded', function () {
 });
     let generatedOTP = ""; // لتخزين الرمز مؤقتاً
 
-    async function hashString(str) {
-    const encoder = new TextEncoder();
-    const data = encoder.encode(str);
-    const hashBuffer = await crypto.subtle.digest('SHA-256', data);
-    const hashArray = Array.from(new Uint8Array(hashBuffer));
-    return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-}
-    
     async function showOTP() {
     const fullName = document.getElementById('fullName').value;
     const email = document.getElementById('email').value;
@@ -181,6 +173,10 @@ document.addEventListener('DOMContentLoaded', function () {
 
     if (!fullName || !email || !password || !stadiumName) {
         alert("يرجى ملء جميع الخانات");
+        return;
+    }
+    if (password.length < 10) {
+        alert("يجب أن تتكون كلمة المرور من 10 أحرف على الأقل.");
         return;
     }
 
@@ -249,22 +245,20 @@ document.addEventListener('DOMContentLoaded', function () {
     const password = document.getElementById('password').value.trim();
     const stadiumName = document.getElementById('stadiumName').value;
 
-    // الرابط النهائي لإرسال البيانات
-   const finalURLObject = new URL(scriptURL);
-   finalURLObject.searchParams.set('action', 'saveData');
-   finalURLObject.searchParams.set('fullName', fullName);
-   finalURLObject.searchParams.set('email', email);
-   finalURLObject.searchParams.set('password', password);
-   finalURLObject.searchParams.set('stadiumName', stadiumName);
-   finalURLObject.searchParams.set('otpToken', verifyResult.token);
-   let finalURL = finalURLObject.toString();
-
-if (isSubStadiumMode) {
-    finalURL += `&parentSlug=${encodeURIComponent(parentSlug)}&parentPass=${encodeURIComponent(parentPass)}`;
-}
     try {
-        // نستخدم fetch بدون no-cors لنتمكن من قراءة الـ slug العشوائي الراجع من جوجل
-        const response = await fetch(finalURL);
+        const response = await fetch(`${scriptURL}?action=saveData`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Accept': 'text/plain' },
+            body: JSON.stringify({
+                fullName,
+                email,
+                password,
+                stadiumName,
+                otpToken: verifyResult.token,
+                parentSlug: isSubStadiumMode ? parentSlug : "",
+                parentPass: isSubStadiumMode ? parentPass : ""
+            })
+        });
         const resultText = await response.text();
 
         if (resultText.includes("Success:")) {
@@ -273,9 +267,6 @@ if (isSubStadiumMode) {
             if (!finalSlug || !/^[a-zA-Z0-9_-]{2,100}$/.test(finalSlug)) {
                 throw new Error('Invalid stadium identifier returned by server');
             }
-            // فتح الداشبورد مباشرة يحتاج جلسة المسؤول التي أُنشئت بهذا الحساب.
-            const passwordHash = await hashString(password.trim());
-            sessionStorage.setItem('adminPassHash_' + finalSlug, passwordHash);
             localStorage.setItem('lastVisitedStadiumId', finalSlug);
             const userLink = new URL(
                 `booking.html?id=${encodeURIComponent(finalSlug)}`,
