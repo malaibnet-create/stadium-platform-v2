@@ -51,6 +51,15 @@ const APPS_SCRIPT_BASE_URL = 'https://dmalaib-api-proxy.malaib-net.workers.dev';
 const settingsScriptURL = APPS_SCRIPT_BASE_URL;
 const bookingScriptURL = APPS_SCRIPT_BASE_URL;
 
+(function clearLegacyAdminCredentials() {
+    for (let index = sessionStorage.length - 1; index >= 0; index--) {
+        const key = sessionStorage.key(index);
+        if (key && key.startsWith('adminPassHash_')) {
+            sessionStorage.removeItem(key);
+        }
+    }
+})();
+
 function escapeHTML(value) {
     return String(value ?? '')
         .replace(/&/g, '&amp;')
@@ -76,22 +85,44 @@ function safeExternalHref(value, allowedHosts = []) {
 }
 
 function getAdminPassHash() {
-    return sessionStorage.getItem('adminPassHash_' + stadiumId) || '';
+    return sessionStorage.getItem('adminSession_' + stadiumId) || '';
+}
+
+function adminAuthHeaders() {
+    const token = getAdminPassHash();
+    if (!token) throw new Error('جلسة لوحة التحكم غير صالحة');
+    return { 'Authorization': `Bearer ${token}` };
+}
+
+async function adminGet(action, params = {}) {
+    const url = new URL(settingsScriptURL);
+    url.searchParams.set('action', action);
+    url.searchParams.set('id', stadiumId);
+    Object.entries(params).forEach(([key, value]) => {
+        url.searchParams.set(key, value);
+    });
+
+    return fetch(url.toString(), {
+        headers: { ...adminAuthHeaders(), 'Accept': 'application/json' },
+        cache: 'no-store'
+    });
 }
 
 let ownerStadiums = [];
 
 async function adminPost(action, extra = {}) {
-    const pass = getAdminPassHash();
-    if (!stadiumId || !pass) throw new Error('جلسة لوحة التحكم غير صالحة');
+    if (!stadiumId) throw new Error('جلسة لوحة التحكم غير صالحة');
 
     const response = await fetch(`${bookingScriptURL}?action=${encodeURIComponent(action)}`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            ...adminAuthHeaders()
+        },
         body: JSON.stringify({
             action,
             id: stadiumId,
-            pass,
             ...extra
         })
     });
@@ -164,7 +195,7 @@ async function switchAdminStadium(newSlug) {
     const upgradeOptions = document.getElementById('upgradeOptions');
     if (upgradeOptions) upgradeOptions.style.display = 'none';
 
-    if (ownerPassHash) sessionStorage.setItem('adminPassHash_' + stadiumId, ownerPassHash);
+    if (ownerPassHash) sessionStorage.setItem('adminSession_' + stadiumId, ownerPassHash);
     localStorage.setItem('lastVisitedStadiumId', stadiumId);
 
     const url = new URL(window.location.href);
@@ -898,8 +929,14 @@ async function loadExistingBookings() {
         const response = await fetch(
             `${bookingScriptURL}?action=getBookings&id=${encodeURIComponent(stadiumId)}&t=${Date.now()}`
         );
+        if (!response.ok) {
+            throw new Error(`Booking request failed with status ${response.status}`);
+        }
+
         const bookings = await response.json();
-        if (!Array.isArray(bookings)) throw new Error('Invalid bookings response');
+        if (!Array.isArray(bookings)) {
+            throw new Error("Invalid bookings response");
+        }
         handleData(bookings);
     } catch (error) {
         console.error('Bookings load failed:', error);
@@ -1219,9 +1256,6 @@ async function saveAdminSettings(event) {
 
         // 2. تجميع البيانات في كائن (Object) عادي أولاً لسهولة المعالجة
         const dataToSave = {
-            action: "adminUpdateSettings",
-            id: stadiumId,
-            currentPass: getAdminPassHash(),
             newPass: finalPass,
             stadiumName: document.getElementById('upd_name')?.value || "",
             pDay: document.getElementById('upd_price_day')?.value || "",
@@ -1240,32 +1274,21 @@ async function saveAdminSettings(event) {
             status: document.getElementById('upd_maintenance')?.checked ? "maintenance" : "open"
         };
 
-        // 3. بناء الرابط النهائي بذكاء
-        // نأخذ الرابط الأساسي (الذي يحتوي أصلاً على المفتاح السري)
-        const finalUrl = new URL(settingsScriptURL);
-        
-        // إضافة كل البيانات من dataToSave إلى المعلمات الموجودة في الرابط
-        Object.keys(dataToSave).forEach(key => {
-            finalUrl.searchParams.set(key, dataToSave[key]);
-        });
-        // منع Cloudflare/المتصفح من إعادة استخدام استجابة قديمة لطلب تغيير الكود.
-        finalUrl.searchParams.set('_t', Date.now());
+        const result = await adminPost("adminUpdateSettings", dataToSave);
 
-        // 4. إرسال الطلب
-        const response = await fetch(finalUrl.toString());
-        const result = await response.text();
-
-        if (result.trim() === "Success") {
+        if (String(result).trim() === "Success") {
             if (finalPass) {
                 const ownedSlugs = new Set([
                     stadiumId,
                     ...(Array.isArray(ownerStadiums) ? ownerStadiums.map(item => item.slug) : [])
                 ]);
                 ownedSlugs.forEach(slug => {
-                    if (slug) sessionStorage.setItem('adminPassHash_' + slug, finalPass);
+                    if (slug) sessionStorage.removeItem('adminSession_' + slug);
                 });
+                alert("✅ تم تحديث كلمة المرور. سجّل الدخول مرة أخرى.");
+            } else {
+                alert("✅ تم تحديث بيانات الملعب بنجاح!");
             }
-            alert("✅ تم تحديث بيانات الملعب بنجاح!");
             location.reload(); 
         } else {
             alert("⚠️ حدث خطأ في السكريبت: " + result);
@@ -1439,12 +1462,15 @@ async function loadActualCancellations() {
             <div class="loader"></div> </div>`;
 
     try {
-        const response = await fetch(
-            `${settingsScriptURL}?action=getAdminBookings` +
-            `&id=${encodeURIComponent(stadiumId)}` +
-            `&pass=${encodeURIComponent(getAdminPassHash())}`
-        );
+        const response = await adminGet("getAdminBookings");
+        if (!response.ok) {
+            throw new Error(`Admin bookings request failed with status ${response.status}`);
+        }
+
         const bookings = await response.json();
+        if (!Array.isArray(bookings)) {
+            throw new Error("Invalid admin bookings response");
+        }
 
         if (bookings.length === 0) {
             content.innerHTML = `
@@ -1479,10 +1505,7 @@ async function loadActualCancellations() {
                     <tbody>`;
 
         bookings.forEach(bk => {
-            // تحويل التاريخ (dd/MM/yyyy) لاسم اليوم
-            const dateParts = bk.date.split("/");
-            const dateObj = new Date(+dateParts[2], dateParts[1] - 1, +dateParts[0]);
-            const dayName = dateObj.toLocaleDateString('ar-MA', { weekday: 'long' });
+            const dayName = bk.dayName || "—";
 
             html += `
                 <tr style="border-bottom:1px solid #f1f5f9; transition:0.2s;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='transparent'">
@@ -1492,7 +1515,7 @@ async function loadActualCancellations() {
                     <td style="padding:10px 8px; font-weight:500;">${escapeHTML(bk.name)}</td>
                    <td class="cancel-action-cell" style="padding:10px 8px; text-align:center;">
                         <a href="tel:${encodeURIComponent(String(bk.phone || ''))}" style="text-decoration:none; color:#16a34a; font-weight:bold;">
-                            ${escapeHTML(bk.phone)} 📞
+                            ${escapeHTML(bk.phone || "—")} 📞
                         </a>
                     </td>
                     <td style="padding:10px 8px; text-align:center;">
@@ -1520,9 +1543,9 @@ async function cancelBooking(rowNumber, btn) {
     if (!confirm("هل أنت متأكد من إلغاء هذا الحجز نهائياً؟")) return;
 
     // 1. جلب الكود السري من حقل تسجيل الدخول الموجود في الصفحة
-        const hashedPass = getAdminPassHash();
+        const sessionToken = getAdminPassHash();
 
-        if (!hashedPass) {
+        if (!sessionToken) {
         alert("⚠️ خطأ: لم يتم العثور على كود التحقق. يرجى إعادة تسجيل الدخول.");
         return;
     }
@@ -1535,12 +1558,7 @@ async function cancelBooking(rowNumber, btn) {
     }
 
     try {
-        // 2. تشفير الكود السري قبل إرساله
-        // 3. إرسال الطلب مع إضافة id و pass (الهاش)
-        // أضفنا Timestamp (&_t=...) لضمان جلب بيانات طازجة
-        const url = `${settingsScriptURL}?action=cancelBooking&row=${encodeURIComponent(rowNumber)}&id=${encodeURIComponent(stadiumId)}&pass=${encodeURIComponent(hashedPass)}&_t=${Date.now()}`;
-        
-        const response = await fetch(url);
+        const response = await adminGet("cancelBooking", { row: rowNumber, _t: Date.now() });
         const result = await response.text();
         
         if (result.trim() === "CancelSuccess") {
@@ -1587,11 +1605,7 @@ async function loadActualStats() {
         </div>`;
 
     try {
-        const response = await fetch(
-            `${settingsScriptURL}?action=getStats` +
-            `&id=${encodeURIComponent(stadiumId)}` +
-            `&pass=${encodeURIComponent(getAdminPassHash())}`
-        );
+        const response = await adminGet("getStats");
         const data = await response.json();
         
         const monthNames = ["يناير", "فبراير", "مارس", "أبريل", "مايو", "يونيو", "يوليو", "أغسطس", "سبتمبر", "أكتوبر", "نوفمبر", "ديسمبر"];
@@ -1713,20 +1727,17 @@ async function handleAdminAuth(btn) {
     btn.innerText = "جاري التحقق... ⏳";
 
     try {
-        // --- التعديل الأمني الجديد هنا ---
-        // نقوم بتشفير كلمة المرور قبل إرسالها للسيرفر
         const hashedPassword = await hashString(password);
-        
-        // نرسل hashedPassword بدلاً من password
-        const response = await fetch(`${settingsScriptURL}?action=adminAuth&id=${encodeURIComponent(stadiumId)}&pass=${encodeURIComponent(hashedPassword)}&_t=${Date.now()}`, {
+        const response = await fetch(`${settingsScriptURL}?action=adminAuth`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+            body: JSON.stringify({ action: 'adminAuth', id: stadiumId, pass: hashedPassword }),
             cache: 'no-store'
         });
-        const result = await response.text();
+        const result = await response.json();
 
-        console.log("استجابة السيرفر:", result);
-
-        if (result.trim() === "Success") {
-            sessionStorage.setItem('adminPassHash_' + stadiumId, hashedPassword);
+        if (response.ok && result.result === "success" && result.token) {
+            sessionStorage.setItem('adminSession_' + stadiumId, result.token);
             // 1. إغلاق نافذة طلب الكود الصغيرة
             closeAdminAuth(); 
             
@@ -1807,7 +1818,7 @@ async function handleForgotPassword() {
                 ...(Array.isArray(ownerStadiums) ? ownerStadiums.map(item => item.slug) : [])
             ]);
             resetSlugs.forEach(slug => {
-                if (slug) sessionStorage.removeItem('adminPassHash_' + slug);
+                if (slug) sessionStorage.removeItem('adminSession_' + slug);
             });
             alert("✅ تم إرسال كود الدخول إلى بريدك الإلكتروني بنجاح.");
         } else if (result.trim() === "EmailMismatch") {
@@ -1833,52 +1844,65 @@ function closeAdminPanel() {
     }
 }
 function showBookingTicket(stadiumName, date, time, stadiumUrl) {
-    // 1. استخراج اسم اليوم بطريقة آمنة
     const days = ["الأحد", "الإثنين", "الثلاثاء", "الأربعاء", "الخميس", "الجمعة", "السبت"];
-    
-    // تحويل التاريخ من DD/MM/YYYY إلى تنسيق يفهمه JavaScript (اختياري حسب تنسيق مدخلاتك)
-    let parts = date.split('/');
-    let formattedDate = parts.length === 3 ? new Date(parts[2], parts[1] - 1, parts[0]) : new Date(date);
-    
+    const parts = String(date).split('/');
+    const formattedDate = parts.length === 3 ? new Date(parts[2], parts[1] - 1, parts[0]) : new Date(date);
     const dayName = days[formattedDate.getDay()] || "الموعد المحدد";
-
-    // 2. نص الواتساب (مختصر وأنيق)
     const shareText = `⚽ *تذكرة حجز مباراة*\n\n📍 الملعب: ${stadiumName}\n📅 اليوم: ${dayName}\n📆 التاريخ: ${date}\n⏰ الوقت: ${time}\n\n🔗 الرابط:\n${stadiumUrl}\n\nتم عبر ملاعب NET 🏟️`;
-
     const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(shareText)}`;
-
-    // 3. بناء التذكرة (تبسيط الـ HTML لضمان التوافق)
-    const ticketHtml = `
-    <div class="ticket-container" style="text-align:center; font-family:'Cairo', sans-serif;">
-        <div class="ticket-header" style="background:#1e3a8a; color:white; padding:10px; border-radius:10px 10px 0 0;">
-            <h3 style="margin:0;">تم الحجز بنجاح! ✅</h3>
-        </div>
-        <div class="ticket-body" style="padding:15px; border:1px solid #e2e8f0; border-top:none; background:#fff;">
-            <p style="margin:5px 0;"><strong>${stadiumName}</strong></p>
-            <p style="margin:5px 0; color:#475569;">${dayName} | ${date}</p>
-            <p style="margin:5px 0; font-size:1.2rem; color:#1e3a8a; font-weight:bold;">${time}</p>
-        </div>
-        <div class="ticket-footer" style="margin-top:15px;">
-            <button onclick="window.open('${whatsappUrl}', '_blank')" 
-                    style="background:#22c55e; color:white; border:none; padding:12px 20px; border-radius:8px; cursor:pointer; font-weight:bold; width:100%; font-family:'Cairo';">
-                ارسل التفاصيل للفريق (واتساب) 💬
-            </button>
-            <p style="font-size:0.7rem; color:#64748b; margin-top:10px;">يفضل عمل لقطة شاشة للتذكرة 📸</p>
-        </div>
-    </div>`;
-
-    // 4. عرض التذكرة في الحاوية المخصصة
     const formContent = document.getElementById('bookingFormContent');
     const ticketContainer = document.getElementById('successTicketContainer');
 
     if (ticketContainer && formContent) {
+        const ticket = document.createElement('div');
+        ticket.className = 'ticket-container';
+        ticket.style.cssText = "text-align:center; font-family:'Cairo', sans-serif;";
+        const header = document.createElement('div');
+        header.className = 'ticket-header';
+        header.style.cssText = "background:#1e3a8a; color:white; padding:10px; border-radius:10px 10px 0 0;";
+        const title = document.createElement('h3');
+        title.style.margin = '0';
+        title.textContent = 'تم الحجز بنجاح! ✅';
+        header.appendChild(title);
+
+        const body = document.createElement('div');
+        body.className = 'ticket-body';
+        body.style.cssText = "padding:15px; border:1px solid #e2e8f0; border-top:none; background:#fff;";
+        const stadiumLine = document.createElement('p');
+        stadiumLine.style.margin = '5px 0';
+        const stadiumLabel = document.createElement('strong');
+        stadiumLabel.textContent = String(stadiumName);
+        stadiumLine.appendChild(stadiumLabel);
+        const dateLine = document.createElement('p');
+        dateLine.style.cssText = 'margin:5px 0; color:#475569;';
+        dateLine.textContent = `${dayName} | ${date}`;
+        const timeLine = document.createElement('p');
+        timeLine.style.cssText = 'margin:5px 0; font-size:1.2rem; color:#1e3a8a; font-weight:bold;';
+        timeLine.textContent = String(time);
+        body.append(stadiumLine, dateLine, timeLine);
+
+        const footer = document.createElement('div');
+        footer.className = 'ticket-footer';
+        footer.style.marginTop = '15px';
+        const shareButton = document.createElement('button');
+        shareButton.type = 'button';
+        shareButton.style.cssText = "background:#22c55e; color:white; border:none; padding:12px 20px; border-radius:8px; cursor:pointer; font-weight:bold; width:100%; font-family:'Cairo';";
+        shareButton.textContent = 'ارسل التفاصيل للفريق (واتساب) 💬';
+        shareButton.addEventListener('click', () => {
+            window.open(whatsappUrl, '_blank', 'noopener,noreferrer');
+        });
+        const hint = document.createElement('p');
+        hint.style.cssText = 'font-size:0.7rem; color:#64748b; margin-top:10px;';
+        hint.textContent = 'يفضل عمل لقطة شاشة للتذكرة 📸';
+        footer.append(shareButton, hint);
+        ticket.append(header, body, footer);
+
         formContent.style.display = 'none';
         ticketContainer.style.display = 'block';
-        ticketContainer.innerHTML = ticketHtml;
+        ticketContainer.replaceChildren(ticket);
     } else {
-        // إذا لم يجد الحاويات، يفتح الواتساب مباشرة كحل احتياطي
         alert(`✅ تم الحجز!\nالملعب: ${stadiumName}\nالوقت: ${time}`);
-        window.open(whatsappUrl, '_blank');
+        window.open(whatsappUrl, '_blank', 'noopener,noreferrer');
     }
 }
 
@@ -2573,12 +2597,9 @@ async function legacyAddStadiumRegistration() {
         return;
     }
 
-    let parentPassHash = sessionStorage.getItem('adminPassHash_' + stadiumId);
-
-    if (!parentPassHash) {
-        const pass = prompt("أدخل كود المسؤول لتأكيد إضافة ملعب جديد تابع لهذا الحساب:");
-        if (!pass) return;
-        parentPassHash = await hashString(pass);
+    if (!getAdminPassHash()) {
+        alert("انتهت جلسة الإدارة. سجّل الدخول مرة أخرى قبل إضافة ملعب.");
+        return;
     }
 
     const registerUrl = new URL("register.html", window.location.href);
@@ -2685,7 +2706,7 @@ async function createStadiumFromDashboard(button) {
         if (!newSlug) throw new Error('لم يُرجع الخادم معرف الملعب الجديد');
 
         const ownerPassHash = getAdminPassHash();
-        sessionStorage.setItem('adminPassHash_' + newSlug, ownerPassHash);
+        sessionStorage.setItem('adminSession_' + newSlug, ownerPassHash);
         await switchAdminStadium(newSlug);
         await loadOwnerStadiums();
         alert('تم إنشاء الملعب وفتحه بنجاح.');
@@ -2747,9 +2768,10 @@ function showCourtsManagement() {
 })();
 
 async function confirmDeleteAccount() {
-    const pass = prompt("أدخل الرقم السري لحسابك لتأكيد حذف الحساب:");
-
-    if (!pass) return;
+    if (!getAdminPassHash()) {
+        alert("انتهت جلسة الإدارة. سجّل الدخول مرة أخرى.");
+        return;
+    }
 
     const confirmText = prompt('للتأكيد النهائي اكتب: حذف');
 
@@ -2759,16 +2781,12 @@ async function confirmDeleteAccount() {
     }
 
     try {
-        const hashedPassword = await hashString(pass);
-
         // نحفظ أول ملعب متبقٍ في الحساب قبل حذف الملعب الحالي.
         // ترتيب getOwnerStadiums هو ترتيب الصفوف، وبالتالي يبقى الملعب الأساسي
         // (الأول إنشاءً) هو الوجهة بعد حذف ملعب آخر.
         let fallbackStadiumId = '';
         try {
-            const ownerResponse = await fetch(
-                `${settingsScriptURL}?action=getOwnerStadiums&id=${encodeURIComponent(stadiumId)}&pass=${encodeURIComponent(hashedPassword)}&_t=${Date.now()}`
-            );
+            const ownerResponse = await adminGet("getOwnerStadiums", { _t: Date.now() });
             const ownerResult = await ownerResponse.json();
             const remaining = Array.isArray(ownerResult?.stadiums)
                 ? ownerResult.stadiums.filter(item => String(item.slug) !== String(stadiumId))
@@ -2778,17 +2796,12 @@ async function confirmDeleteAccount() {
             console.warn('تعذر تحديد الملعب البديل قبل الحذف:', ownerError);
         }
 
-        const url = new URL(settingsScriptURL);
-        url.searchParams.set("action", "deleteStadiumAccount");
-        url.searchParams.set("id", stadiumId);
-        url.searchParams.set("pass", hashedPassword);
-
-        const response = await fetch(url.toString());
+        const response = await adminGet("deleteStadiumAccount");
         const result = await response.text();
 
         if (result.trim() === "DeleteSuccess") {
             alert("تم حذف الحساب بنجاح.");
-            sessionStorage.removeItem('adminPassHash_' + stadiumId);
+            sessionStorage.removeItem('adminSession_' + stadiumId);
             if (fallbackStadiumId) {
                 localStorage.setItem('lastVisitedStadiumId', fallbackStadiumId);
                 window.location.href = "booking.html?id=" + encodeURIComponent(fallbackStadiumId);
