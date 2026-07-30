@@ -1248,15 +1248,9 @@ async function saveAdminSettings(event) {
         // 1. جلب كلمة المرور وتشفيرها
         // يجب أن يطابق الكود الذي يدخله المستخدم لاحقًا في تسجيل الدخول.
         const rawPass = document.getElementById('upd_pass')?.value.trim() || "";
-        let finalPass = "";
-        
-        if (rawPass) {
-            finalPass = await hashString(rawPass);
-        }
-
         // 2. تجميع البيانات في كائن (Object) عادي أولاً لسهولة المعالجة
         const dataToSave = {
-            newPass: finalPass,
+            newPassword: rawPass,
             stadiumName: document.getElementById('upd_name')?.value || "",
             pDay: document.getElementById('upd_price_day')?.value || "",
             pNight: document.getElementById('upd_price_night')?.value || "",
@@ -1277,7 +1271,7 @@ async function saveAdminSettings(event) {
         const result = await adminPost("adminUpdateSettings", dataToSave);
 
         if (String(result).trim() === "Success") {
-            if (finalPass) {
+            if (rawPass) {
                 const ownedSlugs = new Set([
                     stadiumId,
                     ...(Array.isArray(ownerStadiums) ? ownerStadiums.map(item => item.slug) : [])
@@ -1700,17 +1694,6 @@ function closeAdminAuth() {
     }
 }
 
-// --- 3. دالة تسجيل الدخول ومعالجة كلمة السر ---
-
-// --- 3. دالة تسجيل الدخول ومعالجة كلمة السر ---
-async function hashString(str) {
-    const encoder = new TextEncoder();
-    const data = encoder.encode(str);
-    const hashBuffer = await crypto.subtle.digest('SHA-256', data);
-    const hashArray = Array.from(new Uint8Array(hashBuffer));
-    return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-}
-// --- 3. دالة تسجيل الدخول ومعالجة كلمة السر ---
 async function handleAdminAuth(btn) {
     const passwordInput = document.getElementById('adminPassInput');
     const password = passwordInput ? passwordInput.value.trim() : "";
@@ -1727,11 +1710,10 @@ async function handleAdminAuth(btn) {
     btn.innerText = "جاري التحقق... ⏳";
 
     try {
-        const hashedPassword = await hashString(password);
         const response = await fetch(`${settingsScriptURL}?action=adminAuth`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-            body: JSON.stringify({ action: 'adminAuth', id: stadiumId, pass: hashedPassword }),
+            body: JSON.stringify({ action: 'adminAuth', id: stadiumId, password }),
             cache: 'no-store'
         });
         const result = await response.json();
