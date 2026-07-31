@@ -208,9 +208,11 @@ document.addEventListener('DOMContentLoaded', function () {
 
   async function verifyOTP() {
     const userOTP = document.getElementById('otpCode').value;
-    
-    // تصحيح: يجب تعريف btn داخل هذه الدالة أيضاً
     const btn = document.querySelector('#otpModal .btn-submit');
+    if (btn.disabled) return;
+    btn.disabled = true;
+    const originalText = btn.innerText;
+    btn.innerText = "جاري التحقق...";
 
     const verifyURL = `${scriptURL}?action=verifyOTP` +
         `&email=${encodeURIComponent(document.getElementById('email').value.trim())}` +
@@ -228,11 +230,15 @@ document.addEventListener('DOMContentLoaded', function () {
     } catch (error) {
         console.error("OTP verification failed:", error);
         alert("تعذر الاتصال بخادم التحقق. حاول مرة أخرى.");
+        btn.disabled = false;
+        btn.innerText = originalText;
         return;
     }
 
     if (verifyResult.result !== "Verified" || !verifyResult.token) {
         alert(verifyResult.message || "الرمز غير صحيح أو منتهي الصلاحية، حاول مجدداً.");
+        btn.disabled = false;
+        btn.innerText = originalText;
         return;
     }
 
