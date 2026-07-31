@@ -1716,7 +1716,13 @@ async function handleAdminAuth(btn) {
             body: JSON.stringify({ action: 'adminAuth', id: stadiumId, password }),
             cache: 'no-store'
         });
-        const result = await response.json();
+        const responseText = await response.text();
+        let result;
+        try {
+            result = JSON.parse(responseText);
+        } catch {
+            throw new Error("استجابة غير صالحة من الخادم.");
+        }
 
         if (response.ok && result.result === "success" && result.token) {
             sessionStorage.setItem('adminSession_' + stadiumId, result.token);
@@ -1756,7 +1762,12 @@ async function handleAdminAuth(btn) {
 }
 
         } else {
-            alert("❌ كلمة السر غير صحيحة، حاول مرة أخرى.");
+            const message = result.error === "Worker configuration is incomplete"
+                ? "إعداد PASSWORD_PEPPER أو SESSIONS غير مكتمل في Cloudflare Worker."
+                : result.error === "Upstream request failed"
+                    ? "فشل اتصال Worker بـGoogle Apps Script. تأكد من نشر Code.gs في نفس المشروع المرتبط بـAPPS_SCRIPT_URL."
+                    : "كلمة السر غير صحيحة، حاول مرة أخرى.";
+            alert("❌ " + message);
             if(passwordInput) {
                 passwordInput.value = "";
                 passwordInput.focus();
