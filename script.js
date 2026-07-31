@@ -924,10 +924,18 @@ function changeWeek(direction) {
     initTable();
 }
 
+let bookingsRequestInFlight = false;
+
 async function loadExistingBookings() {
+    if (bookingsRequestInFlight) return;
+    bookingsRequestInFlight = true;
+    const controller = new AbortController();
+    const timeoutId = window.setTimeout(() => controller.abort(), 20000);
+
     try {
         const response = await fetch(
-            `${bookingScriptURL}?action=getBookings&id=${encodeURIComponent(stadiumId)}&t=${Date.now()}`
+            `${bookingScriptURL}?action=getBookings&id=${encodeURIComponent(stadiumId)}&t=${Date.now()}`,
+            { cache: 'no-store', signal: controller.signal }
         );
         if (!response.ok) {
             throw new Error(`Booking request failed with status ${response.status}`);
@@ -940,6 +948,9 @@ async function loadExistingBookings() {
         handleData(bookings);
     } catch (error) {
         console.error('Bookings load failed:', error);
+    } finally {
+        window.clearTimeout(timeoutId);
+        bookingsRequestInFlight = false;
     }
     return;
     /* Legacy JSONP code retained only for reference; backend now returns JSON.
@@ -1041,15 +1052,14 @@ function addNextSlot() {
         }
     }
 }
-// --- تحديث الجدول تلقائياً كل 15 ثانية ---
+// --- تحديث الجدول تلقائياً كل دقيقة عندما تكون الصفحة مرئية ولا توجد نافذة حجز مفتوحة ---
 setInterval(() => {
-    // نقوم بالتحديث فقط إذا كان المستخدم لا يملأ حالياً بيانات الحجز
     const modal = document.getElementById('bookingModal');
-    if (modal && modal.style.display !== "block") {
-        console.log("جاري تحديث الحجوزات تلقائياً...");
+    const bookingModalClosed = !modal || modal.style.display === '' || modal.style.display === 'none';
+    if (document.visibilityState === 'visible' && bookingModalClosed) {
         if (typeof loadExistingBookings === "function") loadExistingBookings();
     }
-}, 15000);
+}, 60000);
 
 const LOCAL_REMINDERS_KEY = "malaeb-local-reminders-v1";
 let localReminderTimerId = null;
