@@ -180,9 +180,9 @@ if (slug && !/^[a-zA-Z0-9_-]{2,100}$/.test(slug)) {
             if (!confirmNoLoc) return;
         }
 
-        // بناء الرابط الخاص بالأمر updateSettings مع إضافة lat و lng
-        const adminPass = sessionStorage.getItem('adminPassHash_' + slug) || '';
-        if (!adminPass) {
+        // تستخدم لوحة التحكم رمز الجلسة القصير الصادر من Worker، وليس هاش كلمة المرور.
+        const adminSession = sessionStorage.getItem('adminSession_' + slug) || '';
+        if (!adminSession) {
             alert('يرجى تسجيل الدخول من لوحة الإدارة أولًا.');
             return;
         }
@@ -192,7 +192,6 @@ if (slug && !/^[a-zA-Z0-9_-]{2,100}$/.test(slug)) {
 
         const finalUpdateURL = `${scriptURL}?action=updateSettings` + 
                              `&slug=${encodeURIComponent(slug)}` +
-                             `&pass=${encodeURIComponent(adminPass)}` +
                              `&stadiumName=${encodeURIComponent(stadiumName)}` +
                              `&org=${encodeURIComponent(org)}` +
                              `&pDay=${encodeURIComponent(pDay)}` +
@@ -206,7 +205,10 @@ if (slug && !/^[a-zA-Z0-9_-]{2,100}$/.test(slug)) {
                              `&_t=${Date.now()}`;
 
         try {
-            const response = await fetch(finalUpdateURL);
+            const response = await fetch(finalUpdateURL, {
+                headers: { 'Authorization': `Bearer ${adminSession}` },
+                cache: 'no-store'
+            });
             const result = await response.text();
 
             if (result.trim() === "Update Success") {
