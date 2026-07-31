@@ -1,4 +1,4 @@
-const cacheName = 'malaeb-net-v13-unified-release';
+const cacheName = 'malaeb-net-v14-registration-session';
 const assets = [
   './',
   './index.html',
