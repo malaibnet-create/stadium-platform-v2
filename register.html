@@ -273,6 +273,20 @@ document.addEventListener('DOMContentLoaded', function () {
             if (!finalSlug || !/^[a-zA-Z0-9_-]{2,100}$/.test(finalSlug)) {
                 throw new Error('Invalid stadium identifier returned by server');
             }
+
+            // ينشئ التسجيل الحساب فقط؛ اطلب جلسة إدارة مستقلة قبل فتح لوحة التحكم.
+            const authResponse = await fetch(`${scriptURL}?action=adminAuth`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+                body: JSON.stringify({ action: 'adminAuth', id: finalSlug, password }),
+                cache: 'no-store'
+            });
+            const authResult = await authResponse.json().catch(() => null);
+            if (!authResponse.ok || authResult?.result !== 'success' || !authResult.token) {
+                throw new Error('تم إنشاء الحساب، لكن تعذر بدء جلسة لوحة الإدارة. سجّل الدخول بكلمة المرور التي أنشأتها.');
+            }
+            sessionStorage.setItem('adminSession_' + finalSlug, authResult.token);
+
             localStorage.setItem('lastVisitedStadiumId', finalSlug);
             const userLink = new URL(
                 `booking.html?id=${encodeURIComponent(finalSlug)}`,
