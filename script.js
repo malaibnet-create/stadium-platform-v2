@@ -3022,8 +3022,9 @@ async function submitRecurringBooking() {
     button.innerText = "جاري التحقق من المواعيد...";
 
     try {
-        const response = await fetch(bookingScriptURL, {
+        const response = await fetch(`${bookingScriptURL}?action=createBooking`, {
             method: "POST",
+            headers: { "Content-Type": "application/json", "Accept": "application/json" },
             body: JSON.stringify({
                 stadiumId: stadiumId,
                 name: name,
