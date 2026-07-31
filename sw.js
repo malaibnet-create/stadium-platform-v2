@@ -1,4 +1,4 @@
-const cacheName = 'malaeb-net-v10-password-security';
+const cacheName = 'malaeb-net-v11-password-security';
 const assets = [
   './',
   './index.html',
