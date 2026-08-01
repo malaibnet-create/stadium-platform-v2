@@ -1,4 +1,4 @@
-const cacheName = 'malaeb-net-v22-http-only-sessions';
+const cacheName = 'malaeb-net-v23-swiper-fallback';
 const assets = [
   './',
   './index.html',
