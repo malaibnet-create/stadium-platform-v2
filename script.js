@@ -1258,6 +1258,10 @@ async function saveAdminSettings(event) {
         // 1. جلب كلمة المرور وتشفيرها
         // يجب أن يطابق الكود الذي يدخله المستخدم لاحقًا في تسجيل الدخول.
         const rawPass = document.getElementById('upd_pass')?.value.trim() || "";
+        if (rawPass && rawPass.length < 10) {
+            alert("⚠️ لم يتم تغيير كلمة المرور: يجب أن تتكون من 10 أحرف على الأقل.");
+            return;
+        }
         // 2. تجميع البيانات في كائن (Object) عادي أولاً لسهولة المعالجة
         const dataToSave = {
             newPassword: rawPass,
