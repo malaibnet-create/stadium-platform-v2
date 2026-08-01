@@ -45,7 +45,7 @@
 
 // 1. الإعدادات والروابط الأساسية
 // Cloudflare Worker
-const APPS_SCRIPT_BASE_URL = 'https://dmalaib-api-proxy.malaib-net.workers.dev';
+const APPS_SCRIPT_BASE_URL = 'https://api.malaibnet.com';
 
 // جميع الطلبات تمر عبر Cloudflare Worker
 const settingsScriptURL = APPS_SCRIPT_BASE_URL;
@@ -84,14 +84,8 @@ function safeExternalHref(value, allowedHosts = []) {
     return safeHttpUrl(value, allowedHosts);
 }
 
-function getAdminPassHash() {
-    return sessionStorage.getItem('adminSession_' + stadiumId) || '';
-}
-
 function adminAuthHeaders() {
-    const token = getAdminPassHash();
-    if (!token) throw new Error('جلسة لوحة التحكم غير صالحة');
-    return { 'Authorization': `Bearer ${token}` };
+    return {};
 }
 
 async function adminGet(action, params = {}) {
@@ -104,6 +98,7 @@ async function adminGet(action, params = {}) {
 
     return fetch(url.toString(), {
         headers: { ...adminAuthHeaders(), 'Accept': 'application/json' },
+        credentials: 'include',
         cache: 'no-store'
     });
 }
@@ -120,6 +115,7 @@ async function adminPost(action, extra = {}) {
             'Accept': 'application/json',
             ...adminAuthHeaders()
         },
+        credentials: 'include',
         body: JSON.stringify({
             action,
             id: stadiumId,
@@ -184,7 +180,6 @@ async function loadOwnerStadiums() {
 async function switchAdminStadium(newSlug) {
     if (!newSlug || newSlug === stadiumId) return;
 
-    const ownerPassHash = getAdminPassHash();
     stadiumId = newSlug;
     // لا نسمح ببقاء إعدادات الملعب السابق ظاهرة أثناء تحميل الملعب الجديد.
     currentAccountStatus = "Free";
@@ -195,7 +190,6 @@ async function switchAdminStadium(newSlug) {
     const upgradeOptions = document.getElementById('upgradeOptions');
     if (upgradeOptions) upgradeOptions.style.display = 'none';
 
-    if (ownerPassHash) sessionStorage.setItem('adminSession_' + stadiumId, ownerPassHash);
     localStorage.setItem('lastVisitedStadiumId', stadiumId);
 
     const url = new URL(window.location.href);
@@ -1246,12 +1240,9 @@ async function saveAdminSettings(event) {
 
         if (String(result).trim() === "Success") {
             if (rawPass) {
-                const ownedSlugs = new Set([
-                    stadiumId,
-                    ...(Array.isArray(ownerStadiums) ? ownerStadiums.map(item => item.slug) : [])
-                ]);
-                ownedSlugs.forEach(slug => {
-                    if (slug) sessionStorage.removeItem('adminSession_' + slug);
+                await fetch(`${settingsScriptURL}?action=logout`, {
+                    method: 'POST',
+                    credentials: 'include'
                 });
                 alert("✅ تم تحديث كلمة المرور. سجّل الدخول مرة أخرى.");
             } else {
@@ -1511,13 +1502,6 @@ async function cancelBooking(rowNumber, btn) {
     if (!confirm("هل أنت متأكد من إلغاء هذا الحجز نهائياً؟")) return;
 
     // 1. جلب الكود السري من حقل تسجيل الدخول الموجود في الصفحة
-        const sessionToken = getAdminPassHash();
-
-        if (!sessionToken) {
-        alert("⚠️ خطأ: لم يتم العثور على كود التحقق. يرجى إعادة تسجيل الدخول.");
-        return;
-    }
-
     // تعطيل الزر مؤقتاً
     const originalText = btn ? btn.innerText : "إلغاء";
     if (btn) {
@@ -1688,6 +1672,7 @@ async function handleAdminAuth(btn) {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
             body: JSON.stringify({ action: 'adminAuth', id: stadiumId, password }),
+            credentials: 'include',
             cache: 'no-store'
         });
         const responseText = await response.text();
@@ -1698,8 +1683,7 @@ async function handleAdminAuth(btn) {
             throw new Error("استجابة غير صالحة من الخادم.");
         }
 
-        if (response.ok && result.result === "success" && result.token) {
-            sessionStorage.setItem('adminSession_' + stadiumId, result.token);
+        if (response.ok && result.result === "success") {
             // 1. إغلاق نافذة طلب الكود الصغيرة
             closeAdminAuth(); 
             
@@ -1780,12 +1764,9 @@ async function handleForgotPassword() {
 
         if (result.trim() === "Sent") {
             // منع استخدام جلسة قديمة بعد طلب إعادة التعيين.
-            const resetSlugs = new Set([
-                stadiumId,
-                ...(Array.isArray(ownerStadiums) ? ownerStadiums.map(item => item.slug) : [])
-            ]);
-            resetSlugs.forEach(slug => {
-                if (slug) sessionStorage.removeItem('adminSession_' + slug);
+            await fetch(`${settingsScriptURL}?action=logout`, {
+                method: 'POST',
+                credentials: 'include'
             });
             alert("✅ تم إرسال كود الدخول إلى بريدك الإلكتروني بنجاح.");
         } else if (result.trim() === "EmailMismatch") {
@@ -2564,11 +2545,6 @@ async function legacyAddStadiumRegistration() {
         return;
     }
 
-    if (!getAdminPassHash()) {
-        alert("انتهت جلسة الإدارة. سجّل الدخول مرة أخرى قبل إضافة ملعب.");
-        return;
-    }
-
     const registerUrl = new URL("register.html", window.location.href);
     registerUrl.searchParams.set("mode", "addSubStadium");
     registerUrl.searchParams.set("parent", stadiumId);
@@ -2672,8 +2648,6 @@ async function createStadiumFromDashboard(button) {
         const newSlug = responseText.substring('Success:'.length).trim();
         if (!newSlug) throw new Error('لم يُرجع الخادم معرف الملعب الجديد');
 
-        const ownerPassHash = getAdminPassHash();
-        sessionStorage.setItem('adminSession_' + newSlug, ownerPassHash);
         await switchAdminStadium(newSlug);
         await loadOwnerStadiums();
         alert('تم إنشاء الملعب وفتحه بنجاح.');
@@ -2735,11 +2709,6 @@ function showCourtsManagement() {
 })();
 
 async function confirmDeleteAccount() {
-    if (!getAdminPassHash()) {
-        alert("انتهت جلسة الإدارة. سجّل الدخول مرة أخرى.");
-        return;
-    }
-
     const confirmText = prompt('للتأكيد النهائي اكتب: حذف');
 
     if (confirmText !== "حذف") {
@@ -2768,7 +2737,6 @@ async function confirmDeleteAccount() {
 
         if (result.trim() === "DeleteSuccess") {
             alert("تم حذف الحساب بنجاح.");
-            sessionStorage.removeItem('adminSession_' + stadiumId);
             if (fallbackStadiumId) {
                 localStorage.setItem('lastVisitedStadiumId', fallbackStadiumId);
                 window.location.href = "booking.html?id=" + encodeURIComponent(fallbackStadiumId);
@@ -2896,17 +2864,17 @@ async function submitOwnerLandingLogin(event) {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
             body: JSON.stringify({ action: 'adminAuth', email, password }),
+            credentials: 'include',
             cache: 'no-store'
         });
         const result = await response.json().catch(() => null);
-        if (!response.ok || result?.result !== 'success' || !result.token) {
+        if (!response.ok || result?.result !== 'success') {
             throw new Error('بيانات الدخول غير صحيحة.');
         }
         const ownerStadiumId = String(result.stadiumId || '').trim();
         if (!/^[a-zA-Z0-9_-]{3,80}$/.test(ownerStadiumId)) {
             throw new Error('تعذر تحديد حساب الملعب.');
         }
-        sessionStorage.setItem('adminSession_' + ownerStadiumId, result.token);
         localStorage.setItem('lastVisitedStadiumId', ownerStadiumId);
         window.location.assign(`booking.html?id=${encodeURIComponent(ownerStadiumId)}`);
     } catch (error) {
