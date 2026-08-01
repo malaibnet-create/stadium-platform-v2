@@ -1,4 +1,4 @@
-const cacheName = 'malaeb-net-v20-owner-email-login';
+const cacheName = 'malaeb-net-v22-http-only-sessions';
 const assets = [
   './',
   './index.html',
