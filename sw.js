@@ -1,4 +1,4 @@
-const cacheName = 'malaeb-net-v23-swiper-fallback';
+const cacheName = 'malaeb-net-v24-local-libraries-root';
 const assets = [
   './',
   './index.html',
