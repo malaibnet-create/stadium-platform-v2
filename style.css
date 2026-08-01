@@ -1714,7 +1714,8 @@ body.missing-stadium-page #supervisorFloatBtn {
 }
 
 .missing-primary-btn,
-.missing-secondary-btn {
+.missing-secondary-btn,
+.missing-login-btn {
     min-height: 48px;
     border: none;
     border-radius: 12px;
@@ -1735,6 +1736,35 @@ body.missing-stadium-page #supervisorFloatBtn {
 .missing-secondary-btn {
     background: #10b981;
     color: white;
+}
+
+.missing-login-btn {
+    background: white;
+    color: #1e3a8a;
+    border: 1px solid #1e3a8a;
+}
+
+.missing-actions-heading,
+.owner-landing-login {
+    grid-column: 1 / -1;
+}
+
+.missing-actions-heading {
+    padding: 12px;
+    border-radius: 12px;
+    background: #eff6ff;
+    color: #1e3a8a;
+    font-weight: bold;
+}
+
+.missing-player-heading {
+    margin-top: 8px;
+    background: #ecfdf5;
+    color: #047857;
+}
+
+.owner-landing-login {
+    text-align: right;
 }
 
 @media (max-width: 560px) {
