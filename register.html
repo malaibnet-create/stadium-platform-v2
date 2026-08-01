@@ -4,9 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="referrer" content="strict-origin-when-cross-origin">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'; form-action 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https://api.malaibnet.com;">
     <title>إنشاء حساب - منصة ملاعب</title>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script src="vendor/qrcodejs-1.0.0.min.js"></script>
     <style>
         :root {
             --primary-color: #2563eb;
@@ -137,7 +138,7 @@
 
 <script>
   // Cloudflare Worker
-const APPS_SCRIPT_BASE_URL = 'https://dmalaib-api-proxy.malaib-net.workers.dev';
+const APPS_SCRIPT_BASE_URL = 'https://api.malaibnet.com';
 
 const scriptURL = APPS_SCRIPT_BASE_URL;
     function escapeHTML(value) {
@@ -279,13 +280,13 @@ document.addEventListener('DOMContentLoaded', function () {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
                 body: JSON.stringify({ action: 'adminAuth', id: finalSlug, password }),
+                credentials: 'include',
                 cache: 'no-store'
             });
             const authResult = await authResponse.json().catch(() => null);
-            if (!authResponse.ok || authResult?.result !== 'success' || !authResult.token) {
+            if (!authResponse.ok || authResult?.result !== 'success') {
                 throw new Error('تم إنشاء الحساب، لكن تعذر بدء جلسة لوحة الإدارة. سجّل الدخول بكلمة المرور التي أنشأتها.');
             }
-            sessionStorage.setItem('adminSession_' + finalSlug, authResult.token);
 
             localStorage.setItem('lastVisitedStadiumId', finalSlug);
             const userLink = new URL(
