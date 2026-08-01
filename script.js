@@ -2855,6 +2855,9 @@ function showMissingStadiumLanding() {
                 <button type="button" onclick="openNearbyModal()" class="missing-secondary-btn">
                     البحث عن ملاعب قريبة
                 </button>
+                <a href="mailto:malaib.net@gmail.com?subject=بلاغ%20عن%20مشكلة%20في%20ملاعب%20NET" class="missing-contact-link">
+                    تواصل للإبلاغ عن مشكلة
+                </a>
             </div>
         </div>
     `;
@@ -2905,7 +2908,7 @@ async function submitOwnerLandingLogin(event) {
         }
         sessionStorage.setItem('adminSession_' + ownerStadiumId, result.token);
         localStorage.setItem('lastVisitedStadiumId', ownerStadiumId);
-        window.location.assign(`dashboard.html?id=${encodeURIComponent(ownerStadiumId)}`);
+        window.location.assign(`booking.html?id=${encodeURIComponent(ownerStadiumId)}`);
     } catch (error) {
         alert(error.message || 'تعذر تسجيل الدخول حالياً.');
     } finally {
