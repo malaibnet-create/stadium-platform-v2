@@ -1767,6 +1767,14 @@ body.missing-stadium-page #supervisorFloatBtn {
     text-align: right;
 }
 
+.missing-contact-link {
+    grid-column: 1 / -1;
+    margin-top: 8px;
+    color: #475569;
+    font-size: .9rem;
+    text-decoration: underline;
+}
+
 @media (max-width: 560px) {
     .missing-stadium-actions {
         grid-template-columns: 1fr;
