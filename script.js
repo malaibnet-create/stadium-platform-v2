@@ -434,13 +434,17 @@ setupSupervisorContact(data.phone, data.stadium_name);
                     swiperWrapper.appendChild(slide);
                 });
 
-                if (window.mySwiper) window.mySwiper.destroy(true, true);
-                window.mySwiper = new Swiper('.swiper-container', {
-                    loop: true,
-                    autoplay: { delay: 3000, disableOnInteraction: false },
-                    pagination: { el: '.swiper-pagination', clickable: true },
-                    navigation: { nextEl: '.swiper-button-next', prevEl: '.swiper-button-prev' },
-                });
+                if (typeof window.Swiper === 'function') {
+                    if (window.mySwiper) window.mySwiper.destroy(true, true);
+                    window.mySwiper = new Swiper('.swiper-container', {
+                        loop: true,
+                        autoplay: { delay: 3000, disableOnInteraction: false },
+                        pagination: { el: '.swiper-pagination', clickable: true },
+                        navigation: { nextEl: '.swiper-button-next', prevEl: '.swiper-button-prev' },
+                    });
+                } else {
+                    console.warn('Swiper is unavailable; continuing without the image carousel.');
+                }
             } // نهاية if (swiperWrapper)
       // استدعاء بناء الجدول مع تمرير البيانات الجديدة لضمان السرعة والدقة
             if (typeof initTable === "function") {
