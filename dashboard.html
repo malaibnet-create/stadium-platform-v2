@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="referrer" content="strict-origin-when-cross-origin">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'; form-action 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https:; connect-src 'self' https://api.malaibnet.com;">
     <title>إعدادات الملعب - لوحة التحكم</title>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
     <style>
@@ -111,7 +112,7 @@ function showMapInstructions() {
 
   // 1. إعداد المتغيرات الأساسية
   // Cloudflare Worker
-const APPS_SCRIPT_BASE_URL = 'https://dmalaib-api-proxy.malaib-net.workers.dev';
+const APPS_SCRIPT_BASE_URL = 'https://api.malaibnet.com';
 
 const scriptURL = APPS_SCRIPT_BASE_URL;
 
@@ -180,13 +181,6 @@ if (slug && !/^[a-zA-Z0-9_-]{2,100}$/.test(slug)) {
             if (!confirmNoLoc) return;
         }
 
-        // تستخدم لوحة التحكم رمز الجلسة القصير الصادر من Worker، وليس هاش كلمة المرور.
-        const adminSession = sessionStorage.getItem('adminSession_' + slug) || '';
-        if (!adminSession) {
-            alert('يرجى تسجيل الدخول من لوحة الإدارة أولًا.');
-            return;
-        }
-
         btn.innerText = "جاري الحفظ والتحميل...";
         btn.disabled = true;
 
@@ -206,7 +200,7 @@ if (slug && !/^[a-zA-Z0-9_-]{2,100}$/.test(slug)) {
 
         try {
             const response = await fetch(finalUpdateURL, {
-                headers: { 'Authorization': `Bearer ${adminSession}` },
+                credentials: 'include',
                 cache: 'no-store'
             });
             const result = await response.text();
