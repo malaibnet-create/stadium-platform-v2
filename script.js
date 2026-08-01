@@ -224,46 +224,6 @@ if (stadiumId) {
     localStorage.setItem('lastVisitedStadiumId', stadiumId);
 }
 
-// --- دالة المانيفست الموحدة ---
-function setupFixedManifest() {
-    const baseUrl = window.location.origin + window.location.pathname.replace(/\/[^\/]*$/, '/');
-    
-    const myFixedManifest = {
-        "short_name": "ملاعب NET",
-        "name": "ملاعب NET - منصة حجز الملاعب",
-        "id": "stadium-platform-main-fixed", 
-        "start_url": baseUrl + "index.html", // العودة دائماً للرابط الرئيسي ليقرر التوجيه
-        "scope": baseUrl, 
-        "display": "standalone",
-        "background_color": "#ffffff",
-        "theme_color": "#1e3a8a",
-        "icons": [
-            { "src": baseUrl + "logo_no_background.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
-            { "src": baseUrl + "logo_no_background.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
-        ]
-    };
-
-    try {
-        const stringManifest = JSON.stringify(myFixedManifest);
-        const base64Manifest = btoa(unescape(encodeURIComponent(stringManifest)));
-        const manifestURL = 'data:application/json;base64,' + base64Manifest;
-        
-        const oldManifest = document.querySelector('link[rel="manifest"]');
-        if (oldManifest) oldManifest.remove();
-
-        let link = document.createElement('link');
-        link.id = 'dynamic-manifest';
-        link.rel = 'manifest';
-        link.href = manifestURL;
-        document.head.appendChild(link);
-    } catch (e) {
-        console.error("Manifest Error: ", e);
-    }
-}
-
-// استدعاء المانيفست
-setupFixedManifest();
-
 // --- نظام تحديث الحالة (بدون توجيه قسري) ---
 (function syncAppState() {
     const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
@@ -2858,6 +2818,9 @@ function showMissingStadiumLanding() {
     if (title) title.innerText = "هذا الملعب غير متوفر حاليًا";
     if (org) org.innerText = "";
     if (location) location.innerText = "";
+    if (stadiumId && localStorage.getItem('lastVisitedStadiumId') === stadiumId) {
+        localStorage.removeItem('lastVisitedStadiumId');
+    }
 
     const oldLanding = document.getElementById("missingStadiumLanding");
     if (oldLanding) oldLanding.remove();
@@ -2870,19 +2833,93 @@ function showMissingStadiumLanding() {
     landing.innerHTML = `
         <div class="missing-stadium-card">
             <img src="logo_no_background.png" alt="MalaibNet" class="missing-stadium-logo">
-            <h2>الملعب غير موجود أو تم حذف الحساب</h2>
-            <p>يمكنك إنشاء واجهة ملعب جديدة، أو البحث عن ملاعب قريبة منك في حدود 20 كلم.</p>
+            <h2>${stadiumId ? 'الملعب غير موجود أو تم حذف الحساب' : 'مرحباً بك في ملاعب NET'}</h2>
+            <p>اختر الخدمة المناسبة لك.</p>
 
             <div class="missing-stadium-actions">
-                <a href="register.html" class="missing-primary-btn">إنشاء واجهة ملعب جديدة</a>
+                <div class="missing-actions-heading">
+                    خدمات أصحاب الملاعب
+                </div>
+                <a href="register.html" class="missing-primary-btn">إنشاء واجهة ملعب</a>
+                <button type="button" onclick="toggleOwnerLandingLogin()" class="missing-login-btn">
+                    تسجيل دخول صاحب الملعب
+                </button>
+                <form id="ownerLandingLogin" class="owner-landing-login" style="display:none;" onsubmit="submitOwnerLandingLogin(event)">
+                    <label for="ownerLandingStadiumId">معرف الملعب أو رابط صفحة الحجز</label>
+                    <input id="ownerLandingStadiumId" required autocomplete="username" placeholder="st-xxxxxxxx أو رابط الملعب" style="width:100%; box-sizing:border-box; margin:6px 0 10px; padding:10px; border:1px solid #cbd5e1; border-radius:8px;">
+                    <label for="ownerLandingPassword">كلمة المرور</label>
+                    <input id="ownerLandingPassword" type="password" required autocomplete="current-password" style="width:100%; box-sizing:border-box; margin:6px 0 10px; padding:10px; border:1px solid #cbd5e1; border-radius:8px;">
+                    <button type="submit" class="missing-primary-btn" style="width:100%;">دخول إلى لوحة التحكم</button>
+                </form>
+                <div class="missing-actions-heading missing-player-heading">للاعبين</div>
                 <button type="button" onclick="openNearbyModal()" class="missing-secondary-btn">
-                    زيارة ملاعب قريبة
+                    البحث عن ملاعب قريبة
                 </button>
             </div>
         </div>
     `;
 
     app.appendChild(landing);
+}
+
+function toggleOwnerLandingLogin() {
+    const form = document.getElementById('ownerLandingLogin');
+    if (!form) return;
+    const isHidden = form.style.display === 'none';
+    form.style.display = isHidden ? 'block' : 'none';
+    if (isHidden) document.getElementById('ownerLandingStadiumId')?.focus();
+}
+
+function ownerLandingStadiumId_(value) {
+    const text = String(value || '').trim();
+    try {
+        const url = new URL(text);
+        return url.searchParams.get('id') || '';
+    } catch (_) {
+        return text;
+    }
+}
+
+async function submitOwnerLandingLogin(event) {
+    event.preventDefault();
+    const stadiumInput = document.getElementById('ownerLandingStadiumId');
+    const passwordInput = document.getElementById('ownerLandingPassword');
+    const submitButton = event.currentTarget.querySelector('button[type="submit"]');
+    const ownerStadiumId = ownerLandingStadiumId_(stadiumInput?.value);
+    const password = passwordInput?.value || '';
+
+    if (!/^[a-zA-Z0-9_-]{3,80}$/.test(ownerStadiumId) || !password) {
+        alert('أدخل معرف ملعب صحيحاً وكلمة المرور.');
+        return;
+    }
+
+    const originalText = submitButton?.innerText;
+    if (submitButton) {
+        submitButton.disabled = true;
+        submitButton.innerText = 'جاري تسجيل الدخول...';
+    }
+    try {
+        const response = await fetch(`${settingsScriptURL}?action=adminAuth`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+            body: JSON.stringify({ action: 'adminAuth', id: ownerStadiumId, password }),
+            cache: 'no-store'
+        });
+        const result = await response.json().catch(() => null);
+        if (!response.ok || result?.result !== 'success' || !result.token) {
+            throw new Error('بيانات الدخول غير صحيحة.');
+        }
+        sessionStorage.setItem('adminSession_' + ownerStadiumId, result.token);
+        localStorage.setItem('lastVisitedStadiumId', ownerStadiumId);
+        window.location.assign(`dashboard.html?id=${encodeURIComponent(ownerStadiumId)}`);
+    } catch (error) {
+        alert(error.message || 'تعذر تسجيل الدخول حالياً.');
+    } finally {
+        if (submitButton) {
+            submitButton.disabled = false;
+            submitButton.innerText = originalText;
+        }
+    }
 }
 
 
