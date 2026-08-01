@@ -29,8 +29,8 @@
             // التوجيه لآخر ملعب زاره فعلياً
             window.location.replace("booking.html?id=" + encodeURIComponent(lastId));
         } else {
-            // إذا لم يسبق له زيارة أي ملعب، يذهب للتسجيل
-            window.location.replace("register.html");
+            // تعرض واجهة اختيار واضحة للمالك واللاعب بدلاً من فتح التسجيل تلقائياً.
+            window.location.replace("booking.html?discover=1");
         }
     }
 
