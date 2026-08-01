@@ -1,4 +1,4 @@
-const cacheName = 'malaeb-net-v18-owner-player-landing';
+const cacheName = 'malaeb-net-v19-owner-email-login';
 const assets = [
   './',
   './index.html',
