@@ -2845,8 +2845,8 @@ function showMissingStadiumLanding() {
                     تسجيل دخول صاحب الملعب
                 </button>
                 <form id="ownerLandingLogin" class="owner-landing-login" style="display:none;" onsubmit="submitOwnerLandingLogin(event)">
-                    <label for="ownerLandingStadiumId">معرف الملعب أو رابط صفحة الحجز</label>
-                    <input id="ownerLandingStadiumId" required autocomplete="username" placeholder="st-xxxxxxxx أو رابط الملعب" style="width:100%; box-sizing:border-box; margin:6px 0 10px; padding:10px; border:1px solid #cbd5e1; border-radius:8px;">
+                    <label for="ownerLandingEmail">البريد الإلكتروني</label>
+                    <input id="ownerLandingEmail" type="email" required autocomplete="username" placeholder="name@example.com" style="width:100%; box-sizing:border-box; margin:6px 0 10px; padding:10px; border:1px solid #cbd5e1; border-radius:8px;">
                     <label for="ownerLandingPassword">كلمة المرور</label>
                     <input id="ownerLandingPassword" type="password" required autocomplete="current-password" style="width:100%; box-sizing:border-box; margin:6px 0 10px; padding:10px; border:1px solid #cbd5e1; border-radius:8px;">
                     <button type="submit" class="missing-primary-btn" style="width:100%;">دخول إلى لوحة التحكم</button>
@@ -2867,29 +2867,19 @@ function toggleOwnerLandingLogin() {
     if (!form) return;
     const isHidden = form.style.display === 'none';
     form.style.display = isHidden ? 'block' : 'none';
-    if (isHidden) document.getElementById('ownerLandingStadiumId')?.focus();
-}
-
-function ownerLandingStadiumId_(value) {
-    const text = String(value || '').trim();
-    try {
-        const url = new URL(text);
-        return url.searchParams.get('id') || '';
-    } catch (_) {
-        return text;
-    }
+    if (isHidden) document.getElementById('ownerLandingEmail')?.focus();
 }
 
 async function submitOwnerLandingLogin(event) {
     event.preventDefault();
-    const stadiumInput = document.getElementById('ownerLandingStadiumId');
+    const emailInput = document.getElementById('ownerLandingEmail');
     const passwordInput = document.getElementById('ownerLandingPassword');
     const submitButton = event.currentTarget.querySelector('button[type="submit"]');
-    const ownerStadiumId = ownerLandingStadiumId_(stadiumInput?.value);
+    const email = emailInput?.value.trim().toLowerCase() || '';
     const password = passwordInput?.value || '';
 
-    if (!/^[a-zA-Z0-9_-]{3,80}$/.test(ownerStadiumId) || !password) {
-        alert('أدخل معرف ملعب صحيحاً وكلمة المرور.');
+    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email) || !password) {
+        alert('أدخل البريد الإلكتروني وكلمة المرور.');
         return;
     }
 
@@ -2902,12 +2892,16 @@ async function submitOwnerLandingLogin(event) {
         const response = await fetch(`${settingsScriptURL}?action=adminAuth`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-            body: JSON.stringify({ action: 'adminAuth', id: ownerStadiumId, password }),
+            body: JSON.stringify({ action: 'adminAuth', email, password }),
             cache: 'no-store'
         });
         const result = await response.json().catch(() => null);
         if (!response.ok || result?.result !== 'success' || !result.token) {
             throw new Error('بيانات الدخول غير صحيحة.');
+        }
+        const ownerStadiumId = String(result.stadiumId || '').trim();
+        if (!/^[a-zA-Z0-9_-]{3,80}$/.test(ownerStadiumId)) {
+            throw new Error('تعذر تحديد حساب الملعب.');
         }
         sessionStorage.setItem('adminSession_' + ownerStadiumId, result.token);
         localStorage.setItem('lastVisitedStadiumId', ownerStadiumId);
