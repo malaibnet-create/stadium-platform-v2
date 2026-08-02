@@ -31,8 +31,17 @@
         </div>
 
         <div class="section">
-            <label>الجمعية أو الجهة المشرفة</label>
-            <input type="text" id="organization" placeholder="اسم الجمعية المسؤولة">
+            <label>نوع الملعب</label>
+            <select id="organization">
+                <option value="كرة قدم">كرة قدم</option>
+                <option value="كرة قدم مصغرة">كرة قدم مصغرة</option>
+                <option value="كرة سلة">كرة سلة</option>
+                <option value="كرة تنس">كرة تنس</option>
+                <option value="كرة طائرة">كرة طائرة</option>
+                <option value="كرة يد">كرة يد</option>
+                <option value="بادل">بادل</option>
+                <option value="متعدد الرياضات">متعدد الرياضات</option>
+            </select>
         </div>
 
         <div class="section">
@@ -49,19 +58,10 @@
         </div>
 
 <div class="section">
-    <label style="display: flex; align-items: center; gap: 8px; font-weight: bold;">
-        موقع الملعب (رابط الخريطة)
-        <span onclick="showMapInstructions()" style="cursor: pointer; background: #1e3a8a; color: white; width: 18px; height: 18px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 12px;" title="كيف أحصل على الرابط؟">؟</span>
-    </label>
-    
-    <div style="display: flex; gap: 5px; margin-top: 5px;">
-        <input type="text" id="location" placeholder="ضع رابط Google Maps هنا" style="flex: 1; padding: 10px; border: 1px solid #ddd; border-radius: 8px;">
-        
-        <!-- الزر السحري لجلب الإحداثيات -->
-        <button type="button" onclick="detectCoordinates()" style="background: #10b981; color: white; border: none; border-radius: 8px; padding: 0 15px; cursor: pointer; font-size: 1.1rem; display: flex; align-items: center; justify-content: center;" title="حدد إحداثيات موقعك الحالي">
-            📍
-        </button>
-    </div>
+    <label style="font-weight: bold;">تحديد موقع الملعب *</label>
+    <button type="button" onclick="detectCoordinates()" style="background: #10b981; color: white; border: none; border-radius: 8px; padding: 10px 15px; cursor: pointer; font-size: 1rem;" title="حدد إحداثيات موقعك الحالي">
+        📍 تحديد موقعي الحالي
+    </button>
 
     <!-- حقول مخفية لتخزين أرقام الطول والعرض -->
     <input type="hidden" id="lat">
@@ -72,7 +72,7 @@
     </div>
 
     <small style="display: block; color: #666; margin-top: 5px; font-size: 0.85rem;">
-        💡 <strong>هام:</strong> ضع الرابط أولاً، ثم اضغط على 📍 وأنت <b>داخل الملعب</b> ليتمكن اللاعبون من العثور عليك عبر خاصية المسافة.
+        💡 <strong>هام:</strong> اضغط على 📍 وأنت <b>داخل الملعب</b>. تُستخدم الإحداثيات لخاصية الملاعب القريبة وزر الخريطة.
     </small>
 </div>
            <div class="section">
@@ -97,19 +97,6 @@
 </div>
 
 <script>
-// دالة تعليمات الرابط (القديمة كما هي)
-function showMapInstructions() {
-    alert(
-      "كيفية الحصول على الرابط الصحيح:\n" +
-      "1. افتح تطبيق Google Maps وابحث عن ملعبك.\n" +
-      "2. اضغط على زر 'مشاركة' (Share).\n" +
-      "3. اختر 'نسخ الرابط' (Copy link).\n" +
-      "4. قم بلصق الرابط هنا.\n\n" +
-      "شكل الرابط يجب أن يبدأ بـ https://maps.app.goo.gl/... أو https://goo.gl/maps/..."
-    );
-}
-
-
   // 1. إعداد المتغيرات الأساسية
   // Cloudflare Worker
 const APPS_SCRIPT_BASE_URL = 'https://api.malaibnet.com';
@@ -136,11 +123,10 @@ if (slug && !/^[a-zA-Z0-9_-]{2,100}$/.test(slug)) {
             if (data !== "NotFound") {
                 // تعبئة الخانات بالبيانات الموجودة مسبقاً في الشيت
                 document.getElementById('stadiumName').value = data.stadium_name || "";
-                document.getElementById('organization').value = data.org || "";
+                document.getElementById('organization').value = data.stadium_type || "كرة قدم";
                 document.getElementById('priceDay').value = data.price_day || "";
                 document.getElementById('priceNight').value = data.price_night || "";
                 document.getElementById('managerPhone').value = data.phone || "";
-                document.getElementById('location').value = data.location || "";
                 document.getElementById('fbLink').value = data.fb || "";
                 document.getElementById('instaLink').value = data.insta || "";
             }
@@ -162,7 +148,6 @@ if (slug && !/^[a-zA-Z0-9_-]{2,100}$/.test(slug)) {
         const pDay = document.getElementById('priceDay').value;
         const pNight = document.getElementById('priceNight').value;
         const phone = document.getElementById('managerPhone').value;
-        const loc = document.getElementById('location').value;
         const fb = document.getElementById('fbLink').value;
         const insta = document.getElementById('instaLink').value;
 
@@ -175,10 +160,9 @@ if (slug && !/^[a-zA-Z0-9_-]{2,100}$/.test(slug)) {
             return;
         }
 
-        // تنبيه بسيط إذا نسى الضغط على زر الموقع (اختياري)
         if (!lat || !lng) {
-            const confirmNoLoc = confirm("لم يتم تحديد إحداثيات الموقع عبر زر (📍). هل تريد الاستمرار بحفظ الرابط فقط؟ (لن يظهر الملعب في خاصية الملاعب القريبة بدونها)");
-            if (!confirmNoLoc) return;
+            alert("اضغط زر 📍 لتحديد إحداثيات الملعب قبل الحفظ.");
+            return;
         }
 
         btn.innerText = "جاري الحفظ والتحميل...";
@@ -187,11 +171,10 @@ if (slug && !/^[a-zA-Z0-9_-]{2,100}$/.test(slug)) {
         const finalUpdateURL = `${scriptURL}?action=updateSettings` + 
                              `&slug=${encodeURIComponent(slug)}` +
                              `&stadiumName=${encodeURIComponent(stadiumName)}` +
-                             `&org=${encodeURIComponent(org)}` +
+                             `&stadiumType=${encodeURIComponent(org)}` +
                              `&pDay=${encodeURIComponent(pDay)}` +
                              `&pNight=${encodeURIComponent(pNight)}` +
                              `&phone=${encodeURIComponent(phone)}` +
-                             `&loc=${encodeURIComponent(loc)}` +
                              `&fb=${encodeURIComponent(fb)}` +
                              `&insta=${encodeURIComponent(insta)}` +
                              `&lat=${encodeURIComponent(lat)}` + 
