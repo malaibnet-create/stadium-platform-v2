@@ -50,6 +50,14 @@ const APPS_SCRIPT_BASE_URL = 'https://api.malaibnet.com';
 // جميع الطلبات تمر عبر Cloudflare Worker
 const settingsScriptURL = APPS_SCRIPT_BASE_URL;
 const bookingScriptURL = APPS_SCRIPT_BASE_URL;
+const STADIUM_TYPES = ["كرة قدم", "كرة قدم مصغرة", "كرة سلة", "كرة تنس", "كرة طائرة", "كرة يد", "بادل", "متعدد الرياضات"];
+
+function stadiumTypeOptions(selectedType) {
+    const selected = STADIUM_TYPES.includes(selectedType) ? selectedType : "كرة قدم";
+    return STADIUM_TYPES.map(type =>
+        `<option value="${type}"${type === selected ? " selected" : ""}>${type}</option>`
+    ).join("");
+}
 
 (function clearLegacyAdminCredentials() {
     for (let index = sessionStorage.length - 1; index >= 0; index--) {
@@ -308,7 +316,7 @@ if (data.stadium_name) {
             }
 
 const orgEl = document.getElementById('displayOrg');
-if (orgEl) orgEl.innerText = "بإشراف: " + (data.org || "");
+if (orgEl) orgEl.innerText = data.stadium_type || "نوع الملعب غير محدد";
 
 // 2. حل مشكلة اللوغو
 const logoImg = document.getElementById('displayLogo');
@@ -346,15 +354,7 @@ setupSupervisorContact(data.phone, data.stadium_name);
             // 5. زر الموقع
          const locBtn = document.getElementById('btnLocation');
             if(locBtn) {
-                const safeLocation = safeExternalHref(data.location, ['maps.google.com', 'www.google.com', 'goo.gl', 'maps.app.goo.gl']);
-                if (safeLocation) {
-                    locBtn.style.opacity = "1";
-                    locBtn.onclick = (e) => {
-                        e.preventDefault();
-                        window.open(safeLocation, '_blank', 'noopener,noreferrer');
-                    };
-                } else if (data.lat && data.lng) { 
-                    // إذا لم يوجد رابط ولكن توجد إحداثيات، نفتح الموقع بناءً عليها
+                if (data.lat && data.lng) {
                     locBtn.style.opacity = "1";
                     locBtn.onclick = (e) => {
                         e.preventDefault();
@@ -484,6 +484,7 @@ function renderRelatedStadiums(data) {
                href="booking.html?id=${encodeURIComponent(stadium.slug)}">
                 <span class="stadium-card-icon">⚽</span>
                 <span class="stadium-card-name">${escapeHTML(stadium.stadium_name)}</span>
+                <small>${escapeHTML(stadium.stadium_type || "نوع غير محدد")}</small>
                 ${isActive ? '<small>الملعب الحالي</small>' : ''}
             </a>
         `;
@@ -1228,8 +1229,9 @@ async function saveAdminSettings(event) {
             pNight: document.getElementById('upd_price_night')?.value || "",
             logo: document.getElementById('upd_logo')?.value || "",
             phone: document.getElementById('upd_phone')?.value || "",
-            org: document.getElementById('upd_org')?.value || "",
-            loc: document.getElementById('upd_loc')?.value || "",
+            stadiumType: document.getElementById('upd_type')?.value || "",
+            lat: document.getElementById('upd_lat')?.value || "",
+            lng: document.getElementById('upd_lng')?.value || "",
             fb: document.getElementById('upd_fb')?.value || "",
             insta: document.getElementById('upd_insta')?.value || "",
             openHour: document.getElementById('openHourInput')?.value || "8",
@@ -1288,8 +1290,8 @@ async function loadActualSettings() {
         <label><b>اسم الملعب:</b></label>
         <input type="text" id="upd_name" class="admin-input" value="${escapeHTML(data.stadium_name)}">
         
-        <label><b>اسم المؤسسة/المسؤول:</b></label>
-        <input type="text" id="upd_org" class="admin-input" value="${escapeHTML(data.org || '')}">
+        <label><b>نوع الملعب:</b></label>
+        <select id="upd_type" class="admin-input">${stadiumTypeOptions(data.stadium_type)}</select>
 
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
             <div>
@@ -1306,11 +1308,12 @@ async function loadActualSettings() {
         <input type="text" id="upd_phone" class="admin-input" value="${escapeHTML(data.phone)}">
 
         <div class="admin-field">
-            <label style="display: flex; align-items: center; gap: 8px;">
-                <b>موقع الملعب (Google Maps):</b>
-                <span onclick="showMapHelp()" style="cursor: pointer; background: #1e3a8a; color: white; width: 18px; height: 18px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 12px;" title="كيف أحصل على الرابط؟">؟</span>
-            </label>
-            <input type="text" id="upd_loc" class="admin-input" value="${escapeHTML(data.location || '')}" placeholder="ضع رابط الخريطة هنا">
+            <label><b>تحديد موقع الملعب:</b></label>
+            <button type="button" data-detect-coordinates onclick="detectCoordinates()" class="btn-secondary">📍 تحديد موقعي الحالي</button>
+            <input type="hidden" id="upd_lat" value="${escapeHTML(data.lat || '')}">
+            <input type="hidden" id="upd_lng" value="${escapeHTML(data.lng || '')}">
+            <div id="upd_coordSuccess" class="owner-coord-success" style="${data.lat && data.lng ? '' : 'display:none;'}">✅ تم حفظ إحداثيات الملعب.</div>
+            <small>اضغط الزر وأنت داخل الملعب. سيستخدم اللاعبون هذه الإحداثيات لفتح الخريطة.</small>
         </div>
 
         <div style="background: #f8fafc; padding: 12px; border-radius: 10px; border: 1px solid #e2e8f0;">
@@ -1318,13 +1321,13 @@ async function loadActualSettings() {
                 <b>روابط الصور (الشعار والسلايدر):</b>
                 <span onclick="showImageHelp()" style="cursor: pointer; background: #2563eb; color: white; width: 18px; height: 18px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 12px;">؟</span>
             </label>
-            <p style="font-size: 11px; color: #64748b; margin: 5px 0;">ارفع الصور على <a href="https://postimages.org/" target="_blank" rel="noopener noreferrer" style="color:#22c55e; font-weight:bold; text-decoration:none;">Postimages.org</a>  وانسخ "الرابط المباشر .الاختيار الثاني".</p>
+            <p style="font-size: 11px; color: #64748b; margin: 5px 0;">ارفع الصور على <a href="https://postimages.org/" target="_blank" rel="noopener noreferrer" style="color:#22c55e; font-weight:bold; text-decoration:none;">Postimages.org</a> وانسخ "الرابط المباشر".</p>
             
             <label style="font-size: 12px; display:block; margin-top:10px;">رابط اللوجو:</label>
-            <input type="text" id="upd_logo" class="admin-input" value="${escapeHTML(data.logo_url || '')}" placeholder="رابط اللوجو المباشر,الاختيار الثاني (Direct Link)" style="margin-bottom:8px;">
+            <input type="text" id="upd_logo" class="admin-input" value="${escapeHTML(data.logo_url || '')}" placeholder="رابط اللوجو المباشر (Direct Link)" style="margin-bottom:8px;">
             
             <label style="font-size: 12px; display:block;">صور السلايدر (1، 2، 3):</label>
-            <input type="text" id="upd_img1" class="admin-input" value="${escapeHTML(data.img1 || '')}" placeholder="رابط صورة السلايدر الاختيار الثاني في قائمة الروابط 1" style="margin-bottom:5px;">
+            <input type="text" id="upd_img1" class="admin-input" value="${escapeHTML(data.img1 || '')}" placeholder="رابط صورة السلايدر 1" style="margin-bottom:5px;">
             <input type="text" id="upd_img2" class="admin-input" value="${escapeHTML(data.img2 || '')}" placeholder="رابط صورة السلايدر 2" style="margin-bottom:5px;">
             <input type="text" id="upd_img3" class="admin-input" value="${escapeHTML(data.img3 || '')}" placeholder="رابط صورة السلايدر 3">
         </div>
@@ -1845,7 +1848,7 @@ function showBookingTicket(stadiumName, date, time, stadiumUrl) {
         });
         const hint = document.createElement('p');
         hint.style.cssText = 'font-size:0.7rem; color:#64748b; margin-top:10px;';
-        hint.textContent = ' اعمل لقطة شاشة للتذكرة للإدلاء بها عند دخول الملعب📸';
+        hint.textContent = 'يفضل عمل لقطة شاشة للتذكرة 📸';
         footer.append(shareButton, hint);
         ticket.append(header, body, footer);
 
@@ -1919,9 +1922,9 @@ function shakeUpgradeButton() {
 
 // نفس آلية تحديد الموقع الموجودة في dashboard.html، وتعمل أيضًا مع نموذج الإضافة الديناميكي.
 function detectCoordinates() {
-    const latInput = document.getElementById('add_stadium_lat') || document.getElementById('lat');
-    const lngInput = document.getElementById('add_stadium_lng') || document.getElementById('lng');
-    const successMessage = document.getElementById('add_stadium_coordSuccess') || document.getElementById('coordSuccess');
+    const latInput = document.getElementById('add_stadium_lat') || document.getElementById('upd_lat') || document.getElementById('lat');
+    const lngInput = document.getElementById('add_stadium_lng') || document.getElementById('upd_lng') || document.getElementById('lng');
+    const successMessage = document.getElementById('add_stadium_coordSuccess') || document.getElementById('upd_coordSuccess') || document.getElementById('coordSuccess');
     const button = document.querySelector('[data-detect-coordinates]') ||
         document.querySelector('button[onclick="detectCoordinates()"]');
 
@@ -2440,6 +2443,7 @@ async function findNearbyStadiums() {
                     <div class="stadium-card">
                         <div class="stadium-info">
                             <h4 style="margin-bottom:2px;">${escapeHTML(stadium.stadium_name)}</h4>
+                            <p style="margin:0 0 6px; color:#475569; font-size:.85rem;">${escapeHTML(stadium.stadium_type || "نوع غير محدد")}</p>
                             <span class="distance-tag" style="background:#e0f2fe; color:#0369a1;">
                                 🚗 يبعد ${stadium.distance.toFixed(1)} كلم عنك
                             </span>
@@ -2578,7 +2582,9 @@ async function openAddStadiumRegistration() {
                 <label>اسم الملعب التجاري *<input id="add_stadium_name" maxlength="120" required placeholder="مثلاً: ملعب نجوم بوعسل"></label>
             </div>
             <div class="owner-form-section">
-                <label>الجمعية أو الجهة المشرفة<input id="add_stadium_org" maxlength="120" placeholder="اسم الجمعية أو الجهة المسؤولة"></label>
+                <label>نوع الملعب
+                    <select id="add_stadium_type">${stadiumTypeOptions("كرة قدم")}</select>
+                </label>
             </div>
             <div class="owner-form-section">
                 <label>ثمن الحجز بالساعة</label>
@@ -2591,15 +2597,14 @@ async function openAddStadiumRegistration() {
                 <label>رقم هاتف المشرف أو المكلف بالملعب<input id="add_stadium_phone" type="tel" maxlength="30" placeholder="06xxxxxxxx"></label>
             </div>
             <div class="owner-form-section">
-                <label>موقع الملعب (رابط الخريطة)</label>
+                <label>تحديد موقع الملعب *</label>
                 <div class="owner-location-row">
-                    <input id="add_stadium_loc" maxlength="300" placeholder="ضع رابط Google Maps هنا">
                     <button type="button" data-detect-coordinates onclick="detectCoordinates()" title="حدد إحداثيات موقعك الحالي">📍</button>
                 </div>
                 <input type="hidden" id="add_stadium_lat">
                 <input type="hidden" id="add_stadium_lng">
                 <div id="add_stadium_coordSuccess" class="owner-coord-success" style="display:none;">✅ تم التقاط إحداثيات الملعب بنجاح.</div>
-                <small>ضع رابط الخريطة أولاً، ثم اضغط 📍 وأنت داخل الملعب لتفعيل خاصية الملاعب القريبة.</small>
+                <small>اضغط 📍 وأنت داخل الملعب. سيُستخدم الموقع لخاصية الملاعب القريبة وزر الخريطة.</small>
             </div>
             <div class="owner-form-section">
                 <label>روابط التواصل الاجتماعي</label>
@@ -2622,6 +2627,12 @@ async function createStadiumFromDashboard(button) {
         alert('أدخل اسم الملعب أولاً.');
         return;
     }
+    const latitude = document.getElementById('add_stadium_lat')?.value.trim();
+    const longitude = document.getElementById('add_stadium_lng')?.value.trim();
+    if (!latitude || !longitude) {
+        alert('اضغط زر 📍 لتحديد إحداثيات الملعب قبل الإنشاء.');
+        return;
+    }
 
     const originalText = button?.innerText || 'إنشاء الملعب';
     if (button) {
@@ -2633,13 +2644,12 @@ async function createStadiumFromDashboard(button) {
     try {
         const result = await adminPost('createStadium', {
             stadiumName: name,
-            org: field('add_stadium_org'),
+            stadiumType: field('add_stadium_type'),
             phone: field('add_stadium_phone'),
-            loc: field('add_stadium_loc'),
             pDay: field('add_stadium_pday'),
             pNight: field('add_stadium_pnight'),
-            lat: field('add_stadium_lat'),
-            lng: field('add_stadium_lng'),
+            lat: latitude,
+            lng: longitude,
             fb: field('add_stadium_fb'),
             insta: field('add_stadium_insta')
         });
