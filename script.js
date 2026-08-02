@@ -50,10 +50,12 @@ const APPS_SCRIPT_BASE_URL = 'https://api.malaibnet.com';
 // جميع الطلبات تمر عبر Cloudflare Worker
 const settingsScriptURL = APPS_SCRIPT_BASE_URL;
 const bookingScriptURL = APPS_SCRIPT_BASE_URL;
-const STADIUM_TYPES = ["Mini-foot", "كرة قدم", "كرة سلة", "كرة تنس", "كرة طائرة", "كرة يد", "بادل", "متعدد الرياضات"];
+const STADIUM_TYPES = ["Mini-foot", "ملعب كرة قدم كبير", "كرة سلة", "كرة تنس", "كرة طائرة", "كرة يد", "بادل", "متعدد الرياضات"];
 
 function stadiumTypeOptions(selectedType) {
-    const normalizedType = selectedType === "كرة قدم مصغرة" ? "Mini-foot" : selectedType;
+    const normalizedType = selectedType === "كرة قدم مصغرة"
+        ? "Mini-foot"
+        : (selectedType === "كرة قدم" ? "ملعب كرة قدم كبير" : selectedType);
     const selected = STADIUM_TYPES.includes(normalizedType) ? normalizedType : "Mini-foot";
     return STADIUM_TYPES.map(type =>
         `<option value="${type}"${type === selected ? " selected" : ""}>${type}</option>`
@@ -1324,15 +1326,15 @@ async function loadActualSettings() {
                 <b>روابط الصور (الشعار والسلايدر):</b>
                 <span onclick="showImageHelp()" style="cursor: pointer; background: #2563eb; color: white; width: 18px; height: 18px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 12px;">؟</span>
             </label>
-            <p style="font-size: 11px; color: #64748b; margin: 5px 0;">ارفع الصور على <a href="https://postimages.org/" target="_blank" rel="noopener noreferrer" style="color:#22c55e; font-weight:bold; text-decoration:none;">Postimages.org</a> وانسخ "الرابط المباشر".</p>
+            <p style="font-size: 11px; color: #475569; margin: 5px 0; font-weight:700;">ارفع الصور على <a href="https://postimages.org/" target="_blank" rel="noopener noreferrer" style="color:#15803d; font-weight:bold; text-decoration:none;">Postimages.org</a>، ثم اختر الرابط الثاني في قائمة الاختيارات: <span dir="ltr">Direct link</span>.</p>
             
             <label style="font-size: 12px; display:block; margin-top:10px;">رابط اللوجو:</label>
-            <input type="text" id="upd_logo" class="admin-input" value="${escapeHTML(data.logo_url || '')}" placeholder="رابط اللوجو المباشر (Direct Link)" style="margin-bottom:8px;">
+            <input type="text" id="upd_logo" class="admin-input" value="${escapeHTML(data.logo_url || '')}" placeholder="ضع الرابط الثاني من القائمة: Direct link" style="margin-bottom:8px;">
             
             <label style="font-size: 12px; display:block;">صور السلايدر (1، 2، 3):</label>
-            <input type="text" id="upd_img1" class="admin-input" value="${escapeHTML(data.img1 || '')}" placeholder="رابط صورة السلايدر 1" style="margin-bottom:5px;">
-            <input type="text" id="upd_img2" class="admin-input" value="${escapeHTML(data.img2 || '')}" placeholder="رابط صورة السلايدر 2" style="margin-bottom:5px;">
-            <input type="text" id="upd_img3" class="admin-input" value="${escapeHTML(data.img3 || '')}" placeholder="رابط صورة السلايدر 3">
+            <input type="text" id="upd_img1" class="admin-input" value="${escapeHTML(data.img1 || '')}" placeholder="صورة 1: الرابط الثاني Direct link" style="margin-bottom:5px;">
+            <input type="text" id="upd_img2" class="admin-input" value="${escapeHTML(data.img2 || '')}" placeholder="صورة 2: الرابط الثاني Direct link" style="margin-bottom:5px;">
+            <input type="text" id="upd_img3" class="admin-input" value="${escapeHTML(data.img3 || '')}" placeholder="صورة 3: الرابط الثاني Direct link">
         </div>
 
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
@@ -1419,7 +1421,7 @@ window.showMapHelp = function() {
 };
 
 window.showImageHelp = function() {
-    alert("🖼️ كيفية رفع الصور والحصول على رابط:\n1. ادخل لموقع Postimages.org.\n2. ارفع صورتك.\n3. بعد الرفع، انسخ الرابط المكتوب بجانبه 'Direct Link' (الرابط المباشر).\n4. الرابط الصحيح يجب أن ينتهي بـ .jpg أو .png");
+    alert("🖼️ كيفية رفع الصور والحصول على رابط:\n1. ادخل لموقع Postimages.org.\n2. ارفع صورتك.\n3. بعد الرفع، اختر الرابط الثاني في قائمة الاختيارات: Direct link.\n4. انسخ الرابط والصقه في الخانة المناسبة.");
 }; 
 
 
@@ -2321,7 +2323,7 @@ const legalPages = {
             </ul>
 
             <h3>2. إلغاء الحجز من طرف اللاعب</h3>
-            <p>يجوز للاعب إلغاء الحجز قبل موعده على الأقل قبل 12 ساعة ذلك عبر الاتصال بمشرف الملعب .</p>
+            <p>يجوز للاعب إلغاء الحجز قبل موعده وفق الشروط التي يحددها صاحب الملعب أو السياسة العامة للمنصة.</p>
 
             <h3>3. الدفع عند الوصول</h3>
             <p>إذا اختار اللاعب الدفع عند الوصول، لا يترتب على MalaibNet أي التزام مالي تجاه اللاعب أو صاحب الملعب.</p>
