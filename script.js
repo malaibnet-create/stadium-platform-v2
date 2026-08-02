@@ -722,21 +722,48 @@ function updateModalDetails() {
     detailsElement.style.opacity = '1';
 }
 
-function isNightBookingHour(hour) {
-    const numericHour = Number.parseInt(String(hour).split(':')[0], 10);
-    return Number.isFinite(numericHour) && (numericHour >= 18 || numericHour < 8);
+function getSeasonalDayNightHours(date) {
+    const dateValue = date instanceof Date ? date : parseBookingDate_(date);
+    const month = dateValue ? dateValue.getMonth() + 1 : new Date().getMonth() + 1;
+
+    if (month >= 5 && month <= 8) {
+        return { dayStart: 7, nightStart: 21 };
+    }
+    if (month === 3 || month === 4 || month === 9 || month === 10) {
+        return { dayStart: 7, nightStart: 20 };
+    }
+    return { dayStart: 8, nightStart: 18 };
 }
 
-function getHourlyBookingRate(hour) {
+function parseBookingDate_(value) {
+    if (value instanceof Date && !Number.isNaN(value.getTime())) {
+        return new Date(value.getFullYear(), value.getMonth(), value.getDate());
+    }
+
+    const parts = String(value || "").split("/").map(Number);
+    if (parts.length !== 3 || parts.some(part => !Number.isFinite(part))) return null;
+    const date = new Date(parts[2], parts[1] - 1, parts[0]);
+    return date.getFullYear() === parts[2] && date.getMonth() === parts[1] - 1 && date.getDate() === parts[0]
+        ? date
+        : null;
+}
+
+function isNightBookingHour(hour, bookingDate) {
+    const numericHour = Number.parseInt(String(hour).split(':')[0], 10);
+    const hours = getSeasonalDayNightHours(bookingDate);
+    return Number.isFinite(numericHour) && (numericHour >= hours.nightStart || numericHour < hours.dayStart);
+}
+
+function getHourlyBookingRate(hour, bookingDate) {
     const stadium = window.stadiumData || {};
-    const isNight = isNightBookingHour(hour);
+    const isNight = isNightBookingHour(hour, bookingDate);
     const configuredPrice = isNight ? stadium.price_night : stadium.price_day;
     const parsedPrice = Number(configuredPrice);
     return Number.isFinite(parsedPrice) && parsedPrice >= 0 ? parsedPrice : 0;
 }
 
 function getSelectedSlotsTotal() {
-    return selectedSlots.reduce((total, slot) => total + getHourlyBookingRate(slot.hour), 0);
+    return selectedSlots.reduce((total, slot) => total + getHourlyBookingRate(slot.hour, slot.date), 0);
 }
 
 function formatBookingPrice(value) {
@@ -3003,25 +3030,39 @@ function openRecurringModal() {
         hourSelect.appendChild(option);
     }
 
+    document.getElementById("recurringDay").value = new Date().getDay();
     hourSelect.onchange = updateRecurringPriceSummary;
+    document.getElementById("recurringDay").onchange = updateRecurringPriceSummary;
     const weeksInput = document.getElementById("recurringWeeks");
     if (weeksInput) weeksInput.oninput = updateRecurringPriceSummary;
     updateRecurringPriceSummary();
 
-    document.getElementById("recurringDay").value = new Date().getDay();
     document.getElementById("recurringModal").style.display = "block";
+}
+
+function getRecurringBookingTotal(dayIndex, hour, weeks) {
+    const firstDate = getFirstRecurringDate(dayIndex, hour);
+    let total = 0;
+    for (let week = 0; week < weeks; week++) {
+        const date = new Date(firstDate);
+        date.setDate(firstDate.getDate() + (week * 7));
+        total += getHourlyBookingRate(hour, getFormattedDate(date));
+    }
+    return total;
 }
 
 function updateRecurringPriceSummary() {
     const summary = document.getElementById("recurringPriceSummary");
     const hour = document.getElementById("recurringHour")?.value;
     const weeks = Number.parseInt(document.getElementById("recurringWeeks")?.value, 10);
-    if (!summary || !hour || !Number.isFinite(weeks) || weeks < 1) return;
+    const dayIndex = Number.parseInt(document.getElementById("recurringDay")?.value, 10);
+    if (!summary || !hour || !Number.isFinite(weeks) || weeks < 1 || !Number.isFinite(dayIndex)) return;
 
-    const hourlyRate = getHourlyBookingRate(hour);
-    const total = hourlyRate * weeks;
-    const period = isNightBookingHour(hour) ? "ليلي" : "نهاري";
-    summary.textContent = `💰 سعر الساعة (${period}): ${formatBookingPrice(hourlyRate)} درهم — الإجمالي لـ ${weeks} أسبوع: ${formatBookingPrice(total)} درهم`;
+    const firstDate = getFirstRecurringDate(dayIndex, hour);
+    const hourlyRate = getHourlyBookingRate(hour, getFormattedDate(firstDate));
+    const total = getRecurringBookingTotal(dayIndex, hour, weeks);
+    const period = isNightBookingHour(hour, getFormattedDate(firstDate)) ? "ليلي" : "نهاري";
+    summary.textContent = `💰 سعر الساعة (${period}): ${formatBookingPrice(hourlyRate)} درهم — الإجمالي لـ ${weeks} أسبوع حسب مواسم الحجز: ${formatBookingPrice(total)} درهم`;
 }
 
 function closeRecurringModal() {
@@ -3113,7 +3154,8 @@ async function submitRecurringBooking() {
 
         closeRecurringModal();
         initTable();
-        alert(`✅ تم تثبيت ${bookings.length} حجزًا أسبوعيًا بنجاح.\n💰 السعر الإجمالي: ${formatBookingPrice(getHourlyBookingRate(hour) * bookings.length)} درهم`);
+        const total = bookings.reduce((sum, booking) => sum + getHourlyBookingRate(booking.hour, booking.date), 0);
+        alert(`✅ تم تثبيت ${bookings.length} حجزًا أسبوعيًا بنجاح.\n💰 السعر الإجمالي: ${formatBookingPrice(total)} درهم`);
     } catch (error) {
         console.error(error);
         alert("تعذر إرسال الحجوزات. يرجى المحاولة مرة أخرى.");
