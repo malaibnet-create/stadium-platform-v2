@@ -1807,26 +1807,27 @@ body.missing-stadium-page #supervisorFloatBtn {
 .related-stadiums-list {
     display: flex;
     justify-content: center;
-    gap: 10px;
+    gap: 8px;
     flex-wrap: wrap;
 }
 
 .related-stadium-link {
-    min-width: 145px;
-    padding: 10px 12px;
+    width: 132px;
+    min-width: 132px;
+    padding: 8px 7px;
     box-sizing: border-box;
-    display: inline-flex;
+    display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 7px;
-    flex-wrap: wrap;
+    gap: 3px;
     border: 1px solid #bfdbfe;
     border-radius: 13px;
     background: #ffffff;
     color: #1e3a8a;
     text-decoration: none;
     font-family: 'Cairo', sans-serif;
-    font-size: 0.84rem;
+    font-size: 0.78rem;
     font-weight: bold;
     transition: 0.25s ease;
 }
@@ -1845,18 +1846,42 @@ body.missing-stadium-page #supervisorFloatBtn {
 }
 
 .stadium-card-icon {
-    font-size: 1.1rem;
+    font-size: 1rem;
+}
+
+.related-stadium-heading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    max-width: 100%;
 }
 
 .stadium-card-name {
     white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 102px;
 }
 
-.related-stadium-link small {
-    width: 100%;
+.related-stadium-type,
+.related-stadium-current {
     text-align: center;
+    font-size: 0.71rem;
+    font-weight: 700;
+    line-height: 1.25;
+}
+
+.related-stadium-type {
+    color: #1d4ed8;
+}
+
+.related-stadium-current {
     color: #dbeafe;
-    font-size: 0.68rem;
+}
+
+.related-stadium-link.active .related-stadium-type {
+    color: #ffffff;
 }
 
 .related-stadiums-hint {
@@ -1882,9 +1907,11 @@ body.missing-stadium-page #supervisorFloatBtn {
     }
 
     .related-stadium-link {
-        flex: 0 0 145px;
-        min-width: 145px;
-        font-size: 0.78rem;
+        flex: 0 0 122px;
+        width: 122px;
+        min-width: 122px;
+        padding: 7px 5px;
+        font-size: 0.73rem;
     }
 }
 
