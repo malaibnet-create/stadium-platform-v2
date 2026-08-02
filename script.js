@@ -1318,13 +1318,13 @@ async function loadActualSettings() {
                 <b>روابط الصور (الشعار والسلايدر):</b>
                 <span onclick="showImageHelp()" style="cursor: pointer; background: #2563eb; color: white; width: 18px; height: 18px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 12px;">؟</span>
             </label>
-            <p style="font-size: 11px; color: #64748b; margin: 5px 0;">ارفع الصور على <a href="https://postimages.org/" target="_blank" rel="noopener noreferrer" style="color:#22c55e; font-weight:bold; text-decoration:none;">Postimages.org</a> وانسخ "الرابط المباشر".</p>
+            <p style="font-size: 11px; color: #64748b; margin: 5px 0;">ارفع الصور على <a href="https://postimages.org/" target="_blank" rel="noopener noreferrer" style="color:#22c55e; font-weight:bold; text-decoration:none;">Postimages.org</a>  وانسخ "الرابط المباشر .الاختيار الثاني".</p>
             
             <label style="font-size: 12px; display:block; margin-top:10px;">رابط اللوجو:</label>
-            <input type="text" id="upd_logo" class="admin-input" value="${escapeHTML(data.logo_url || '')}" placeholder="رابط اللوجو المباشر (Direct Link)" style="margin-bottom:8px;">
+            <input type="text" id="upd_logo" class="admin-input" value="${escapeHTML(data.logo_url || '')}" placeholder="رابط اللوجو المباشر,الاختيار الثاني (Direct Link)" style="margin-bottom:8px;">
             
             <label style="font-size: 12px; display:block;">صور السلايدر (1، 2، 3):</label>
-            <input type="text" id="upd_img1" class="admin-input" value="${escapeHTML(data.img1 || '')}" placeholder="رابط صورة السلايدر 1" style="margin-bottom:5px;">
+            <input type="text" id="upd_img1" class="admin-input" value="${escapeHTML(data.img1 || '')}" placeholder="رابط صورة السلايدر الاختيار الثاني في قائمة الروابط 1" style="margin-bottom:5px;">
             <input type="text" id="upd_img2" class="admin-input" value="${escapeHTML(data.img2 || '')}" placeholder="رابط صورة السلايدر 2" style="margin-bottom:5px;">
             <input type="text" id="upd_img3" class="admin-input" value="${escapeHTML(data.img3 || '')}" placeholder="رابط صورة السلايدر 3">
         </div>
@@ -1845,7 +1845,7 @@ function showBookingTicket(stadiumName, date, time, stadiumUrl) {
         });
         const hint = document.createElement('p');
         hint.style.cssText = 'font-size:0.7rem; color:#64748b; margin-top:10px;';
-        hint.textContent = 'يفضل عمل لقطة شاشة للتذكرة 📸';
+        hint.textContent = ' اعمل لقطة شاشة للتذكرة للإدلاء بها عند دخول الملعب📸';
         footer.append(shareButton, hint);
         ticket.append(header, body, footer);
 
