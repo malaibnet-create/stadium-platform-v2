@@ -19,11 +19,11 @@
     
     <!-- إضافة إصدار (Version) للملفات لضمان تحديث الكاش عند المستخدمين -->
     <meta name="referrer" content="strict-origin-when-cross-origin">
-    <link rel="stylesheet" href="style.css?v=26-security">
+    <link rel="stylesheet" href="style.css?v=14-security">
     
     <script src="swiper-11.1.15.min.js"></script>
     
-    <script src="script.js?v=26-swiper-fallback" defer></script>
+    <script src="script.js?v=24-hourly-booking-prices" defer></script>
     
 </head>
 
@@ -165,7 +165,7 @@
 <div class="action-buttons">
     <button type="button" onclick="toggleRules()" class="btn-info">
         <span class="action-icon">📜</span>
-        <span>ثمن الحجز</span>
+        <span>سعر الساعة</span>
     </button>
 
     <button type="button" id="btnLocation" class="btn-map">
@@ -200,14 +200,14 @@
             <div style="display: flex; gap: 10px; margin-bottom: 20px;">
                 <div style="flex: 1; background: white; padding: 15px; border-radius: 15px; text-align: center; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px rgba(0,0,0,0.02);">
                     <span style="font-size: 1.5rem; display: block; margin-bottom: 5px;">☀️</span>
-                    <span style="color: #64748b; font-size: 0.8rem; display: block;">ثمن النهار</span>
-                    <strong style="color: #1e3a8a; font-size: 1.2rem;"><span id="displayPriceDay">--</span> <small style="font-size: 0.7rem;">درهم</small></strong>
+                    <span style="color: #64748b; font-size: 0.8rem; display: block;">سعر الساعة نهاراً</span>
+                    <strong style="color: #1e3a8a; font-size: 1.2rem;"><span id="displayPriceDay">--</span> <small style="font-size: 0.7rem;">درهم / ساعة</small></strong>
                 </div>
                 
                 <div id="nightPriceRow" style="flex: 1; background: white; padding: 15px; border-radius: 15px; text-align: center; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px rgba(0,0,0,0.02);">
                     <span style="font-size: 1.5rem; display: block; margin-bottom: 5px;">🌙</span>
-                    <span style="color: #64748b; font-size: 0.8rem; display: block;">ثمن الليل</span>
-                    <strong style="color: #f59e0b; font-size: 1.2rem;"><span id="displayPriceNight">--</span> <small style="font-size: 0.7rem;">درهم</small></strong>
+                    <span style="color: #64748b; font-size: 0.8rem; display: block;">سعر الساعة ليلاً</span>
+                    <strong style="color: #f59e0b; font-size: 1.2rem;"><span id="displayPriceNight">--</span> <small style="font-size: 0.7rem;">درهم / ساعة</small></strong>
                 </div>
             </div>
 
@@ -296,6 +296,9 @@
                     <input id="recurringWeeks" type="number" min="1" max="52" value="4">
                 </label>
             </div>
+            <div id="recurringPriceSummary" style="margin: 14px 0; padding: 10px; border-radius: 8px; background: #eff6ff; color: #1e3a8a; font-weight: 700; text-align: center;">
+                اختر الساعة وعدد الأسابيع لعرض السعر الإجمالي.
+            </div>
 
             <label>
                 الاسم الكامل
@@ -340,7 +343,7 @@
 
         <div id="bookingFormContent" style="padding: 20px; text-align: right; font-family: 'Cairo', sans-serif; background: white;">
             
-            <p id="selectedDetails" style="background: #f0f7ff; padding: 10px; border-radius: 8px; color: #1e3a8a; font-weight: bold; border-right: 5px solid #2563eb;"></p>
+            <p id="selectedDetails" style="background: #f0f7ff; padding: 10px; border-radius: 8px; color: #1e3a8a; font-weight: bold; border-right: 5px solid #2563eb; white-space: pre-line;"></p>
 
             <div id="extraSlotContainer" style="display:none; margin: 15px 0; padding: 12px; background-color: #f0fdf4; border: 1px dashed #22c55e; border-radius: 10px; text-align: center;">
                 <p style="margin: 0 0 10px 0; color: #166534; font-weight: bold; font-size: 0.9rem;">💡 هل ترغب في حجز ساعتين متتاليتين بدلاً من ساعة واحدة؟</p>
@@ -405,7 +408,7 @@
         
    <footer class="site-footer">
     <div class="footer-social-links">
-        <a id="emailLink" href="malaibnet@gmail.com" class="footer-link-btn contact-btn">
+        <a id="emailLink" href="mailto:support@example.com" class="footer-link-btn contact-btn">
             <i class="fas fa-envelope"></i> تواصل معنا
         </a>
         
