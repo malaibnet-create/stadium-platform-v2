@@ -1873,7 +1873,12 @@ body.missing-stadium-page #supervisorFloatBtn {
 }
 
 .related-stadium-type {
-    color: #1d4ed8;
+    display: inline-block;
+    padding: 2px 7px;
+    border-radius: 999px;
+    background: #dbeafe;
+    color: #172554;
+    border: 1px solid #93c5fd;
 }
 
 .related-stadium-current {
@@ -1881,7 +1886,9 @@ body.missing-stadium-page #supervisorFloatBtn {
 }
 
 .related-stadium-link.active .related-stadium-type {
-    color: #ffffff;
+    background: #ffffff;
+    color: #1e3a8a;
+    border-color: #ffffff;
 }
 
 .related-stadiums-hint {
