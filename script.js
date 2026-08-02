@@ -50,10 +50,11 @@ const APPS_SCRIPT_BASE_URL = 'https://api.malaibnet.com';
 // جميع الطلبات تمر عبر Cloudflare Worker
 const settingsScriptURL = APPS_SCRIPT_BASE_URL;
 const bookingScriptURL = APPS_SCRIPT_BASE_URL;
-const STADIUM_TYPES = ["كرة قدم", "كرة قدم مصغرة", "كرة سلة", "كرة تنس", "كرة طائرة", "كرة يد", "بادل", "متعدد الرياضات"];
+const STADIUM_TYPES = ["Mini-foot", "كرة قدم", "كرة سلة", "كرة تنس", "كرة طائرة", "كرة يد", "بادل", "متعدد الرياضات"];
 
 function stadiumTypeOptions(selectedType) {
-    const selected = STADIUM_TYPES.includes(selectedType) ? selectedType : "كرة قدم";
+    const normalizedType = selectedType === "كرة قدم مصغرة" ? "Mini-foot" : selectedType;
+    const selected = STADIUM_TYPES.includes(normalizedType) ? normalizedType : "Mini-foot";
     return STADIUM_TYPES.map(type =>
         `<option value="${type}"${type === selected ? " selected" : ""}>${type}</option>`
     ).join("");
@@ -482,10 +483,12 @@ function renderRelatedStadiums(data) {
         return `
             <a class="related-stadium-link ${isActive ? 'active' : ''}"
                href="booking.html?id=${encodeURIComponent(stadium.slug)}">
-                <span class="stadium-card-icon">⚽</span>
-                <span class="stadium-card-name">${escapeHTML(stadium.stadium_name)}</span>
-                <small>${escapeHTML(stadium.stadium_type || "نوع غير محدد")}</small>
-                ${isActive ? '<small>الملعب الحالي</small>' : ''}
+                <span class="related-stadium-heading">
+                    <span class="stadium-card-icon">⚽</span>
+                    <span class="stadium-card-name">${escapeHTML(stadium.stadium_name)}</span>
+                </span>
+                <small class="related-stadium-type">${escapeHTML(stadium.stadium_type || "Mini-foot")}</small>
+                ${isActive ? '<small class="related-stadium-current">الملعب الحالي</small>' : ''}
             </a>
         `;
     }).join('');
@@ -2583,7 +2586,7 @@ async function openAddStadiumRegistration() {
             </div>
             <div class="owner-form-section">
                 <label>نوع الملعب
-                    <select id="add_stadium_type">${stadiumTypeOptions("كرة قدم")}</select>
+                    <select id="add_stadium_type">${stadiumTypeOptions("Mini-foot")}</select>
                 </label>
             </div>
             <div class="owner-form-section">
