@@ -710,13 +710,40 @@ function updateModalDetails() {
         text = `📅 حجز يوم: ${date} | ⏰ من ${firstSlot.hour} إلى ${nextHour}`;
     }
 
+    const total = getSelectedSlotsTotal();
+    const hoursLabel = selectedSlots.length === 1 ? "ساعة واحدة" : "ساعتان";
+
     // التحديث الفعلي للنص والإظهار
-    detailsElement.innerText = text;
+    detailsElement.innerText = `${text}\n💰 السعر الإجمالي: ${formatBookingPrice(total)} درهم (${hoursLabel})`;
     detailsElement.style.display = 'block';
     
     // تأكيد إضافي: أحياناً يكون العنصر مخفياً بسبب CSS الأب
     detailsElement.style.visibility = 'visible';
     detailsElement.style.opacity = '1';
+}
+
+function isNightBookingHour(hour) {
+    const numericHour = Number.parseInt(String(hour).split(':')[0], 10);
+    return Number.isFinite(numericHour) && (numericHour >= 18 || numericHour < 8);
+}
+
+function getHourlyBookingRate(hour) {
+    const stadium = window.stadiumData || {};
+    const isNight = isNightBookingHour(hour);
+    const configuredPrice = isNight ? stadium.price_night : stadium.price_day;
+    const parsedPrice = Number(configuredPrice);
+    return Number.isFinite(parsedPrice) && parsedPrice >= 0 ? parsedPrice : 0;
+}
+
+function getSelectedSlotsTotal() {
+    return selectedSlots.reduce((total, slot) => total + getHourlyBookingRate(slot.hour), 0);
+}
+
+function formatBookingPrice(value) {
+    return Number(value || 0).toLocaleString('ar-MA', {
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 2
+    });
 }
 
 async function submitFinalBooking() {
@@ -794,7 +821,7 @@ async function submitFinalBooking() {
         const firstSlot = selectedSlots[0];
         const lastSlot = selectedSlots[selectedSlots.length - 1];
 
-        const startTime = firstSlot.hour + ":00";
+        const startTime = firstSlot.hour;
         const endTime = (parseInt(lastSlot.hour) + 1) + ":00";
         const timeRange = `${startTime} إلى ${endTime}`;
 
@@ -808,7 +835,7 @@ async function submitFinalBooking() {
         }
 
         // استدعاء دالة التذكرة (التي تتولى عرض التذكرة وخيار الواتساب)
-        showBookingTicket(currentStadiumName, firstSlot.date, timeRange, stadiumUrl);
+        showBookingTicket(currentStadiumName, firstSlot.date, timeRange, stadiumUrl, getSelectedSlotsTotal());
 
         // تحديث البيانات في الخلفية
         loadExistingBookings();
@@ -1300,12 +1327,12 @@ async function loadActualSettings() {
 
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
             <div>
-                <label><b>سعر النهار:</b></label>
-                <input type="number" id="upd_price_day" class="admin-input" value="${escapeHTML(data.price_day)}">
+                <label><b>سعر الساعة نهاراً (درهم):</b></label>
+                <input type="number" id="upd_price_day" class="admin-input" value="${escapeHTML(data.price_day)}" placeholder="سعر حجز الملعب للساعة">
             </div>
             <div>
-                <label><b>سعر الليل:</b></label>
-                <input type="number" id="upd_price_night" class="admin-input" value="${escapeHTML(data.price_night)}">
+                <label><b>سعر الساعة ليلاً (درهم):</b></label>
+                <input type="number" id="upd_price_night" class="admin-input" value="${escapeHTML(data.price_night)}" placeholder="سعر حجز الملعب للساعة">
             </div>
         </div>
 
@@ -1407,8 +1434,8 @@ content.innerHTML = html;
 
         // تحديد القيم الحالية التي جلبناها من السيرفر (data)
         // لاحظ أننا نستخدم data هنا لأنها تحتوي على أحدث القيم من السيرفر
-        openSelect.value = data.openHour || 8;
-        closeSelect.value = data.closeHour || 23;
+        openSelect.value = data.openHour === undefined || data.openHour === null || data.openHour === "" ? 8 : data.openHour;
+        closeSelect.value = data.closeHour === undefined || data.closeHour === null || data.closeHour === "" ? 23 : data.closeHour;
     } 
     } catch (e) {
         content.innerHTML = "<p style='color:red;'>خطأ في الاتصال بالسيرفر</p>";
@@ -1803,12 +1830,12 @@ function closeAdminPanel() {
         window.location.href = url.toString();
     }
 }
-function showBookingTicket(stadiumName, date, time, stadiumUrl) {
+function showBookingTicket(stadiumName, date, time, stadiumUrl, totalPrice) {
     const days = ["الأحد", "الإثنين", "الثلاثاء", "الأربعاء", "الخميس", "الجمعة", "السبت"];
     const parts = String(date).split('/');
     const formattedDate = parts.length === 3 ? new Date(parts[2], parts[1] - 1, parts[0]) : new Date(date);
     const dayName = days[formattedDate.getDay()] || "الموعد المحدد";
-    const shareText = `⚽ *تذكرة حجز مباراة*\n\n📍 الملعب: ${stadiumName}\n📅 اليوم: ${dayName}\n📆 التاريخ: ${date}\n⏰ الوقت: ${time}\n\n🔗 الرابط:\n${stadiumUrl}\n\nتم عبر ملاعب NET 🏟️`;
+    const shareText = `⚽ *تذكرة حجز مباراة*\n\n📍 الملعب: ${stadiumName}\n📅 اليوم: ${dayName}\n📆 التاريخ: ${date}\n⏰ الوقت: ${time}\n💰 السعر الإجمالي: ${formatBookingPrice(totalPrice)} درهم\n\n🔗 الرابط:\n${stadiumUrl}\n\nتم عبر ملاعب NET 🏟️`;
     const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(shareText)}`;
     const formContent = document.getElementById('bookingFormContent');
     const ticketContainer = document.getElementById('successTicketContainer');
@@ -1839,7 +1866,10 @@ function showBookingTicket(stadiumName, date, time, stadiumUrl) {
         const timeLine = document.createElement('p');
         timeLine.style.cssText = 'margin:5px 0; font-size:1.2rem; color:#1e3a8a; font-weight:bold;';
         timeLine.textContent = String(time);
-        body.append(stadiumLine, dateLine, timeLine);
+        const priceLine = document.createElement('p');
+        priceLine.style.cssText = 'margin:8px 0 0; color:#15803d; font-size:1.05rem; font-weight:bold;';
+        priceLine.textContent = `السعر الإجمالي: ${formatBookingPrice(totalPrice)} درهم`;
+        body.append(stadiumLine, dateLine, timeLine, priceLine);
 
         const footer = document.createElement('div');
         footer.className = 'ticket-footer';
@@ -1853,7 +1883,7 @@ function showBookingTicket(stadiumName, date, time, stadiumUrl) {
         });
         const hint = document.createElement('p');
         hint.style.cssText = 'font-size:0.7rem; color:#64748b; margin-top:10px;';
-        hint.textContent = 'يفضل عمل لقطة شاشة للتذكرة 📸';
+        hint.textContent = 'صوّر الوصل للإدلاء به في الملعب أو عند المشرف على الملعب. 📸';
         footer.append(shareButton, hint);
         ticket.append(header, body, footer);
 
@@ -2592,10 +2622,10 @@ async function openAddStadiumRegistration() {
                 </label>
             </div>
             <div class="owner-form-section">
-                <label>ثمن الحجز بالساعة</label>
+                <label>سعر حجز الملعب بالساعة</label>
                 <div class="owner-form-grid owner-price-grid">
-                    <input id="add_stadium_pday" type="number" min="0" step="0.01" placeholder="نهاراً (درهم)">
-                    <input id="add_stadium_pnight" type="number" min="0" step="0.01" placeholder="ليلاً - مع الأضواء (درهم)">
+                    <input id="add_stadium_pday" type="number" min="0" step="0.01" placeholder="سعر الساعة نهاراً (درهم)">
+                    <input id="add_stadium_pnight" type="number" min="0" step="0.01" placeholder="سعر الساعة ليلاً (درهم)">
                 </div>
             </div>
             <div class="owner-form-section">
@@ -2973,8 +3003,25 @@ function openRecurringModal() {
         hourSelect.appendChild(option);
     }
 
+    hourSelect.onchange = updateRecurringPriceSummary;
+    const weeksInput = document.getElementById("recurringWeeks");
+    if (weeksInput) weeksInput.oninput = updateRecurringPriceSummary;
+    updateRecurringPriceSummary();
+
     document.getElementById("recurringDay").value = new Date().getDay();
     document.getElementById("recurringModal").style.display = "block";
+}
+
+function updateRecurringPriceSummary() {
+    const summary = document.getElementById("recurringPriceSummary");
+    const hour = document.getElementById("recurringHour")?.value;
+    const weeks = Number.parseInt(document.getElementById("recurringWeeks")?.value, 10);
+    if (!summary || !hour || !Number.isFinite(weeks) || weeks < 1) return;
+
+    const hourlyRate = getHourlyBookingRate(hour);
+    const total = hourlyRate * weeks;
+    const period = isNightBookingHour(hour) ? "ليلي" : "نهاري";
+    summary.textContent = `💰 سعر الساعة (${period}): ${formatBookingPrice(hourlyRate)} درهم — الإجمالي لـ ${weeks} أسبوع: ${formatBookingPrice(total)} درهم`;
 }
 
 function closeRecurringModal() {
@@ -3066,7 +3113,7 @@ async function submitRecurringBooking() {
 
         closeRecurringModal();
         initTable();
-        alert(`✅ تم تثبيت ${bookings.length} حجزًا أسبوعيًا بنجاح.`);
+        alert(`✅ تم تثبيت ${bookings.length} حجزًا أسبوعيًا بنجاح.\n💰 السعر الإجمالي: ${formatBookingPrice(getHourlyBookingRate(hour) * bookings.length)} درهم`);
     } catch (error) {
         console.error(error);
         alert("تعذر إرسال الحجوزات. يرجى المحاولة مرة أخرى.");
