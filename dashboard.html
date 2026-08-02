@@ -33,8 +33,8 @@
         <div class="section">
             <label>نوع الملعب</label>
             <select id="organization">
-                <option value="كرة قدم">كرة قدم</option>
-                <option value="كرة قدم مصغرة">كرة قدم مصغرة</option>
+                <option value="Mini-foot">Mini-foot</option>
+                <option value="كرة قدم"> كرة قدم ملعب كبير</option>
                 <option value="كرة سلة">كرة سلة</option>
                 <option value="كرة تنس">كرة تنس</option>
                 <option value="كرة طائرة">كرة طائرة</option>
@@ -123,7 +123,7 @@ if (slug && !/^[a-zA-Z0-9_-]{2,100}$/.test(slug)) {
             if (data !== "NotFound") {
                 // تعبئة الخانات بالبيانات الموجودة مسبقاً في الشيت
                 document.getElementById('stadiumName').value = data.stadium_name || "";
-                document.getElementById('organization').value = data.stadium_type || "كرة قدم";
+                document.getElementById('organization').value = data.stadium_type === "كرة قدم مصغرة" ? "Mini-foot" : (data.stadium_type || "Mini-foot");
                 document.getElementById('priceDay').value = data.price_day || "";
                 document.getElementById('priceNight').value = data.price_night || "";
                 document.getElementById('managerPhone').value = data.phone || "";
