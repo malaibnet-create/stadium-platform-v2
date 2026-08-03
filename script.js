@@ -789,12 +789,8 @@ async function submitFinalBooking() {
         return alert("يرجى إدخال رقم هاتف صحيح (أرقام فقط بدون حروف أو رموز).");
     }
 
-    let notificationsAllowed = false;
-    try {
-        notificationsAllowed = await requestNotificationPermission_();
-    } catch (error) {
-        console.warn("Could not enable notifications:", error);
-    }
+    // لا نطلب صلاحية الإشعارات قبل الحجز؛ نافذة الإذن قد تعطل الطلب على الهاتف.
+    const notificationsAllowed = "Notification" in window && Notification.permission === "granted";
 
     // إظهار رسالة انتظار
     const btn = document.getElementById('finalConfirmBtn');
@@ -803,30 +799,27 @@ async function submitFinalBooking() {
     btn.disabled = true;
 
     try {
-        // نستخدم حلقة تكرار لمعالجة الساعات واحدة تلو الأخرى للتأكد من خلوها في الشيت
-        for (const slot of selectedSlots) {
-            const response = await fetch(bookingScriptURL, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    stadiumId: stadiumId,
+        const response = await fetch(`${bookingScriptURL}?action=createBooking`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+            body: JSON.stringify({
+                stadiumId,
+                name,
+                phone,
+                bookings: selectedSlots.map(slot => ({
                     dayName: slot.dayName,
                     date: slot.date,
-                    hour: slot.hour,
-                    name: name,
-                    phone: phone
-                })
-            });
+                    hour: slot.hour
+                }))
+            })
+        });
+        const result = await response.json().catch(() => null);
 
-            const result = await response.json();
-
-            // إذا كان الرد من الشيت يخبرنا بأن الساعة محجوزة بالفعل
-            if (result.result === "error") {
-                alert("⚠️ " + result.message);
-                initTable(); 
-                closeBookingModal();
-                return; 
-            }
+        // الخادم يتحقق من الساعات ويضيفها جميعاً دفعة واحدة، أو يرفضها جميعاً.
+        if (!response.ok || !result || result.result !== "success") {
+            alert("⚠️ " + (result?.message || "تعذر إتمام الحجز. حاول مرة أخرى."));
+            initTable();
+            return;
         }
 
         // --- النجاح: تلوين الخانات في الجدول أولاً ---
@@ -1027,10 +1020,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 if (!stadiumLoaded) {
     return;
-}
-
-if (typeof initTable === "function") {
-    await initTable();
 }
 
         // 4. إظهار المحتوى بسلاسة بعد اكتمال كل شيء
