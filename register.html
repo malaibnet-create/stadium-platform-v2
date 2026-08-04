@@ -221,16 +221,27 @@ document.addEventListener('DOMContentLoaded', function () {
 
     let verifyResult;
     try {
-        const verifyResponse = await fetch(verifyURL);
+        const verifyResponse = await fetch(`${verifyURL}&_t=${Date.now()}`, {
+            method: 'GET',
+            credentials: 'include',
+            cache: 'no-store',
+            headers: { 'Accept': 'application/json' }
+        });
         const rawVerifyResult = await verifyResponse.text();
+        if (!verifyResponse.ok) {
+            throw new Error(`OTP verification endpoint returned HTTP ${verifyResponse.status}`);
+        }
         try {
             verifyResult = JSON.parse(rawVerifyResult);
         } catch {
-            verifyResult = { result: "Error", message: rawVerifyResult.trim() };
+            verifyResult = { result: "Error", message: "استجابة غير صالحة من خادم التحقق" };
         }
     } catch (error) {
         console.error("OTP verification failed:", error);
-        alert("تعذر الاتصال بخادم التحقق. حاول مرة أخرى.");
+        const statusHint = /HTTP 404/.test(String(error?.message || ""))
+            ? "الخدمة غير موجودة حالياً (HTTP 404). يجب نشر نسخة Worker التي تحتوي على verifyOTP."
+            : "تعذر الاتصال بخادم التحقق. حاول مرة أخرى.";
+        alert(statusHint);
         btn.disabled = false;
         btn.innerText = originalText;
         return;
@@ -332,6 +343,11 @@ document.addEventListener('DOMContentLoaded', function () {
             document.getElementById('openDashboardBtn')?.addEventListener('click', () => {
                 window.location.href = `dashboard.html?id=${encodeURIComponent(finalSlug)}`;
             });
+
+            // الانتقال تلقائياً إلى لوحة التحكم بعد نجاح إنشاء الحساب.
+            window.setTimeout(() => {
+                window.location.href = `dashboard.html?id=${encodeURIComponent(finalSlug)}`;
+            }, 1500);
 
             // توليد رمز QR فوراً
             new QRCode(document.getElementById("qrcode"), {
