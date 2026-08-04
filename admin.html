@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; connect-src 'self' https://api.malaibnet.com; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline';">
+  <title>لوحة الإدارة</title>
+  <style>
+    body{font-family:Arial,sans-serif;background:#f1f5f9;color:#172033;margin:0;padding:24px}
+    main{max-width:1150px;margin:auto}.card{background:#fff;border-radius:14px;padding:20px;margin-bottom:18px;box-shadow:0 5px 18px #00000012}
+    h1{margin-top:0}.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}input,select,button{padding:10px;border:1px solid #cbd5e1;border-radius:8px;font:inherit}input{min-width:210px}button{cursor:pointer;background:#2563eb;color:#fff;border:0}button.secondary{background:#64748b}button.danger{background:#dc2626}.hidden{display:none!important}.message{margin-top:10px;color:#b91c1c;white-space:pre-wrap}
+    table{width:100%;border-collapse:collapse;margin-top:15px;background:#fff}th,td{padding:10px;border-bottom:1px solid #e2e8f0;text-align:right;font-size:14px}th{background:#eff6ff;white-space:nowrap}.muted{color:#64748b;font-size:13px}
+    @media(max-width:700px){body{padding:10px}.card{padding:14px;overflow:auto}table{min-width:850px}}
+  </style>
+</head>
+<body>
+<main>
+  <section id="loginCard" class="card">
+    <h1>لوحة الإدارة</h1>
+    <p class="muted">هذه الصفحة مخصصة للمسؤول العام فقط.</p>
+    <div class="row"><input id="adminEmail" type="email" placeholder="البريد الإداري"><input id="adminPassword" type="password" placeholder="كلمة المرور"><button id="loginBtn">دخول</button></div>
+    <div id="loginMessage" class="message"></div>
+  </section>
+
+  <section id="bootstrapCard" class="card">
+    <h2>إنشاء المسؤول الأول</h2>
+    <p class="muted">استخدم هذا القسم مرة واحدة فقط، ثم احذف ADMIN_BOOTSTRAP_TOKEN من Cloudflare.</p>
+    <div class="row"><input id="bootstrapToken" type="password" placeholder="ADMIN_BOOTSTRAP_TOKEN"><input id="bootstrapEmail" type="email" placeholder="البريد الإداري"><input id="bootstrapPassword" type="password" placeholder="كلمة مرور 10 أحرف على الأقل"><button id="bootstrapBtn">إنشاء</button></div>
+    <div id="bootstrapMessage" class="message"></div>
+  </section>
+
+  <section id="panel" class="hidden">
+    <div class="card row"><strong>لوحة الإدارة</strong><input id="search" placeholder="بحث بالمعرف أو البريد أو اسم الملعب"><button id="refreshBtn">تحديث الحسابات</button><button id="bookingsBtn" class="secondary">عرض الحجوزات</button><button id="logoutBtn" class="danger">خروج</button></div>
+    <div id="panelMessage" class="message"></div>
+    <div class="card"><h2>الحسابات</h2><div id="accountsWrap" class="muted">جاري التحميل...</div></div>
+    <div id="bookingsCard" class="card hidden"><h2>الحجوزات</h2><div id="bookingsWrap" class="muted">جاري التحميل...</div></div>
+  </section>
+</main>
+<script>
+const API = 'https://api.malaibnet.com';
+const $ = id => document.getElementById(id);
+const esc = value => String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]));
+async function api(path, options = {}) {
+  const response = await fetch(`${API}${path}`, { ...options, credentials:'include', headers:{'Accept':'application/json', ...(options.headers || {})} });
+  const text = await response.text(); let data = text;
+  try { data = JSON.parse(text); } catch (_) {}
+  if (!response.ok) throw new Error(typeof data === 'object' ? (data.error || data.message || `HTTP ${response.status}`) : `HTTP ${response.status}: ${text.slice(0,160)}`);
+  return data;
+}
+function show(id, message, error = true) { $(id).textContent = message || ''; $(id).style.color = error ? '#b91c1c' : '#166534'; }
+async function login() {
+  try { await api('/?action=superAdminAuth', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({email:$('adminEmail').value.trim(), password:$('adminPassword').value})}); $('loginCard').classList.add('hidden'); $('bootstrapCard').classList.add('hidden'); $('panel').classList.remove('hidden'); await loadAccounts(); }
+  catch (e) { show('loginMessage', e.message); }
+}
+async function bootstrap() {
+  try { const result = await api('/?action=adminBootstrap', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({bootstrapToken:$('bootstrapToken').value, email:$('bootstrapEmail').value.trim(), password:$('bootstrapPassword').value})}); show('bootstrapMessage', result.message || 'تم إنشاء المسؤول. احذف ADMIN_BOOTSTRAP_TOKEN الآن.', false); }
+  catch (e) { show('bootstrapMessage', e.message); }
+}
+async function loadAccounts() {
+  try { const q = encodeURIComponent($('search').value.trim()); const data = await api(`/?action=adminGetAccounts&q=${q}`); const rows = data.accounts || []; $('accountsWrap').innerHTML = rows.length ? `<table><thead><tr><th>الملعب</th><th>البريد</th><th>الحالة</th><th>الخطة</th><th>الساعات</th><th>إجراء</th></tr></thead><tbody>${rows.map(row => `<tr><td>${esc(row.stadium_name)}<br><span class="muted">${esc(row.slug)}</span></td><td dir="ltr">${esc(row.email)}</td><td>${esc(row.status)}</td><td><select data-plan="${esc(row.slug)}"><option value="Free" ${row.account_type==='Free'?'selected':''}>Free</option><option value="Premium" ${row.account_type==='Premium'?'selected':''}>Premium</option></select></td><td>${esc(row.open_hour)}:00 - ${esc(row.close_hour)}:00</td><td><button data-save="${esc(row.slug)}">حفظ الخطة</button></td></tr>`).join('')}</tbody></table>` : 'لا توجد حسابات'; document.querySelectorAll('[data-save]').forEach(button => button.onclick = () => setPlan(button.dataset.save)); }
+  catch (e) { show('panelMessage', e.message); }
+}
+async function setPlan(slug) { const accountType = document.querySelector(`[data-plan="${CSS.escape(slug)}"]`).value; try { await api('/?action=adminSetAccountType', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({slug, accountType})}); show('panelMessage','تم تحديث الخطة بنجاح.', false); await loadAccounts(); } catch(e) { show('panelMessage',e.message); } }
+async function loadBookings() { try { const data = await api('/?action=adminGetBookings'); const rows=data.bookings||[]; $('bookingsWrap').innerHTML=rows.length?`<table><thead><tr><th>الملعب</th><th>التاريخ</th><th>الساعة</th><th>العميل</th><th>الهاتف</th><th>الحالة</th></tr></thead><tbody>${rows.map(row=>`<tr><td>${esc(row.stadium_slug)}</td><td>${esc(row.booking_date)}</td><td>${esc(row.booking_hour)}</td><td>${esc(row.customer_name)}</td><td dir="ltr">${esc(row.customer_phone)}</td><td>${esc(row.status)}</td></tr>`).join('')}</tbody></table>`:'لا توجد حجوزات'; } catch(e){show('panelMessage',e.message);} }
+$('loginBtn').onclick=login; $('bootstrapBtn').onclick=bootstrap; $('refreshBtn').onclick=loadAccounts; $('search').oninput=()=>loadAccounts(); $('bookingsBtn').onclick=()=>{$('bookingsCard').classList.remove('hidden');loadBookings();}; $('logoutBtn').onclick=()=>{document.cookie='malaib_superadmin_session=; Max-Age=0; Path=/'; location.reload();};
+</script>
+</body>
+</html>
