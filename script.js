@@ -2049,7 +2049,33 @@ function showStats() {
         shakeUpgradeButton();
         return;
     }
-    loadActualStats();
+        loadD1StatsAndArchive();
+}
+
+async function loadD1StatsAndArchive() {
+    const content = document.getElementById('adminSectionContent');
+    if (!content) return;
+    content.innerHTML = '<div style="text-align:center;padding:24px;">جاري تحميل الأرشيف والإحصائيات...</div>';
+    try {
+        const [statsResponse, archiveResponse] = await Promise.all([
+            adminGet('getBookingStats'), adminGet('getBookingArchive')
+        ]);
+        const statsData = await statsResponse.json();
+        const archiveData = await archiveResponse.json();
+        if (!statsResponse.ok) throw new Error(statsData?.error || statsData?.message || 'تعذر تحميل الإحصائيات');
+        if (!archiveResponse.ok) throw new Error(archiveData?.error || archiveData?.message || 'تعذر تحميل الأرشيف');
+        const stats = Array.isArray(statsData.stats) ? statsData.stats : [];
+        const archive = Array.isArray(archiveData.bookings) ? archiveData.bookings : [];
+        const totalHours = stats.reduce((sum, row) => sum + Number(row.total_hours || 0), 0);
+        const totalIncome = stats.reduce((sum, row) => sum + Number(row.total_income || 0), 0);
+        const totalBookings = stats.reduce((sum, row) => sum + Number(row.total_bookings || 0), 0);
+        const statsRows = stats.map(row => `<tr><td>${escapeHTML(row.stadium_slug)}</td><td>${escapeHTML(row.year)}/${escapeHTML(String(row.month).padStart(2, '0'))}</td><td>${Number(row.total_bookings || 0)}</td><td>${Number(row.total_hours || 0)}</td><td>${Number(row.total_income || 0).toLocaleString('ar-MA')}</td></tr>`).join('');
+        const archiveRows = archive.slice(0, 500).map(row => `<tr><td>${escapeHTML(row.stadium_slug)}</td><td>${escapeHTML(row.booking_date)}</td><td>${escapeHTML(row.booking_hour)}</td><td>${escapeHTML(row.customer_name)}</td><td>${escapeHTML(row.customer_phone)}</td><td>${Number(row.hourly_rate || 0).toLocaleString('ar-MA')}</td></tr>`).join('');
+        content.innerHTML = `<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:18px;"><div style="padding:14px;background:#eff6ff;border-radius:10px;"><b>إجمالي الحجوزات</b><br>${totalBookings}</div><div style="padding:14px;background:#f0fdf4;border-radius:10px;"><b>إجمالي الساعات</b><br>${totalHours}</div><div style="padding:14px;background:#fff7ed;border-radius:10px;"><b>إجمالي المداخيل</b><br>${totalIncome.toLocaleString('ar-MA')} د.م</div></div><h3>الإحصائيات الشهرية</h3><div style="overflow:auto;max-height:260px;"><table style="width:100%;border-collapse:collapse;"><thead><tr><th>الملعب</th><th>الشهر</th><th>الحجوزات</th><th>الساعات</th><th>الدخل</th></tr></thead><tbody>${statsRows || '<tr><td colspan="5">لا توجد إحصائيات مؤرشفة بعد.</td></tr>'}</tbody></table></div><h3 style="margin-top:24px;">أرشيف الحجوزات</h3><div style="overflow:auto;max-height:360px;"><table style="width:100%;border-collapse:collapse;"><thead><tr><th>الملعب</th><th>التاريخ</th><th>الساعة</th><th>العميل</th><th>الهاتف</th><th>السعر وقت الحجز</th></tr></thead><tbody>${archiveRows || '<tr><td colspan="6">لا توجد حجوزات مؤرشفة بعد.</td></tr>'}</tbody></table></div><p style="color:#64748b;font-size:.8rem;margin-top:10px;">السعر المعروض هو السعر المحفوظ لحظة إنشاء الحجز، وليس السعر الحالي.</p>`;
+    } catch (error) {
+        console.error('D1 archive/stats error:', error);
+        content.innerHTML = `<div style="color:#b91c1c;padding:20px;">تعذر تحميل الأرشيف: ${escapeHTML(error?.message || error)}</div>`;
+    }
 }
 function openPricingModal() {
     // 1. إظهار نافذة الأسعار (المهمة الأساسية)
