@@ -141,6 +141,20 @@
 const APPS_SCRIPT_BASE_URL = 'https://api.malaibnet.com';
 
 const scriptURL = APPS_SCRIPT_BASE_URL;
+async function fetchWithTimeout(url, options = {}, timeoutMs = 25000) {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+    try {
+        return await fetch(url, { ...options, signal: controller.signal });
+    } catch (error) {
+        if (error?.name === 'AbortError') {
+            throw new Error('الاتصال بطيء جدًا أو انقطع. تحقق من اتصال Wi‑Fi وحاول مرة أخرى.');
+        }
+        throw error;
+    } finally {
+        clearTimeout(timeoutId);
+    }
+}
     function escapeHTML(value) {
         return String(value ?? '').replace(/[&<>"']/g, ch => ({
             '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;'
@@ -188,7 +202,10 @@ document.addEventListener('DOMContentLoaded', function () {
     // الخطوة 1: طلب الرمز من جوجل سكريبت مع إضافة المفتاح السري
     try {
         // تم إضافة &key لضمان أن الطلب قادم من موقعك فقط
-        const response = await fetch(`${scriptURL}?action=sendOTP&email=${encodeURIComponent(email)}`);
+        const response = await fetchWithTimeout(`${scriptURL}?action=sendOTP&email=${encodeURIComponent(email)}`, {
+            cache: 'no-store'
+        });
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
         
         // استخراج النص من الاستجابة (الذي سيكون الهاش المشفر)
         const result = (await response.text()).trim();
@@ -200,7 +217,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     } catch (e) {
         console.error(e);
-        alert("خطأ في الاتصال بالسيرفر.");
+        alert(e.message || "تعذر الاتصال بالخادم. تحقق من اتصال Wi‑Fi وحاول مرة أخرى.");
     } finally {
         btn.innerText = "متابعة لإنشاء الحساب";
         btn.disabled = false;
@@ -221,7 +238,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     let verifyResult;
     try {
-        const verifyResponse = await fetch(`${verifyURL}&_t=${Date.now()}`, {
+        const verifyResponse = await fetchWithTimeout(`${verifyURL}&_t=${Date.now()}`, {
             method: 'GET',
             credentials: 'include',
             cache: 'no-store',
@@ -241,7 +258,7 @@ document.addEventListener('DOMContentLoaded', function () {
         const statusHint = /HTTP 404/.test(String(error?.message || ""))
             ? "الخدمة غير موجودة حالياً (HTTP 404). يجب نشر نسخة Worker التي تحتوي على verifyOTP."
             : "تعذر الاتصال بخادم التحقق. حاول مرة أخرى.";
-        alert(statusHint);
+        alert(error.message || statusHint);
         btn.disabled = false;
         btn.innerText = originalText;
         return;
@@ -264,7 +281,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const stadiumName = document.getElementById('stadiumName').value;
 
     try {
-        const response = await fetch(`${scriptURL}?action=saveData`, {
+        const response = await fetchWithTimeout(`${scriptURL}?action=registerAccount`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', 'Accept': 'text/plain' },
             body: JSON.stringify({
@@ -287,7 +304,7 @@ document.addEventListener('DOMContentLoaded', function () {
             }
 
             // ينشئ التسجيل الحساب فقط؛ اطلب جلسة إدارة مستقلة قبل فتح لوحة التحكم.
-            const authResponse = await fetch(`${scriptURL}?action=adminAuth`, {
+            const authResponse = await fetchWithTimeout(`${scriptURL}?action=adminAuth`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
                 body: JSON.stringify({ action: 'adminAuth', id: finalSlug, password }),
@@ -357,11 +374,13 @@ document.addEventListener('DOMContentLoaded', function () {
             });
 
         } else {
-            alert("حدث خطأ أثناء الحفظ في السيرفر.");
+            alert(resultText === "OTP Required"
+                ? "انتهت جلسة التحقق. اطلب رمزًا جديدًا ثم حاول مرة أخرى."
+                : `تعذر إنشاء الحساب: ${resultText.slice(0, 160)}`);
             btn.disabled = false;
         }
     } catch (e) {
-        alert("خطأ في الاتصال. تأكد من تحديث النشر (Deployment) في Google Script.");
+        alert(e.message || "تعذر إنشاء الحساب بسبب بطء الاتصال. تحقق من Wi‑Fi وحاول مرة أخرى.");
         btn.disabled = false;
     }
 }
