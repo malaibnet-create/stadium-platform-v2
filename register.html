@@ -131,6 +131,7 @@
         <h3>تأكيد البريد الإلكتروني</h3>
         <p>لقد أرسلنا رمزاً إلى بريدك، أدخله هنا:</p>
         <input type="text" id="otpCode" placeholder="- - - -" style="text-align: center; letter-spacing: 10px; font-size: 1.5rem;">
+        <p id="otpStatus" style="min-height:24px;color:#64748b;text-align:center;"></p>
         <br><br>
         <button class="btn-submit" onclick="verifyOTP()">تأكيد ودخول</button>
     </div>
@@ -198,6 +199,9 @@ document.addEventListener('DOMContentLoaded', function () {
     const btn = document.querySelector('.btn-submit');
     btn.innerText = "جاري إرسال الرمز...";
     btn.disabled = true;
+    document.getElementById('otpModal').style.display = 'flex';
+    const otpStatus = document.getElementById('otpStatus');
+    if (otpStatus) otpStatus.textContent = 'جاري إرسال الرمز... يمكنك إدخاله عند وصوله إلى بريدك.';
 
     // الخطوة 1: طلب الرمز من جوجل سكريبت مع إضافة المفتاح السري
     try {
