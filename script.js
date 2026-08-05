@@ -1290,6 +1290,11 @@ async function saveAdminSettings(event) {
             status: document.getElementById('upd_maintenance')?.checked ? "maintenance" : "open"
         };
 
+        if (dataToSave.pDay === "" || dataToSave.pNight === "" || !Number.isFinite(Number(dataToSave.pDay)) || !Number.isFinite(Number(dataToSave.pNight)) || Number(dataToSave.pDay) < 0 || Number(dataToSave.pNight) < 0) {
+            alert("يجب إدخال ثمن النهار وثمن الليل قبل الحفظ.");
+            return;
+        }
+
         const result = await adminPost("adminUpdateSettings", dataToSave);
 
         if (result === "Success" || result === "success" || result?.result === "success") {
@@ -1438,6 +1443,16 @@ async function loadActualSettings() {
     `;
      
 content.innerHTML = html;
+
+    const dayPriceInput = document.getElementById('upd_price_day');
+    const nightPriceInput = document.getElementById('upd_price_night');
+    if (dayPriceInput) { dayPriceInput.required = true; dayPriceInput.min = '0'; dayPriceInput.step = '0.01'; }
+    if (nightPriceInput) { nightPriceInput.required = true; nightPriceInput.min = '0'; nightPriceInput.step = '0.01'; }
+    const locationButton = document.getElementById('upd_location_button') || document.querySelector('#adminSectionContent [data-detect-coordinates]');
+    if (locationButton) {
+        locationButton.style.cssText = 'display:block;width:100%;background:#2563eb;color:#fff;font-size:1rem;font-weight:700;padding:13px;border-radius:10px;cursor:pointer;';
+        locationButton.innerHTML = '📍 تحديد الموقع / إعادة تحديد الموقع';
+    }
 
 // --- أضف الكود هنا لملء الخيارات فور ظهورها في الصفحة ---
     const openSelect = document.getElementById('openHourInput');
