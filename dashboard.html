@@ -139,6 +139,13 @@ if (slug && !/^[a-zA-Z0-9_-]{2,100}$/.test(slug)) {
 
     // تشغيل الجلب التلقائي عند فتح الصفحة
     loadCurrentData();
+    document.getElementById('priceDay').required = true;
+    document.getElementById('priceNight').required = true;
+    const locationButton = document.querySelector('button[onclick="detectCoordinates()"]');
+    if (locationButton) {
+        locationButton.style.cssText = 'display:block;width:100%;background:#2563eb;color:#fff;font-size:1rem;font-weight:700;padding:13px;border-radius:10px;cursor:pointer;';
+        locationButton.innerHTML = '📍 تحديد الموقع / إعادة تحديد الموقع';
+    }
 
   // 3. دالة حفظ البيانات الجديدة المعدلة
     async function saveSettings() {
@@ -156,6 +163,11 @@ if (slug && !/^[a-zA-Z0-9_-]{2,100}$/.test(slug)) {
         // جلب الإحداثيات من الحقول المخفية (التي تملأ عند الضغط على زر 📍)
         const lat = document.getElementById('lat') ? document.getElementById('lat').value : "";
         const lng = document.getElementById('lng') ? document.getElementById('lng').value : "";
+
+        if (pDay === "" || pNight === "" || !Number.isFinite(Number(pDay)) || !Number.isFinite(Number(pNight)) || Number(pDay) < 0 || Number(pNight) < 0) {
+            alert("يجب إدخال ثمن النهار وثمن الليل قبل الحفظ.");
+            return;
+        }
 
         if (!stadiumName || !phone) {
             alert("يرجى كتابة اسم الملعب ورقم الهاتف على الأقل.");
