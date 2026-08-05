@@ -1292,7 +1292,7 @@ async function saveAdminSettings(event) {
 
         const result = await adminPost("adminUpdateSettings", dataToSave);
 
-        if (String(result).trim() === "Success") {
+        if (result === "Success" || result === "success" || result?.result === "success") {
             if (rawPass) {
                 await fetch(`${settingsScriptURL}?action=logout`, {
                     method: 'POST',
@@ -1308,6 +1308,8 @@ async function saveAdminSettings(event) {
         }
     } catch (e) {
         console.error("Save Error:", e);
+        alert(e?.message || "تعذر حفظ إعدادات الملعب.");
+        return;
         alert("❌ فشل الاتصال بالسيرفر.");
     } finally {
         if (btn) {
