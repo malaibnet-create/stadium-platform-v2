@@ -170,27 +170,28 @@ if (slug && !/^[a-zA-Z0-9_-]{2,100}$/.test(slug)) {
         btn.innerText = "جاري الحفظ والتحميل...";
         btn.disabled = true;
 
-        const finalUpdateURL = `${scriptURL}?action=updateSettings` + 
-                             `&slug=${encodeURIComponent(slug)}` +
-                             `&stadiumName=${encodeURIComponent(stadiumName)}` +
-                             `&stadiumType=${encodeURIComponent(org)}` +
-                             `&pDay=${encodeURIComponent(pDay)}` +
-                             `&pNight=${encodeURIComponent(pNight)}` +
-                             `&phone=${encodeURIComponent(phone)}` +
-                             `&fb=${encodeURIComponent(fb)}` +
-                             `&insta=${encodeURIComponent(insta)}` +
-                             `&lat=${encodeURIComponent(lat)}` + 
-                             `&lng=${encodeURIComponent(lng)}` +
-                             `&_t=${Date.now()}`;
-
         try {
-            const response = await fetch(finalUpdateURL, {
+            const response = await fetch(`${scriptURL}?action=adminUpdateSettings`, {
+                method: 'POST',
                 credentials: 'include',
-                cache: 'no-store'
+                cache: 'no-store',
+                headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+                body: JSON.stringify({
+                    id: slug,
+                    stadiumName,
+                    stadiumType: org,
+                    pDay,
+                    pNight,
+                    phone,
+                    fb,
+                    insta,
+                    lat,
+                    lng
+                })
             });
-            const result = await response.text();
+            const result = await response.json().catch(() => null);
 
-            if (result.trim() === "Update Success") {
+            if (response.ok && result?.result === "success") {
                 alert("✅ تمت العملية بنجاح! تهانينا على إنشاء واجهة ملعبك، سيتم فتحها الآن.");
                 
                 // تفعيل التوجيه التلقائي لصفحة الحجز مع إرسال المعرف (slug)
