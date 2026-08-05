@@ -366,10 +366,6 @@ document.addEventListener('DOMContentLoaded', function () {
             });
 
             // الانتقال تلقائياً إلى لوحة التحكم بعد نجاح إنشاء الحساب.
-            window.setTimeout(() => {
-                window.location.href = `dashboard.html?id=${encodeURIComponent(finalSlug)}`;
-            }, 1500);
-
             // توليد رمز QR فوراً
             new QRCode(document.getElementById("qrcode"), {
                 text: userLink,
