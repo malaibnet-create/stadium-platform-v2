@@ -1,68 +1,54 @@
 <!doctype html>
-<html lang="ar" dir="rtl">
+<html lang="en" dir="ltr">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; connect-src 'self' https://api.malaibnet.com; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline';">
-  <title>لوحة الإدارة</title>
+  <title>Stadium Administration</title>
   <style>
     body{font-family:Arial,sans-serif;background:#f1f5f9;color:#172033;margin:0;padding:24px}
-    main{max-width:1150px;margin:auto}.card{background:#fff;border-radius:14px;padding:20px;margin-bottom:18px;box-shadow:0 5px 18px #00000012}
-    h1{margin-top:0}.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}input,select,button{padding:10px;border:1px solid #cbd5e1;border-radius:8px;font:inherit}input{min-width:210px}button{cursor:pointer;background:#2563eb;color:#fff;border:0}button.secondary{background:#64748b}button.danger{background:#dc2626}.hidden{display:none!important}.message{margin-top:10px;color:#b91c1c;white-space:pre-wrap}
-    table{width:100%;border-collapse:collapse;margin-top:15px;background:#fff}th,td{padding:10px;border-bottom:1px solid #e2e8f0;text-align:right;font-size:14px}th{background:#eff6ff;white-space:nowrap}.muted{color:#64748b;font-size:13px}
-    @media(max-width:700px){body{padding:10px}.card{padding:14px;overflow:auto}table{min-width:850px}}
+    main{max-width:1250px;margin:auto}.card{background:#fff;border-radius:14px;padding:20px;margin-bottom:18px;box-shadow:0 5px 18px #00000012}
+    h1{margin-top:0}.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}input,select,button{padding:10px;border:1px solid #cbd5e1;border-radius:8px;font:inherit}input{min-width:210px}button{cursor:pointer;background:#2563eb;color:#fff;border:0}button.secondary{background:#64748b}button.danger{background:#dc2626}.hidden{display:none!important}.message{margin-top:10px;color:#b91c1c;white-space:pre-wrap}.ok{color:#166534}.muted{color:#64748b;font-size:13px}
+    table{width:100%;border-collapse:collapse;margin-top:15px;background:#fff}th,td{padding:10px;border-bottom:1px solid #e2e8f0;text-align:left;font-size:14px}th{background:#eff6ff;white-space:nowrap}td input{min-width:180px;width:100%;box-sizing:border-box}
+    @media(max-width:800px){body{padding:10px}.card{padding:14px;overflow:auto}table{min-width:1050px}}
   </style>
 </head>
 <body>
 <main>
   <section id="loginCard" class="card">
-    <h1>لوحة الإدارة</h1>
-    <p class="muted">هذه الصفحة مخصصة للمسؤول العام فقط.</p>
-    <div class="row"><input id="adminEmail" type="email" placeholder="البريد الإداري"><input id="adminPassword" type="password" placeholder="كلمة المرور"><button id="loginBtn">دخول</button></div>
+    <h1>Stadium Administration</h1>
+    <p class="muted">Super-admin access only.</p>
+    <div class="row"><input id="adminEmail" type="email" placeholder="Admin email"><input id="adminPassword" type="password" placeholder="Password"><button id="loginBtn">Login</button></div>
     <div id="loginMessage" class="message"></div>
   </section>
-
   <section id="bootstrapCard" class="card">
-    <h2>إنشاء المسؤول الأول</h2>
-    <p class="muted">استخدم هذا القسم مرة واحدة فقط، ثم احذف ADMIN_BOOTSTRAP_TOKEN من Cloudflare.</p>
-    <div class="row"><input id="bootstrapToken" type="password" placeholder="ADMIN_BOOTSTRAP_TOKEN"><input id="bootstrapEmail" type="email" placeholder="البريد الإداري"><input id="bootstrapPassword" type="password" placeholder="كلمة مرور 10 أحرف على الأقل"><button id="bootstrapBtn">إنشاء</button></div>
+    <h2>Create first administrator</h2>
+    <p class="muted">Use once, then remove ADMIN_BOOTSTRAP_TOKEN from Cloudflare.</p>
+    <div class="row"><input id="bootstrapToken" type="password" placeholder="ADMIN_BOOTSTRAP_TOKEN"><input id="bootstrapEmail" type="email" placeholder="Admin email"><input id="bootstrapPassword" type="password" placeholder="Password (10+ characters)"><button id="bootstrapBtn">Create</button></div>
     <div id="bootstrapMessage" class="message"></div>
   </section>
-
   <section id="panel" class="hidden">
-    <div class="card row"><strong>لوحة الإدارة</strong><input id="search" placeholder="بحث بالمعرف أو البريد أو اسم الملعب"><button id="refreshBtn">تحديث الحسابات</button><button id="bookingsBtn" class="secondary">عرض الحجوزات</button><button id="logoutBtn" class="danger">خروج</button></div>
+    <div class="card row"><strong>Accounts</strong><input id="search" placeholder="Search slug, email or stadium"><button id="refreshBtn">Refresh</button><button id="bookingsBtn" class="secondary">Show bookings</button><button id="deleteBookingsBtn" class="danger">Delete all bookings</button><button id="deleteAccountsBtn" class="danger">Delete all accounts</button><button id="logoutBtn" class="danger">Logout</button></div>
     <div id="panelMessage" class="message"></div>
-    <div class="card"><h2>الحسابات</h2><div id="accountsWrap" class="muted">جاري التحميل...</div></div>
-    <div id="bookingsCard" class="card hidden"><h2>الحجوزات</h2><div id="bookingsWrap" class="muted">جاري التحميل...</div></div>
+    <div class="card"><h2>Accounts</h2><div id="accountsWrap" class="muted">Loading...</div></div>
+    <div id="bookingsCard" class="card hidden"><h2>Bookings</h2><div id="bookingsWrap" class="muted">Loading...</div></div>
   </section>
 </main>
 <script>
-const API = 'https://api.malaibnet.com';
-const $ = id => document.getElementById(id);
-const esc = value => String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]));
-async function api(path, options = {}) {
-  const response = await fetch(`${API}${path}`, { ...options, credentials:'include', headers:{'Accept':'application/json', ...(options.headers || {})} });
-  const text = await response.text(); let data = text;
-  try { data = JSON.parse(text); } catch (_) {}
-  if (!response.ok) throw new Error(typeof data === 'object' ? (data.error || data.message || `HTTP ${response.status}`) : `HTTP ${response.status}: ${text.slice(0,160)}`);
-  return data;
-}
-function show(id, message, error = true) { $(id).textContent = message || ''; $(id).style.color = error ? '#b91c1c' : '#166534'; }
-async function login() {
-  try { await api('/?action=superAdminAuth', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({email:$('adminEmail').value.trim(), password:$('adminPassword').value})}); $('loginCard').classList.add('hidden'); $('bootstrapCard').classList.add('hidden'); $('panel').classList.remove('hidden'); await loadAccounts(); }
-  catch (e) { show('loginMessage', e.message); }
-}
-async function bootstrap() {
-  try { const result = await api('/?action=adminBootstrap', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({bootstrapToken:$('bootstrapToken').value, email:$('bootstrapEmail').value.trim(), password:$('bootstrapPassword').value})}); show('bootstrapMessage', result.message || 'تم إنشاء المسؤول. احذف ADMIN_BOOTSTRAP_TOKEN الآن.', false); }
-  catch (e) { show('bootstrapMessage', e.message); }
-}
-async function loadAccounts() {
-  try { const q = encodeURIComponent($('search').value.trim()); const data = await api(`/?action=adminGetAccounts&q=${q}`); const rows = data.accounts || []; $('accountsWrap').innerHTML = rows.length ? `<table><thead><tr><th>الملعب</th><th>البريد</th><th>الحالة</th><th>الخطة</th><th>الساعات</th><th>إجراء</th></tr></thead><tbody>${rows.map(row => `<tr><td>${esc(row.stadium_name)}<br><span class="muted">${esc(row.slug)}</span></td><td dir="ltr">${esc(row.email)}</td><td>${esc(row.status)}</td><td><select data-plan="${esc(row.slug)}"><option value="Free" ${row.account_type==='Free'?'selected':''}>Free</option><option value="Premium" ${row.account_type==='Premium'?'selected':''}>Premium</option></select></td><td>${esc(row.open_hour)}:00 - ${esc(row.close_hour)}:00</td><td><button data-save="${esc(row.slug)}">حفظ الخطة</button></td></tr>`).join('')}</tbody></table>` : 'لا توجد حسابات'; document.querySelectorAll('[data-save]').forEach(button => button.onclick = () => setPlan(button.dataset.save)); }
-  catch (e) { show('panelMessage', e.message); }
-}
-async function setPlan(slug) { const accountType = document.querySelector(`[data-plan="${CSS.escape(slug)}"]`).value; try { await api('/?action=adminSetAccountType', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({slug, accountType})}); show('panelMessage','تم تحديث الخطة بنجاح.', false); await loadAccounts(); } catch(e) { show('panelMessage',e.message); } }
-async function loadBookings() { try { const data = await api('/?action=adminGetBookings'); const rows=data.bookings||[]; $('bookingsWrap').innerHTML=rows.length?`<table><thead><tr><th>الملعب</th><th>التاريخ</th><th>الساعة</th><th>العميل</th><th>الهاتف</th><th>الحالة</th></tr></thead><tbody>${rows.map(row=>`<tr><td>${esc(row.stadium_slug)}</td><td>${esc(row.booking_date)}</td><td>${esc(row.booking_hour)}</td><td>${esc(row.customer_name)}</td><td dir="ltr">${esc(row.customer_phone)}</td><td>${esc(row.status)}</td></tr>`).join('')}</tbody></table>`:'لا توجد حجوزات'; } catch(e){show('panelMessage',e.message);} }
-$('loginBtn').onclick=login; $('bootstrapBtn').onclick=bootstrap; $('refreshBtn').onclick=loadAccounts; $('search').oninput=()=>loadAccounts(); $('bookingsBtn').onclick=()=>{$('bookingsCard').classList.remove('hidden');loadBookings();}; $('logoutBtn').onclick=()=>{document.cookie='malaib_superadmin_session=; Max-Age=0; Path=/'; location.reload();};
+const API='https://api.malaibnet.com';
+const $=id=>document.getElementById(id);
+const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]));
+async function api(path,options={}){const r=await fetch(`${API}${path}`,{...options,credentials:'include',headers:{Accept:'application/json',...(options.headers||{})}});const t=await r.text();let d=t;try{d=JSON.parse(t)}catch(_){}if(!r.ok)throw new Error(typeof d==='object'?(d.error||d.message||`HTTP ${r.status}`):`HTTP ${r.status}: ${t.slice(0,160)}`);return d}
+function show(id,message,error=true){$(id).textContent=message||'';$(id).className=error?'message':'message ok'}
+async function login(){try{await api('/?action=superAdminAuth',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:$('adminEmail').value.trim(),password:$('adminPassword').value})});$('loginCard').classList.add('hidden');$('bootstrapCard').classList.add('hidden');$('panel').classList.remove('hidden');await loadAccounts()}catch(e){show('loginMessage',e.message)}}
+async function bootstrap(){try{const r=await api('/?action=adminBootstrap',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({bootstrapToken:$('bootstrapToken').value,email:$('bootstrapEmail').value.trim(),password:$('bootstrapPassword').value})});show('bootstrapMessage',r.message||'Administrator created. Remove ADMIN_BOOTSTRAP_TOKEN now.',false)}catch(e){show('bootstrapMessage',e.message)}}
+async function loadAccounts(){try{const q=encodeURIComponent($('search').value.trim());const d=await api(`/?action=adminGetAccounts&q=${q}`);const rows=d.accounts||[];$('accountsWrap').innerHTML=rows.length?`<table><thead><tr><th>Stadium</th><th>Email</th><th>Plan</th><th>Status</th><th>Hours</th><th>Actions</th></tr></thead><tbody>${rows.map(r=>`<tr><td>${esc(r.stadium_name)}<br><span class="muted">${esc(r.slug)}</span></td><td><input data-email="${esc(r.slug)}" value="${esc(r.email)}" type="email"></td><td><select data-plan="${esc(r.slug)}"><option value="Free" ${r.account_type==='Free'?'selected':''}>Free</option><option value="Premium" ${r.account_type==='Premium'?'selected':''}>Premium</option></select></td><td>${esc(r.status)}</td><td>${esc(r.open_hour)}:00 - ${esc(r.close_hour)}:00</td><td><button data-save="${esc(r.slug)}">Save</button> <button class="danger" data-delete="${esc(r.slug)}">Delete</button></td></tr>`).join('')}</tbody></table>`:'No accounts';document.querySelectorAll('[data-save]').forEach(b=>b.onclick=()=>saveAccount(b.dataset.save));document.querySelectorAll('[data-delete]').forEach(b=>b.onclick=()=>deleteAccount(b.dataset.delete))}catch(e){show('panelMessage',e.message)}}
+async function saveAccount(slug){const plan=document.querySelector(`[data-plan="${CSS.escape(slug)}"]`).value;const email=document.querySelector(`[data-email="${CSS.escape(slug)}"]`).value.trim();try{await api('/?action=adminSetAccountType',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({slug,accountType:plan})});await api('/?action=adminUpdateAccountEmail',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({slug,email})});show('panelMessage','Plan and email saved.',false);await loadAccounts()}catch(e){show('panelMessage',e.message)}}
+async function deleteAccount(slug){if(!confirm('This permanently deletes the account and its bookings. Continue?'))return;try{const r=await api('/?action=adminDeleteAccount',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({slug})});show('panelMessage',`Account deleted. Bookings removed: ${r.deletedBookings||0}`,false);await loadAccounts()}catch(e){show('panelMessage',e.message)}}
+async function loadBookings(){try{const d=await api('/?action=adminGetBookings');const rows=d.bookings||[];$('bookingsWrap').innerHTML=rows.length?`<table><thead><tr><th>Stadium</th><th>Date</th><th>Hour</th><th>Customer</th><th>Phone</th><th>Status</th></tr></thead><tbody>${rows.map(r=>`<tr><td>${esc(r.stadium_slug)}</td><td>${esc(r.booking_date)}</td><td>${esc(r.booking_hour)}</td><td>${esc(r.customer_name)}</td><td>${esc(r.customer_phone)}</td><td>${esc(r.status)}</td></tr>`).join('')}</tbody></table>`:'No bookings'}catch(e){show('panelMessage',e.message)}}
+async function deleteAllBookings(){if(!confirm('Permanently delete ALL bookings?'))return;try{const r=await api('/?action=adminDeleteBookings',{method:'POST',headers:{'Content-Type':'application/json'},body:'{}'});show('panelMessage',`Bookings deleted: ${r.deletedBookings||0}`,false);$('bookingsCard').classList.add('hidden')}catch(e){show('panelMessage',e.message)}}
+async function deleteAllAccounts(){if(prompt('Type DELETE ALL ACCOUNTS to confirm')!=='DELETE ALL ACCOUNTS')return;try{const r=await api('/?action=adminDeleteAllAccounts',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({confirmation:'DELETE ALL ACCOUNTS'})});show('panelMessage',`Accounts deleted: ${r.deletedAccounts||0}; bookings deleted: ${r.deletedBookings||0}`,false);await loadAccounts()}catch(e){show('panelMessage',e.message)}}
+$('loginBtn').onclick=login;$('bootstrapBtn').onclick=bootstrap;$('refreshBtn').onclick=loadAccounts;$('search').oninput=loadAccounts;$('bookingsBtn').onclick=()=>{$('bookingsCard').classList.remove('hidden');loadBookings()};$('deleteBookingsBtn').onclick=deleteAllBookings;$('deleteAccountsBtn').onclick=deleteAllAccounts;$('logoutBtn').onclick=()=>{document.cookie='malaib_superadmin_session=; Max-Age=0; Path=/';location.reload()};
 </script>
 </body>
 </html>
