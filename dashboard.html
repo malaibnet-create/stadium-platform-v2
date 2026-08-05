@@ -201,7 +201,9 @@ if (slug && !/^[a-zA-Z0-9_-]{2,100}$/.test(slug)) {
                 alert("❌ حدث خطأ في قاعدة البيانات: " + result);
             }
         } catch (e) {
-            console.error(e);
+            console.error('Dashboard save failed:', e);
+            alert(e.message || 'Database error');
+            return;
             alert("❌ خطأ في الاتصال بالسيرفر، تأكد من أن رابط السكريبت صحيح.");
         } finally {
             btn.innerText = "حفظ التغييرات ونشر الصفحة";
