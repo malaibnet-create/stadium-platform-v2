@@ -1,4 +1,4 @@
-const cacheName = 'malaeb-net-v40-stadium-type-contrast';
+const cacheName = 'malaeb-net-v41-stadium-type-contrast';
 const assets = [
   './',
   './index.html',
