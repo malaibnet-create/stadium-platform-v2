@@ -1433,7 +1433,14 @@ async function loadActualSettings() {
             💾 حفظ التغييرات النهائية
         </button>
     </div>
-    <div class="danger-zone">
+<section id="adminQrSection" style="background:#f8fafc;border:1px solid #dbeafe;border-radius:12px;padding:16px;margin:18px 0;text-align:center;">
+    <h4 style="color:#2563eb;margin:0 0 8px;">رمز QR الخاص بملعبك</h4>
+    <p style="color:#475569;font-size:.9rem;margin:0 0 10px;">حمّل الصورة وعلّقها في الملعب ليتمكن اللاعبون من الحجز.</p>
+    <div id="adminQrCode" style="display:flex;justify-content:center;margin:10px 0;"></div>
+    <p style="font-weight:700;color:#172033;margin:8px 0;">صوّر الكود بهاتفك للحجز من تطبيق الملعب</p>
+    <button type="button" id="downloadAdminQrBtn" style="background:#0f766e;color:#fff;border:0;border-radius:8px;padding:11px 18px;cursor:pointer;font-weight:700;">⬇️ تنزيل صورة QR للملعب</button>
+</section>
+<div class="danger-zone">
     <h4>حذف الحساب</h4>
     <p>سيتم حذف بيانات الملعب من المنصة. لا تقم بهذا الإجراء إلا إذا كنت متأكدًا.</p>
     <button type="button" onclick="confirmDeleteAccount()" class="delete-account-btn">
@@ -1443,6 +1450,8 @@ async function loadActualSettings() {
     `;
      
 content.innerHTML = html;
+
+    renderAdminQrCard();
 
     const dayPriceInput = document.getElementById('upd_price_day');
     const nightPriceInput = document.getElementById('upd_price_night');
@@ -2816,6 +2825,26 @@ function showCourtsManagement() {
     
 })();
 
+function renderAdminQrCard() {
+    const box = document.getElementById('adminQrCode');
+    const button = document.getElementById('downloadAdminQrBtn');
+    if (!box || !stadiumId || typeof QRCode === 'undefined') return;
+    const bookingUrl = new URL(`booking.html?id=${encodeURIComponent(stadiumId)}`, window.location.href).href;
+    box.innerHTML = '';
+    new QRCode(box, { text: bookingUrl, width: 180, height: 180 });
+    button?.addEventListener('click', () => downloadAdminQrCard(stadiumId));
+}
+
+function downloadAdminQrCard(slug) {
+    const source = document.querySelector('#adminQrCode canvas, #adminQrCode img');
+    if (!source) { alert('يرجى الانتظار حتى يظهر رمز QR ثم حاول مرة أخرى.'); return; }
+    const canvas = document.createElement('canvas'); canvas.width = 900; canvas.height = 1120;
+    const ctx = canvas.getContext('2d'); ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, canvas.width, canvas.height); ctx.fillStyle = '#172033'; ctx.textAlign = 'center';
+    ctx.font = 'bold 42px Arial'; ctx.fillText('احجز ملعبك بسهولة', 450, 80); ctx.font = 'bold 34px Arial'; ctx.fillText('صوّر هذا الكود بهاتفك للحجز', 450, 145);
+    const finish = () => { ctx.drawImage(source, 140, 190, 620, 620); ctx.fillStyle = '#2563eb'; ctx.font = 'bold 36px Arial'; ctx.fillText('افتح كاميرا الهاتف وامسح الكود', 450, 900); ctx.fillStyle = '#64748b'; ctx.font = '24px Arial'; ctx.fillText('سيتم فتح صفحة حجز هذا الملعب', 450, 955); const link = document.createElement('a'); link.download = `malaibnet-qr-${slug}.png`; link.href = canvas.toDataURL('image/png'); link.click(); };
+    if (source.tagName.toLowerCase() === 'img' && !source.complete) source.onload = finish; else finish();
+}
+
 async function confirmDeleteAccount() {
     const confirmText = prompt('للتأكيد النهائي اكتب: حذف');
 
@@ -2840,10 +2869,12 @@ async function confirmDeleteAccount() {
             console.warn('تعذر تحديد الملعب البديل قبل الحذف:', ownerError);
         }
 
-        const response = await adminGet("deleteStadiumAccount");
-        const result = await response.text();
+        const result = await adminPost("deleteStadiumAccount", { id: stadiumId });
 
-        if (result.trim() === "DeleteSuccess") {
+        const deleteResult = typeof result === 'string'
+            ? result.trim()
+            : String(result?.result || result?.message || '').trim();
+        if (deleteResult === "DeleteSuccess") {
             alert("تم حذف الحساب بنجاح.");
             if (fallbackStadiumId) {
                 localStorage.setItem('lastVisitedStadiumId', fallbackStadiumId);
@@ -2852,13 +2883,14 @@ async function confirmDeleteAccount() {
                 localStorage.removeItem('lastVisitedStadiumId');
                 window.location.href = "register.html";
             }
-        } else if (result.trim() === "Unauthorized") {
+        } else if (deleteResult === "Unauthorized") {
             alert("الرقم السري غير صحيح.");
         } else {
-            alert("حدث خطأ أثناء الحذف: " + result);
+            alert("حدث خطأ أثناء الحذف: " + deleteResult);
         }
     } catch (error) {
-        alert("فشل الاتصال بالسيرفر.");
+        console.error('Delete account failed:', error);
+        alert("تعذر حذف الحساب: " + (error?.message || 'تحقق من جلسة الدخول واتصال الإنترنت.'));
     }
 
 
