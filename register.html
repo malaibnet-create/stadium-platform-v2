@@ -345,6 +345,12 @@ document.addEventListener('DOMContentLoaded', function () {
 
                     <div id="qrcode" style="display: flex; justify-content: center; margin-bottom: 15px;"></div>
                     <p class="hint">صور الشاشة أو احفظ رمز QR لوضعه في مدخل الملعب</p>
+                    <button id="downloadQrBtn" type="button" style="background:#0f766e;color:#fff;border:0;padding:11px 18px;border-radius:8px;cursor:pointer;margin:5px 0 14px;font-weight:700;font-size:1rem;">
+                        ⬇️ تنزيل صورة QR للملعب
+                    </button>
+                    <div style="background:#eff6ff;color:#1e3a8a;border:1px solid #bfdbfe;border-radius:8px;padding:10px;margin:4px 0 14px;font-size:.9rem;line-height:1.7;">
+                        صوّر الكود بهاتفك للحجز من تطبيق الملعب
+                    </div>
 
                     <button id="openDashboardBtn"
                             class="btn-submit" style="margin-top: 20px;">
@@ -372,6 +378,8 @@ document.addEventListener('DOMContentLoaded', function () {
                 width: 160,
                 height: 160
             });
+            document.getElementById('downloadQrBtn')?.addEventListener('click', () => downloadQrCard(userLink, finalSlug));
+            showOwnerGuideOnce(finalSlug);
 
         } else {
             alert(resultText === "OTP Required"
@@ -383,6 +391,40 @@ document.addEventListener('DOMContentLoaded', function () {
         alert(e.message || "تعذر إنشاء الحساب بسبب بطء الاتصال. تحقق من Wi‑Fi وحاول مرة أخرى.");
         btn.disabled = false;
     }
+}
+function showOwnerGuideOnce(slug) {
+    const key = `malaib_owner_guide_seen_${slug}`;
+    if (localStorage.getItem(key)) return;
+    const modal = document.createElement('div');
+    modal.style.cssText = 'position:fixed;inset:0;background:#0f172acc;display:flex;align-items:center;justify-content:center;z-index:9999;padding:18px;direction:rtl;';
+    modal.innerHTML = `<div style="max-width:460px;background:#fff;border-radius:16px;padding:24px;box-shadow:0 20px 50px #0005;text-align:right;font-family:Arial,sans-serif;color:#172033;line-height:1.8;">
+      <h3 style="margin-top:0;color:#2563eb;">أين توجد لوحة المسؤول؟</h3>
+      <p>تم إنشاء حساب ملعبك بنجاح. لإدارة الأسعار وساعات العمل والبيانات، اضغط على زر <strong>الدخول للوحة التحكم</strong> الموجود أسفل هذه الصفحة.</p>
+      <p>يمكنك لاحقًا فتح لوحة التحكم من الرابط:</p>
+      <code style="display:block;direction:ltr;background:#f1f5f9;padding:8px;border-radius:7px;word-break:break-all;">dashboard.html?id=${escapeHTML(slug)}</code>
+      <button id="closeOwnerGuide" style="width:100%;margin-top:18px;background:#2563eb;color:white;border:0;border-radius:8px;padding:12px;cursor:pointer;font-weight:700;">فهمت، متابعة</button>
+    </div>`;
+    document.body.appendChild(modal);
+    document.getElementById('closeOwnerGuide').onclick = () => { localStorage.setItem(key, '1'); modal.remove(); };
+}
+
+function downloadQrCard(userLink, slug) {
+    const source = document.querySelector('#qrcode canvas, #qrcode img');
+    if (!source) { alert('يرجى الانتظار حتى يظهر رمز QR ثم حاول مرة أخرى.'); return; }
+    const canvas = document.createElement('canvas');
+    canvas.width = 900; canvas.height = 1120;
+    const ctx = canvas.getContext('2d');
+    ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = '#172033'; ctx.textAlign = 'center';
+    ctx.font = 'bold 42px Arial'; ctx.fillText('احجز ملعبك بسهولة', 450, 80);
+    ctx.font = 'bold 34px Arial'; ctx.fillText('صوّر هذا الكود بهاتفك للحجز', 450, 145);
+    const finish = () => {
+      ctx.fillStyle = '#2563eb'; ctx.font = 'bold 36px Arial'; ctx.fillText('افتح كاميرا الهاتف وامسح الكود', 450, 900);
+      ctx.fillStyle = '#64748b'; ctx.font = '24px Arial'; ctx.fillText('سيتم فتح صفحة حجز هذا الملعب', 450, 955);
+      const a = document.createElement('a'); a.download = `malaibnet-qr-${slug}.png`; a.href = canvas.toDataURL('image/png'); a.click();
+    };
+    if (source.tagName.toLowerCase() === 'canvas') { ctx.drawImage(source, 140, 190, 620, 620); finish(); }
+    else { const img = new Image(); img.onload = () => { ctx.drawImage(img, 140, 190, 620, 620); finish(); }; img.src = source.src; }
 }
 </script>
 </body>
