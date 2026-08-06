@@ -7,6 +7,7 @@
     <meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'; form-action 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https:; connect-src 'self' https://api.malaibnet.com;">
     <title>إعدادات الملعب - لوحة التحكم</title>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
+    <script src="qrcodejs-1.0.0.min.js"></script>
     <style>
         :root { --primary: #2563eb; --bg: #f1f5f9; }
         body { font-family: 'Cairo', sans-serif; background: var(--bg); padding: 20px; }
@@ -22,6 +23,13 @@
 <body>
 
 <div class="container">
+    <section id="ownerQrSection" style="background:#f8fafc;border:1px solid #dbeafe;border-radius:12px;padding:16px;margin-bottom:22px;text-align:center;">
+        <h3 style="color:#2563eb;margin:0 0 8px;">رمز QR الخاص بملعبك</h3>
+        <p style="font-size:.9rem;color:#475569;margin:0 0 12px;">حمّل الصورة وعلّقها في الملعب ليتمكن اللاعبون من الحجز.</p>
+        <div id="ownerQrCode" style="display:flex;justify-content:center;margin:10px 0;"></div>
+        <p style="font-weight:700;color:#172033;margin:8px 0;">صوّر الكود بهاتفك للحجز من تطبيق الملعب</p>
+        <button id="downloadOwnerQr" type="button" style="background:#0f766e;color:white;border:0;border-radius:8px;padding:11px 16px;cursor:pointer;font-weight:700;">⬇️ تنزيل صورة QR للملعب</button>
+    </section>
     <h2>⚙️ إعدادات ملعبك</h2>
     
     <form id="settingsForm">
@@ -109,6 +117,34 @@ if (slug && !/^[a-zA-Z0-9_-]{2,100}$/.test(slug)) {
     alert('Invalid stadium identifier.');
     window.location.replace('index.html');
 }
+const ownerBookingUrl = new URL(`booking.html?id=${encodeURIComponent(slug || '')}`, window.location.href).href;
+
+function showDashboardGuideOnce() {
+    if (!slug || localStorage.getItem(`malaib_owner_guide_seen_${slug}`)) return;
+    const modal = document.createElement('div');
+    modal.style.cssText='position:fixed;inset:0;background:#0f172acc;display:flex;align-items:center;justify-content:center;z-index:9999;padding:18px;direction:rtl;';
+    modal.innerHTML='<div style="max-width:440px;background:#fff;border-radius:16px;padding:24px;box-shadow:0 20px 50px #0005;text-align:right;line-height:1.8;color:#172033;font-family:Arial,sans-serif;"><h3 style="margin-top:0;color:#2563eb;">مرحبًا بك في لوحة مسؤول الملعب</h3><p>من هذه الصفحة يمكنك تعديل بيانات الملعب والأسعار وساعات العمل وتحديد الموقع.</p><p>للحجوزات، استخدم صفحة الحجز المرتبطة برمز QR.</p><button id="closeDashboardGuide" style="width:100%;background:#2563eb;color:white;border:0;border-radius:8px;padding:12px;cursor:pointer;font-weight:700;">فهمت، متابعة</button></div>';
+    document.body.appendChild(modal);
+    document.getElementById('closeDashboardGuide').onclick=()=>{localStorage.setItem(`malaib_owner_guide_seen_${slug}`,'1');modal.remove();};
+}
+
+function renderOwnerQr() {
+    const box=document.getElementById('ownerQrCode');
+    if(!box || !slug || typeof QRCode === 'undefined') return;
+    new QRCode(box,{text:ownerBookingUrl,width:180,height:180});
+    document.getElementById('downloadOwnerQr')?.addEventListener('click',downloadOwnerQrCard);
+}
+
+function downloadOwnerQrCard() {
+    const source=document.querySelector('#ownerQrCode canvas,#ownerQrCode img');
+    if(!source){alert('يرجى الانتظار حتى يظهر رمز QR ثم حاول مرة أخرى.');return;}
+    const canvas=document.createElement('canvas');canvas.width=900;canvas.height=1120;const ctx=canvas.getContext('2d');
+    ctx.fillStyle='#fff';ctx.fillRect(0,0,canvas.width,canvas.height);ctx.fillStyle='#172033';ctx.textAlign='center';ctx.font='bold 42px Arial';ctx.fillText('احجز ملعبك بسهولة',450,80);ctx.font='bold 34px Arial';ctx.fillText('صوّر هذا الكود بهاتفك للحجز',450,145);
+    const draw=()=>{ctx.drawImage(source,140,190,620,620);ctx.fillStyle='#2563eb';ctx.font='bold 36px Arial';ctx.fillText('افتح كاميرا الهاتف وامسح الكود',450,900);ctx.fillStyle='#64748b';ctx.font='24px Arial';ctx.fillText('سيتم فتح صفحة حجز هذا الملعب',450,955);const a=document.createElement('a');a.download=`malaibnet-qr-${slug}.png`;a.href=canvas.toDataURL('image/png');a.click();};
+    if(source.tagName.toLowerCase()==='img'&&!source.complete){source.onload=draw;}else draw();
+}
+renderOwnerQr();
+showDashboardGuideOnce();
     // 2. دالة لجلب البيانات الحالية فور فتح الصفحة
     async function loadCurrentData() {
         if (!slug) {
