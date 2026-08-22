@@ -316,7 +316,7 @@ h2 {
 }
 
 .week-navigation button:first-of-type::before {
-    content: "السابق";
+    content: "Previous";
 }
 
 .week-navigation button:first-of-type::after {
@@ -324,7 +324,26 @@ h2 {
 }
 
 .week-navigation button:last-of-type::before {
+    content: "Next";
+}
+
+html[lang="ar"] .week-navigation button:first-of-type::before {
+    content: "السابق";
+}
+
+html[lang="ar"] .week-navigation button:last-of-type::before {
     content: "القادم";
+}
+
+/* Use the translated button text itself so visual and accessible labels stay identical. */
+.week-navigation button {
+    font-size: 0.86rem;
+    color: #ffffff;
+}
+
+.week-navigation button::before,
+.week-navigation button::after {
+    content: none !important;
 }
 
 .week-navigation button:last-of-type::after {
