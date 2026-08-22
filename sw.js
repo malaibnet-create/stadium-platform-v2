@@ -1,4 +1,4 @@
-const cacheName = 'malaeb-net-v49-dark-mode';
+const cacheName = 'malaeb-net-v50-light-default';
 const assets = [
   './',
   './index.html',
