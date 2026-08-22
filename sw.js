@@ -1,4 +1,4 @@
-const cacheName = 'malaeb-net-v44-full-i18n';
+const cacheName = 'malaeb-net-v49-dark-mode';
 const assets = [
   './',
   './index.html',
@@ -6,7 +6,9 @@ const assets = [
   './dashboard.html',
   './booking.html',
   './style.css',
+  './theme.css',
   './script.js',
+  './theme.js',
   './i18n.js',
   './qrcodejs-1.0.0.min.js',
   './swiper-11.1.15.min.css',
