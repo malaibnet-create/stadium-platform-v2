@@ -8,7 +8,8 @@
     <title>إعدادات الملعب - لوحة التحكم</title>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
     <script src="qrcodejs-1.0.0.min.js"></script>
-<script src="i18n.js?v=7-stage-3"></script>
+<script src="theme.js?v=3-dark-mode"></script>
+<script src="i18n.js?v=8-dark-mode"></script>
     <style>
         :root { --primary: #2563eb; --bg: #f1f5f9; }
         body { font-family: 'Cairo', sans-serif; background: var(--bg); padding: 20px; }
@@ -20,6 +21,7 @@
         .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
         .btn-save { width: 100%; background: var(--primary); color: white; border: none; padding: 15px; border-radius: 8px; font-size: 1.1rem; cursor: pointer; margin-top: 20px; }
     </style>
+    <link rel="stylesheet" href="theme.css?v=6-dark-mode">
 </head>
 <body>
 
@@ -123,8 +125,9 @@ const ownerBookingUrl = new URL(`booking.html?id=${encodeURIComponent(slug || ''
 function showDashboardGuideOnce() {
     if (!slug || localStorage.getItem(`malaib_owner_guide_seen_${slug}`)) return;
     const modal = document.createElement('div');
+    modal.className = 'theme-dialog-overlay';
     modal.style.cssText='position:fixed;inset:0;background:#0f172acc;display:flex;align-items:center;justify-content:center;z-index:9999;padding:18px;direction:rtl;';
-    modal.innerHTML='<div style="max-width:440px;background:#fff;border-radius:16px;padding:24px;box-shadow:0 20px 50px #0005;text-align:right;line-height:1.8;color:#172033;font-family:Arial,sans-serif;"><h3 style="margin-top:0;color:#2563eb;">مرحبًا بك في لوحة مسؤول الملعب</h3><p>من هذه الصفحة يمكنك تعديل بيانات الملعب والأسعار وساعات العمل وتحديد الموقع.</p><p>للحجوزات، استخدم صفحة الحجز المرتبطة برمز QR.</p><button id="closeDashboardGuide" style="width:100%;background:#2563eb;color:white;border:0;border-radius:8px;padding:12px;cursor:pointer;font-weight:700;">فهمت، متابعة</button></div>';
+    modal.innerHTML='<div class="theme-dialog-card" style="max-width:440px;background:#fff;border-radius:16px;padding:24px;box-shadow:0 20px 50px #0005;text-align:right;line-height:1.8;color:#172033;font-family:Arial,sans-serif;"><h3 style="margin-top:0;color:#2563eb;">مرحبًا بك في لوحة مسؤول الملعب</h3><p>من هذه الصفحة يمكنك تعديل بيانات الملعب والأسعار وساعات العمل وتحديد الموقع.</p><p>للحجوزات، استخدم صفحة الحجز المرتبطة برمز QR.</p><button id="closeDashboardGuide" style="width:100%;background:#2563eb;color:white;border:0;border-radius:8px;padding:12px;cursor:pointer;font-weight:700;">فهمت، متابعة</button></div>';
     document.body.appendChild(modal);
     document.getElementById('closeDashboardGuide').onclick=()=>{localStorage.setItem(`malaib_owner_guide_seen_${slug}`,'1');modal.remove();};
 }
