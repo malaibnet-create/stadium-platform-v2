@@ -1,4 +1,39 @@
 
+function getUiLanguage() {
+    return window.MalaibI18n?.getLanguage?.() || 'en';
+}
+
+function getUiLocale() {
+    return window.MalaibI18n?.getLocale?.() || (getUiLanguage() === 'ar' ? 'ar-MA' : 'en-GB');
+}
+
+function uiText(value) {
+    return window.MalaibI18n?.translate?.(value, getUiLanguage()) || String(value ?? '');
+}
+
+function formatUiHour(hour) {
+    const numericHour = Number.parseInt(String(hour).split(':')[0], 10);
+    if (!Number.isFinite(numericHour)) return String(hour || '');
+    const normalized = ((numericHour % 24) + 24) % 24;
+    const displayHour = normalized % 12 || 12;
+    const suffix = normalized < 12
+        ? (getUiLanguage() === 'ar' ? 'ص' : 'AM')
+        : (getUiLanguage() === 'ar' ? 'م' : 'PM');
+    return `${displayHour} ${suffix}`;
+}
+
+function formatUiHourRange(startHour, endHour) {
+    const start = formatUiHour(startHour);
+    const end = formatUiHour(endHour);
+    return getUiLanguage() === 'ar' ? `من ${start} إلى ${end}` : `${start} – ${end}`;
+}
+
+function formatUiBookingDate(value, options = { year: 'numeric', month: 'long', day: 'numeric' }) {
+    const date = value instanceof Date ? value : parseBookingDate_(value);
+    return date && !Number.isNaN(date.getTime())
+        ? date.toLocaleDateString(getUiLocale(), options)
+        : String(value || '');
+}
 
 (function setupNetworkMonitoring() {
     // 1. إنشاء عنصر التنبيه وإضافته لمرة واحدة
@@ -6,7 +41,7 @@
     if (!offlineBanner) {
         offlineBanner = document.createElement('div');
         offlineBanner.id = 'offline-banner';
-        offlineBanner.innerHTML = '⚠️ أنت غير متصل بالإنترنت. لا يمكنك الحجز الآن.';
+        offlineBanner.innerHTML = uiText('⚠️ أنت غير متصل بالإنترنت. لا يمكنك الحجز الآن.');
         offlineBanner.style.display = 'none';
         document.body.prepend(offlineBanner);
     }
@@ -24,7 +59,7 @@
             offlineBanner.style.display = 'block';
             if (confirmBtn) {
                 confirmBtn.classList.add('btn-disabled');
-                confirmBtn.title = "لا يمكن الحجز بدون اتصال بالإنترنت";
+                confirmBtn.title = uiText("لا يمكن الحجز بدون اتصال بالإنترنت");
             }
             // التنبيه يظهر فقط إذا حاول المستخدم التفاعل أو عند انقطاع مفاجئ
             console.warn("تم فقدان الاتصال بالشبكة.");
@@ -534,13 +569,13 @@ function initTable(dataFromFetch) {
     }
 
     // تفريغ السطر العلوي والسفلي تمهيداً لملئهما
-    headerRow.innerHTML = '<th>الساعة</th>';
-    if (footerRow) footerRow.innerHTML = '<th>الساعة</th>';
+    headerRow.innerHTML = `<th>${uiText('الساعة')}</th>`;
+    if (footerRow) footerRow.innerHTML = `<th>${uiText('الساعة')}</th>`;
     
     const daysArr = ["الاثنين", "الثلاثاء", "الأربعاء", "الخميس", "الجمعة", "السبت", "الأحد"];
     
     let displayDate = new Date(currentStartDate.getTime());
-    dateDisplay.innerText = displayDate.toLocaleDateString('ar-MA', { month: 'long', year: 'numeric' });
+    dateDisplay.innerText = displayDate.toLocaleDateString(getUiLocale(), { month: 'long', year: 'numeric' });
 
     let currentWeekDates = [];
     for (let i = 0; i < 7; i++) {
@@ -550,7 +585,8 @@ function initTable(dataFromFetch) {
         let fullDate = getFormattedDate(d);
         currentWeekDates.push({name: daysArr[i], date: fullDate, rawDate: d}); 
         
-        let cellContent = `${daysArr[i]}<br><small>${d.getDate()}</small>`;
+        const localizedDayName = d.toLocaleDateString(getUiLocale(), { weekday: 'long' });
+        let cellContent = `${localizedDayName}<br><small>${d.getDate()}</small>`;
         
         // إضافة اليوم والتاريخ للسطر العلوي والسفلي معاً
         headerRow.innerHTML += `<th>${cellContent}</th>`;
@@ -565,15 +601,7 @@ function initTable(dataFromFetch) {
 
 for (let hour = startHour; hour < lastHour; hour++) {
         let hLabel24 = `${hour}:00`; 
-        let currentH = hour > 12 ? hour - 12 : hour;
-        let nextH = (hour + 1) > 12 ? (hour + 1) - 12 : (hour + 1);
-        
-        if (hour === 12) currentH = 12;
-        if ((hour + 1) === 12) nextH = 12;
-        if (hour === 0) currentH = 12;
-
-        let suffix = (hour >= 12) ? "م" : "ص";
-        let hLabelRange = `${currentH} إلى ${nextH} ${suffix}`; 
+        let hLabelRange = formatUiHourRange(hour, hour + 1); 
 
         let row = `<tr><td style="background:#f8fafc; font-weight:bold; white-space: nowrap; font-size: 0.85rem; padding: 5px; border: 1px solid #ddd;">${hLabelRange}</td>`;
         
@@ -585,14 +613,14 @@ for (let hour = startHour; hour < lastHour; hour++) {
                 row += `<td class="slot past" 
                             data-date="${currentWeekDates[day].date.trim()}" 
                             data-hour="${hLabel24}" 
-                            style="background-color: #f1f5f9; color: #cbd5e1; cursor: not-allowed; pointer-events: none; font-size: 0.8rem; border: 1px solid #ddd;">منتهي</td>`;
+                            style="background-color: #f1f5f9; color: #cbd5e1; cursor: not-allowed; pointer-events: none; font-size: 0.8rem; border: 1px solid #ddd;">${uiText('منتهي')}</td>`;
             } else {
                 row += `<td class="slot" 
                             style="background-color: #ffffff; cursor: pointer; border: 1px solid #ddd;"
                             data-date="${currentWeekDates[day].date.trim()}" 
                             data-day="${currentWeekDates[day].name}" 
                             data-hour="${hLabel24}" 
-                            onclick="handleSlotSelection(this)">متاح</td>`;
+                            onclick="handleSlotSelection(this)">${uiText('متاح')}</td>`;
             }
         }
         row += `</tr>`;
@@ -629,7 +657,7 @@ function handleSlotSelection(element) {
     if (!isAlreadySelected) {
         // حماية: منع حجز أكثر من ساعتين
         if (selectedSlots.length >= 2) {
-            alert("⚠️ عذراً، لا يمكن حجز أكثر من ساعتين متتاليتين.");
+            alert(`⚠️ ${uiText('عذراً، لا يمكن حجز أكثر من ساعتين متتاليتين.')}`);
             return;
         }
         // حماية: التأكد أن الساعات متتالية وفي نفس اليوم
@@ -639,7 +667,7 @@ function handleSlotSelection(element) {
             const currentHour = parseInt(hour.split(':')[0]);
 
             if (Math.abs(currentHour - firstHour) !== 1 || date !== firstSlot.date) {
-                alert("⚠️ عذراً، يجب اختيار ساعات متتالية وفي نفس اليوم.");
+                alert(`⚠️ ${uiText('عذراً، يجب اختيار ساعات متتالية وفي نفس اليوم.')}`);
                 return;
             }
         }
@@ -700,21 +728,30 @@ function updateModalDetails() {
 
     const firstSlot = selectedSlots[0];
     const date = firstSlot.date;
+    const displayDate = formatUiBookingDate(date);
     let text = "";
 
     if (selectedSlots.length === 1) {
-        text = `📅 حجز يوم: ${date} | ⏰ الساعة: ${firstSlot.hour}`;
+        text = getUiLanguage() === 'ar'
+            ? `📅 حجز يوم: ${displayDate} | ⏰ الساعة: ${formatUiHour(firstSlot.hour)}`
+            : `📅 Booking date: ${displayDate} | ⏰ Time: ${formatUiHour(firstSlot.hour)}`;
     } else {
         const lastSlot = selectedSlots[selectedSlots.length - 1];
-        const nextHour = (parseInt(lastSlot.hour.split(':')[0]) + 1) + ":00";
-        text = `📅 حجز يوم: ${date} | ⏰ من ${firstSlot.hour} إلى ${nextHour}`;
+        const nextHour = parseInt(lastSlot.hour.split(':')[0]) + 1;
+        text = getUiLanguage() === 'ar'
+            ? `📅 حجز يوم: ${displayDate} | ⏰ ${formatUiHourRange(firstSlot.hour, nextHour)}`
+            : `📅 Booking date: ${displayDate} | ⏰ ${formatUiHourRange(firstSlot.hour, nextHour)}`;
     }
 
     const total = getSelectedSlotsTotal();
-    const hoursLabel = selectedSlots.length === 1 ? "ساعة واحدة" : "ساعتان";
+    const hoursLabel = getUiLanguage() === 'ar'
+        ? (selectedSlots.length === 1 ? "ساعة واحدة" : "ساعتان")
+        : (selectedSlots.length === 1 ? "one hour" : "two hours");
 
     // التحديث الفعلي للنص والإظهار
-    detailsElement.innerText = `${text}\n💰 السعر الإجمالي: ${formatBookingPrice(total)} درهم (${hoursLabel})`;
+    detailsElement.innerText = getUiLanguage() === 'ar'
+        ? `${text}\n💰 السعر الإجمالي: ${formatBookingPrice(total)} درهم (${hoursLabel})`
+        : `${text}\n💰 Total price: ${formatBookingPrice(total)} MAD (${hoursLabel})`;
     detailsElement.style.display = 'block';
     
     // تأكيد إضافي: أحياناً يكون العنصر مخفياً بسبب CSS الأب
@@ -767,7 +804,7 @@ function getSelectedSlotsTotal() {
 }
 
 function formatBookingPrice(value) {
-    return Number(value || 0).toLocaleString('ar-MA', {
+    return Number(value || 0).toLocaleString(getUiLocale(), {
         minimumFractionDigits: 0,
         maximumFractionDigits: 2
     });
@@ -775,7 +812,7 @@ function formatBookingPrice(value) {
 
 async function submitFinalBooking() {
     if (window.stadiumStatus === "maintenance") {
-        alert("نعتذر منك، لا يمكن إتمام الحجز حالياً لأن الملعب في حالة صيانة أو إصلاح.");
+        alert(uiText("نعتذر منك، لا يمكن إتمام الحجز حالياً لأن الملعب في حالة صيانة أو إصلاح."));
         return; // هذا السطر سيمنع الكود بالأسفل من العمل
     }
     const name = document.getElementById('userName').value;
@@ -783,10 +820,10 @@ async function submitFinalBooking() {
     
     // 1. إضافة خاصية التحقق من رقم الهاتف (أرقام فقط ومن 10 إلى 13 رقماً)
     const phoneRegex = /^[0-9]{10,13}$/;
-    if (!name || !phone) return alert("يرجى إدخال الاسم ورقم الهاتف.");
+    if (!name || !phone) return alert(uiText("يرجى إدخال الاسم ورقم الهاتف."));
     
     if (!phoneRegex.test(phone)) {
-        return alert("يرجى إدخال رقم هاتف صحيح (أرقام فقط بدون حروف أو رموز).");
+        return alert(uiText("يرجى إدخال رقم هاتف صحيح (أرقام فقط بدون حروف أو رموز)."));
     }
 
     // لا نطلب صلاحية الإشعارات قبل الحجز؛ نافذة الإذن قد تعطل الطلب على الهاتف.
@@ -843,7 +880,7 @@ async function submitFinalBooking() {
 
         const startTime = firstSlot.hour;
         const endTime = (parseInt(lastSlot.hour) + 1) + ":00";
-        const timeRange = `${startTime} إلى ${endTime}`;
+        const timeRange = formatUiHourRange(startTime, endTime);
 
         const currentStadiumName = document.title.split('-')[0] || "ملعب بوعسل";
         const stadiumUrl = window.location.href;
@@ -1170,7 +1207,9 @@ async function processLocalReminders_() {
 
         if (!reminder.sentFiveHours && now >= fiveHoursBefore && now < oneHourBefore) {
             await registration.showNotification("⚽ ملاعب NET", {
-                body: `تذكير: تبقى 5 ساعات على موعدك في ${reminder.stadiumName} الساعة ${reminder.bookingHour}.`,
+                body: getUiLanguage() === 'ar'
+                    ? `تذكير: تبقى 5 ساعات على موعدك في ${reminder.stadiumName} الساعة ${formatUiHour(reminder.bookingHour)}.`
+                    : `Reminder: Your booking at ${reminder.stadiumName} starts in 5 hours at ${formatUiHour(reminder.bookingHour)}.`,
                 icon: "logo_no_background.png",
                 badge: "logo_no_background.png",
                 tag: `${reminder.id}-5h`,
@@ -1181,7 +1220,9 @@ async function processLocalReminders_() {
 
         if (!reminder.sentOneHour && now >= oneHourBefore) {
             await registration.showNotification("⚽ ملاعب NET", {
-                body: `تذكير: تبقى ساعة واحدة على موعدك في ${reminder.stadiumName} الساعة ${reminder.bookingHour}.`,
+                body: getUiLanguage() === 'ar'
+                    ? `تذكير: تبقى ساعة واحدة على موعدك في ${reminder.stadiumName} الساعة ${formatUiHour(reminder.bookingHour)}.`
+                    : `Reminder: Your booking at ${reminder.stadiumName} starts in one hour at ${formatUiHour(reminder.bookingHour)}.`,
                 icon: "logo_no_background.png",
                 badge: "logo_no_background.png",
                 tag: `${reminder.id}-1h`,
@@ -1873,11 +1914,14 @@ function closeAdminPanel() {
     }
 }
 function showBookingTicket(stadiumName, date, time, stadiumUrl, totalPrice) {
-    const days = ["الأحد", "الإثنين", "الثلاثاء", "الأربعاء", "الخميس", "الجمعة", "السبت"];
     const parts = String(date).split('/');
     const formattedDate = parts.length === 3 ? new Date(parts[2], parts[1] - 1, parts[0]) : new Date(date);
-    const dayName = days[formattedDate.getDay()] || "الموعد المحدد";
-    const shareText = `⚽ *تذكرة حجز مباراة*\n\n📍 الملعب: ${stadiumName}\n📅 اليوم: ${dayName}\n📆 التاريخ: ${date}\n⏰ الوقت: ${time}\n💰 السعر الإجمالي: ${formatBookingPrice(totalPrice)} درهم\n\n🔗 الرابط:\n${stadiumUrl}\n\nتم عبر ملاعب NET 🏟️`;
+    const displayDate = Number.isNaN(formattedDate.getTime())
+        ? String(date)
+        : formattedDate.toLocaleDateString(getUiLocale(), { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+    const shareText = getUiLanguage() === 'ar'
+        ? `⚽ *تذكرة حجز مباراة*\n\n📍 الملعب: ${stadiumName}\n📆 التاريخ: ${displayDate}\n⏰ الوقت: ${time}\n💰 السعر الإجمالي: ${formatBookingPrice(totalPrice)} درهم\n\n🔗 الرابط:\n${stadiumUrl}\n\nتم عبر ملاعب NET 🏟️`
+        : `⚽ *Match booking ticket*\n\n📍 Stadium: ${stadiumName}\n📆 Date: ${displayDate}\n⏰ Time: ${time}\n💰 Total price: ${formatBookingPrice(totalPrice)} MAD\n\n🔗 Link:\n${stadiumUrl}\n\nBooked via Malaib NET 🏟️`;
     const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(shareText)}`;
     const formContent = document.getElementById('bookingFormContent');
     const ticketContainer = document.getElementById('successTicketContainer');
@@ -1891,7 +1935,7 @@ function showBookingTicket(stadiumName, date, time, stadiumUrl, totalPrice) {
         header.style.cssText = "background:#1e3a8a; color:white; padding:10px; border-radius:10px 10px 0 0;";
         const title = document.createElement('h3');
         title.style.margin = '0';
-        title.textContent = 'تم الحجز بنجاح! ✅';
+        title.textContent = getUiLanguage() === 'ar' ? 'تم الحجز بنجاح! ✅' : 'Booking confirmed! ✅';
         header.appendChild(title);
 
         const body = document.createElement('div');
@@ -1904,13 +1948,15 @@ function showBookingTicket(stadiumName, date, time, stadiumUrl, totalPrice) {
         stadiumLine.appendChild(stadiumLabel);
         const dateLine = document.createElement('p');
         dateLine.style.cssText = 'margin:5px 0; color:#475569;';
-        dateLine.textContent = `${dayName} | ${date}`;
+        dateLine.textContent = displayDate;
         const timeLine = document.createElement('p');
         timeLine.style.cssText = 'margin:5px 0; font-size:1.2rem; color:#1e3a8a; font-weight:bold;';
         timeLine.textContent = String(time);
         const priceLine = document.createElement('p');
         priceLine.style.cssText = 'margin:8px 0 0; color:#15803d; font-size:1.05rem; font-weight:bold;';
-        priceLine.textContent = `السعر الإجمالي: ${formatBookingPrice(totalPrice)} درهم`;
+        priceLine.textContent = getUiLanguage() === 'ar'
+            ? `السعر الإجمالي: ${formatBookingPrice(totalPrice)} درهم`
+            : `Total price: ${formatBookingPrice(totalPrice)} MAD`;
         body.append(stadiumLine, dateLine, timeLine, priceLine);
 
         const footer = document.createElement('div');
@@ -1919,13 +1965,17 @@ function showBookingTicket(stadiumName, date, time, stadiumUrl, totalPrice) {
         const shareButton = document.createElement('button');
         shareButton.type = 'button';
         shareButton.style.cssText = "background:#22c55e; color:white; border:none; padding:12px 20px; border-radius:8px; cursor:pointer; font-weight:bold; width:100%; font-family:'Cairo';";
-        shareButton.textContent = 'ارسل التفاصيل للفريق (واتساب) 💬';
+        shareButton.textContent = getUiLanguage() === 'ar'
+            ? 'ارسل التفاصيل للفريق (واتساب) 💬'
+            : 'Share details with the team (WhatsApp) 💬';
         shareButton.addEventListener('click', () => {
             window.open(whatsappUrl, '_blank', 'noopener,noreferrer');
         });
         const hint = document.createElement('p');
         hint.style.cssText = 'font-size:0.7rem; color:#64748b; margin-top:10px;';
-        hint.textContent = 'صوّر الوصل للإدلاء به في الملعب أو عند المشرف على الملعب. 📸';
+        hint.textContent = getUiLanguage() === 'ar'
+            ? 'صوّر الوصل للإدلاء به في الملعب أو عند المشرف على الملعب. 📸'
+            : 'Take a screenshot and show it at the stadium or to the stadium manager. 📸';
         footer.append(shareButton, hint);
         ticket.append(header, body, footer);
 
@@ -1933,7 +1983,9 @@ function showBookingTicket(stadiumName, date, time, stadiumUrl, totalPrice) {
         ticketContainer.style.display = 'block';
         ticketContainer.replaceChildren(ticket);
     } else {
-        alert(`✅ تم الحجز!\nالملعب: ${stadiumName}\nالوقت: ${time}`);
+        alert(getUiLanguage() === 'ar'
+            ? `✅ تم الحجز!\nالملعب: ${stadiumName}\nالوقت: ${time}`
+            : `✅ Booking confirmed!\nStadium: ${stadiumName}\nTime: ${time}`);
         window.open(whatsappUrl, '_blank', 'noopener,noreferrer');
     }
 }
@@ -3093,7 +3145,7 @@ function closeSupervisorContact() {
 
 function openRecurringModal() {
     if (window.stadiumStatus === "maintenance") {
-        alert("الملعب في حالة صيانة ولا يمكن الحجز حالياً.");
+        alert(uiText("الملعب في حالة صيانة ولا يمكن الحجز حالياً."));
         return;
     }
 
@@ -3105,7 +3157,7 @@ function openRecurringModal() {
     for (let hour = startHour; hour < endHour; hour++) {
         const option = document.createElement("option");
         option.value = `${hour}:00`;
-        option.textContent = `من ${hour}:00 إلى ${hour + 1}:00`;
+        option.textContent = formatUiHourRange(hour, hour + 1);
         hourSelect.appendChild(option);
     }
 
@@ -3140,8 +3192,14 @@ function updateRecurringPriceSummary() {
     const firstDate = getFirstRecurringDate(dayIndex, hour);
     const hourlyRate = getHourlyBookingRate(hour, getFormattedDate(firstDate));
     const total = getRecurringBookingTotal(dayIndex, hour, weeks);
-    const period = isNightBookingHour(hour, getFormattedDate(firstDate)) ? "ليلي" : "نهاري";
-    summary.textContent = `💰 سعر الساعة (${period}): ${formatBookingPrice(hourlyRate)} درهم — الإجمالي لـ ${weeks} أسبوع حسب مواسم الحجز: ${formatBookingPrice(total)} درهم`;
+    const isNight = isNightBookingHour(hour, getFormattedDate(firstDate));
+    if (getUiLanguage() === 'ar') {
+        const period = isNight ? "ليلي" : "نهاري";
+        summary.textContent = `💰 سعر الساعة (${period}): ${formatBookingPrice(hourlyRate)} درهم — الإجمالي لـ ${weeks} أسبوع حسب مواسم الحجز: ${formatBookingPrice(total)} درهم`;
+    } else {
+        const period = isNight ? "night" : "day";
+        summary.textContent = `💰 Hourly rate (${period}): ${formatBookingPrice(hourlyRate)} MAD — total for ${weeks} weeks, based on booking seasons: ${formatBookingPrice(total)} MAD`;
+    }
 }
 
 function closeRecurringModal() {
@@ -3175,19 +3233,19 @@ async function submitRecurringBooking() {
     const phoneRegex = /^[0-9]{10,13}$/;
 
     if (!name || !phone || !hour) {
-        return alert("يرجى إدخال الاسم ورقم الهاتف والموعد.");
+        return alert(uiText("يرجى إدخال الاسم ورقم الهاتف والموعد."));
     }
 
     if (!phoneRegex.test(phone)) {
-        return alert("يرجى إدخال رقم هاتف صحيح بالأرقام فقط.");
+        return alert(uiText("يرجى إدخال رقم هاتف صحيح بالأرقام فقط."));
     }
 
     if (!weeks || weeks < 1 || weeks > 52) {
-        return alert("اختر عددًا من 1 إلى 52 أسبوعًا.");
+        return alert(uiText("اختر عددًا من 1 إلى 52 أسبوعًا."));
     }
 
     if (!confirmed) {
-        return alert("يرجى تأكيد التعهد بالحضور.");
+        return alert(uiText("يرجى تأكيد التعهد بالحضور."));
     }
 
     const dayNames = [
@@ -3211,7 +3269,7 @@ async function submitRecurringBooking() {
 
     const originalText = button.innerText;
     button.disabled = true;
-    button.innerText = "جاري التحقق من المواعيد...";
+    button.innerText = getUiLanguage() === 'ar' ? "جاري التحقق من المواعيد..." : "Checking availability...";
 
     try {
         const response = await fetch(`${bookingScriptURL}?action=createBooking`, {
@@ -3228,16 +3286,18 @@ async function submitRecurringBooking() {
         const result = await response.json();
 
         if (result.result !== "success") {
-            return alert("⚠️ " + result.message);
+            return alert("⚠️ " + uiText(result.message));
         }
 
         closeRecurringModal();
         initTable();
         const total = bookings.reduce((sum, booking) => sum + getHourlyBookingRate(booking.hour, booking.date), 0);
-        alert(`✅ تم تثبيت ${bookings.length} حجزًا أسبوعيًا بنجاح.\n💰 السعر الإجمالي: ${formatBookingPrice(total)} درهم`);
+        alert(getUiLanguage() === 'ar'
+            ? `✅ تم تثبيت ${bookings.length} حجزًا أسبوعيًا بنجاح.\n💰 السعر الإجمالي: ${formatBookingPrice(total)} درهم`
+            : `✅ ${bookings.length} weekly bookings were confirmed successfully.\n💰 Total price: ${formatBookingPrice(total)} MAD`);
     } catch (error) {
         console.error(error);
-        alert("تعذر إرسال الحجوزات. يرجى المحاولة مرة أخرى.");
+        alert(uiText("تعذر إرسال الحجوزات. يرجى المحاولة مرة أخرى."));
     } finally {
         button.disabled = false;
         button.innerText = originalText;
