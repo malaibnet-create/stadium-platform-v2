@@ -10,7 +10,7 @@
   }
 
   function getEffectiveTheme() {
-    return getSavedTheme() || (media.matches ? 'dark' : 'light');
+    return getSavedTheme() || 'light';
   }
 
   function labels(theme) {
@@ -69,11 +69,6 @@
 
   applyTheme(getEffectiveTheme());
 
-  const handleSystemChange = () => {
-    if (!getSavedTheme()) applyTheme(getEffectiveTheme());
-  };
-  if (typeof media.addEventListener === 'function') media.addEventListener('change', handleSystemChange);
-  else if (typeof media.addListener === 'function') media.addListener(handleSystemChange);
   window.addEventListener('storage', event => {
     if (event.key === STORAGE_KEY) applyTheme(getEffectiveTheme());
   });
@@ -89,8 +84,9 @@
       applyTheme(theme);
     },
     useSystemTheme() {
-      localStorage.removeItem(STORAGE_KEY);
-      applyTheme(getEffectiveTheme());
+      const systemTheme = media.matches ? 'dark' : 'light';
+      localStorage.setItem(STORAGE_KEY, systemTheme);
+      applyTheme(systemTheme);
     }
   };
 })();
