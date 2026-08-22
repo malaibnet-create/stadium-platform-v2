@@ -1,0 +1,286 @@
+:root {
+  color-scheme: light;
+  --theme-bg: #f8fafc;
+  --theme-surface: #ffffff;
+  --theme-surface-2: #f1f5f9;
+  --theme-border: #dbe3f0;
+  --theme-text: #172033;
+  --theme-muted: #64748b;
+  --theme-input: #ffffff;
+}
+
+html[data-theme="dark"] {
+  color-scheme: dark;
+  --theme-bg: #0b1220;
+  --theme-surface: #111827;
+  --theme-surface-2: #182235;
+  --theme-border: #334155;
+  --theme-text: #e5edf8;
+  --theme-muted: #9fb0c7;
+  --theme-input: #0f172a;
+}
+
+.malaib-theme-toggle {
+  position: fixed;
+  top: 12px;
+  right: 148px;
+  z-index: 1000003;
+  min-height: 38px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 6px 11px;
+  border: 1px solid var(--theme-border);
+  border-radius: 999px;
+  background: var(--theme-surface);
+  color: var(--theme-text);
+  box-shadow: 0 4px 14px #0f172a24;
+  font: 700 12px/1 Arial, sans-serif;
+  cursor: pointer;
+  transition: background .2s, color .2s, border-color .2s, transform .2s;
+}
+
+html[dir="rtl"] .malaib-theme-toggle {
+  right: auto;
+  left: 148px;
+}
+
+.malaib-theme-toggle.theme-toggle-solo { right: 12px; left: auto; }
+html[dir="rtl"] .malaib-theme-toggle.theme-toggle-solo { right: auto; left: 12px; }
+
+.malaib-theme-toggle:hover { transform: translateY(-1px); }
+.malaib-theme-toggle:focus-visible { outline: 3px solid #60a5fa; outline-offset: 2px; }
+.malaib-theme-toggle span:first-child { font-size: 17px; line-height: 1; }
+
+html[data-theme="dark"] body {
+  background-color: var(--theme-bg) !important;
+  color: var(--theme-text) !important;
+}
+
+html[data-theme="dark"] h1,
+html[data-theme="dark"] h2,
+html[data-theme="dark"] h3,
+html[data-theme="dark"] h4,
+html[data-theme="dark"] label,
+html[data-theme="dark"] p,
+html[data-theme="dark"] strong,
+html[data-theme="dark"] small,
+html[data-theme="dark"] .muted {
+  color: inherit;
+}
+
+html[data-theme="dark"] input,
+html[data-theme="dark"] select,
+html[data-theme="dark"] textarea {
+  background: var(--theme-input) !important;
+  color: var(--theme-text) !important;
+  border-color: var(--theme-border) !important;
+}
+
+html[data-theme="dark"] input::placeholder,
+html[data-theme="dark"] textarea::placeholder { color: #7f91aa !important; opacity: 1; }
+
+html[dir="ltr"] .form-group,
+html[dir="ltr"] .section { text-align: left !important; }
+html[dir="rtl"] .form-group,
+html[dir="rtl"] .section { text-align: right !important; }
+html[dir="ltr"] .week-navigation { direction: ltr !important; }
+html[dir="rtl"] .week-navigation { direction: rtl !important; }
+
+html[data-theme="dark"] .register-container,
+html[data-theme="dark"] .container,
+html[data-theme="dark"] .card,
+html[data-theme="dark"] .modal-content,
+html[data-theme="dark"] .pricing-container,
+html[data-theme="dark"] .plan-card,
+html[data-theme="dark"] .admin-modal-content,
+html[data-theme="dark"] #adminAuthBox,
+html[data-theme="dark"] #bookingFormContent,
+html[data-theme="dark"] #successTicketContainer,
+html[data-theme="dark"] .ticket-body,
+html[data-theme="dark"] .owner-add-stadium-form,
+html[data-theme="dark"] .owner-stadium-option,
+html[data-theme="dark"] .owner-stadium-switcher,
+html[data-theme="dark"] .nearby-card,
+html[data-theme="dark"] .contact-modal-content,
+html[data-theme="dark"] .legal-content {
+  background: var(--theme-surface) !important;
+  color: var(--theme-text) !important;
+  border-color: var(--theme-border) !important;
+}
+
+.theme-dialog-overlay { color: var(--theme-text); }
+.theme-dialog-card { background: var(--theme-surface) !important; color: var(--theme-text) !important; border: 1px solid var(--theme-border); }
+.theme-dialog-card code { background: var(--theme-surface-2) !important; color: var(--theme-text) !important; }
+html[dir="ltr"] .theme-dialog-card { direction: ltr !important; text-align: left !important; }
+html[dir="rtl"] .theme-dialog-card { direction: rtl !important; text-align: right !important; }
+
+html[data-theme="dark"] .premium-card,
+html[data-theme="dark"] .admin-nav-bar,
+html[data-theme="dark"] .admin-modal-header,
+html[data-theme="dark"] #ownerQrSection,
+html[data-theme="dark"] .upgrade-selection-card,
+html[data-theme="dark"] .upgrade-total-box {
+  background: var(--theme-surface-2) !important;
+  color: var(--theme-text) !important;
+  border-color: var(--theme-border) !important;
+}
+
+html[data-theme="dark"] .hint,
+html[data-theme="dark"] .footer-links,
+html[data-theme="dark"] .upgrade-helper-text,
+html[data-theme="dark"] .owner-stadium-option small { color: var(--theme-muted) !important; }
+
+html[data-theme="dark"] table,
+html[data-theme="dark"] tbody,
+html[data-theme="dark"] td {
+  background: var(--theme-surface) !important;
+  color: var(--theme-text) !important;
+  border-color: var(--theme-border) !important;
+}
+
+html[data-theme="dark"] th,
+html[data-theme="dark"] thead,
+html[data-theme="dark"] tfoot {
+  background: #1d2a3d !important;
+  color: #f8fafc !important;
+  border-color: #40516a !important;
+}
+
+html[data-theme="dark"] .booking-table-scroll,
+html[data-theme="dark"] .week-navigation {
+  background: rgba(17, 24, 39, .96) !important;
+  color: var(--theme-text) !important;
+  border-color: var(--theme-border) !important;
+}
+
+html[data-theme="dark"] #dateDisplay {
+  background: #e2e8f0 !important;
+  color: #1e3a8a !important;
+  border-color: #94a3b8 !important;
+}
+
+html[data-theme="dark"] .gallery-section,
+html[data-theme="dark"] .swiper,
+html[data-theme="dark"] .swiper-slide,
+html[data-theme="dark"] .slide-content,
+html[data-theme="dark"] .gallery-card,
+html[data-theme="dark"] .stadium-gallery {
+  background: var(--theme-surface) !important;
+  color: var(--theme-text) !important;
+  border-color: var(--theme-border) !important;
+}
+
+html[data-theme="dark"] #tableBody .slot:not(.booked):not(.selected):not(.past) {
+  background: #111827 !important;
+  color: #b8f7d2 !important;
+}
+
+html[data-theme="dark"] #tableBody .slot.past {
+  background: #0d1524 !important;
+  color: #607089 !important;
+}
+
+html[data-theme="dark"] #tableBody .slot.booked { background: #7f1d1d !important; color: #fff !important; }
+html[data-theme="dark"] #tableBody .slot.selected { background: #047857 !important; color: #fff !important; }
+
+html[data-theme="dark"] #rulesModal [style*="background: #f8fafc"],
+html[data-theme="dark"] #rulesModal [style*="background:#f8fafc"],
+html[data-theme="dark"] #rulesModal [style*="background: white"],
+html[data-theme="dark"] #rulesModal [style*="background:white"] {
+  background: var(--theme-surface-2) !important;
+  color: var(--theme-text) !important;
+  border-color: var(--theme-border) !important;
+}
+
+html[data-theme="dark"] #recurringPriceSummary,
+html[data-theme="dark"] #selectedDetails {
+  background: #172554 !important;
+  color: #bfdbfe !important;
+  border-color: #3b82f6 !important;
+}
+
+html[data-theme="dark"] #extraSlotContainer,
+html[data-theme="dark"] .owner-coord-success,
+html[data-theme="dark"] #coordSuccess {
+  background: #052e2b !important;
+  color: #a7f3d0 !important;
+  border-color: #0f766e !important;
+}
+
+html[data-theme="dark"] #extraSlotContainer p,
+html[data-theme="dark"] #extraSlotContainer span {
+  color: #a7f3d0 !important;
+}
+
+html[data-theme="dark"] #bookingFormContent [style*="background: #fff3cd"],
+html[data-theme="dark"] #bookingFormContent [style*="background:#fff3cd"],
+html[data-theme="dark"] [style*="background: #fdfaf1"] {
+  background: #3b2f12 !important;
+  color: #fde68a !important;
+  border-color: #92400e !important;
+}
+
+html[data-theme="dark"] #bookingFormContent label[style*="background: #f9f9f9"] {
+  background: var(--theme-surface-2) !important;
+}
+
+html[data-theme="dark"] #bookingFormContent label,
+html[data-theme="dark"] #bookingFormContent label span {
+  color: var(--theme-text) !important;
+}
+
+html[dir="ltr"] body .modal-content,
+html[dir="ltr"] body .recurring-modal-content,
+html[dir="ltr"] body #bookingFormContent,
+html[dir="ltr"] body #bookingFormContent label {
+  direction: ltr !important;
+  text-align: left !important;
+}
+
+html[dir="rtl"] body #bookingFormContent,
+html[dir="rtl"] body #bookingFormContent label {
+  direction: rtl !important;
+  text-align: right !important;
+}
+
+html[data-theme="dark"] .admin-full-container,
+html[data-theme="dark"] #adminPanel,
+html[data-theme="dark"] #adminSectionContent,
+html[data-theme="dark"] .admin-content-scroll {
+  background: var(--theme-bg) !important;
+  color: var(--theme-text) !important;
+}
+
+html[data-theme="dark"] .admin-nav-item {
+  background: var(--theme-surface) !important;
+  color: var(--theme-text) !important;
+  border-color: var(--theme-border) !important;
+}
+
+html[data-theme="dark"] .admin-nav-item:hover,
+html[data-theme="dark"] .admin-nav-item.active,
+html[data-theme="dark"] .owner-stadium-option:hover,
+html[data-theme="dark"] .owner-stadium-option.active {
+  background: #172554 !important;
+  color: #dbeafe !important;
+}
+
+html[data-theme="dark"] footer,
+html[data-theme="dark"] .footer {
+  background: #080e19 !important;
+  color: #cbd5e1 !important;
+  border-color: var(--theme-border) !important;
+}
+
+html[data-theme="dark"] a { color: #7dd3fc; }
+html[data-theme="dark"] hr { border-color: var(--theme-border); }
+
+@media (max-width: 480px) {
+  .malaib-theme-toggle { top: 8px; right: 126px; padding: 5px 8px; min-height: 34px; }
+  html[dir="rtl"] .malaib-theme-toggle { right: auto; left: 126px; }
+  .malaib-theme-toggle.theme-toggle-solo { right: 8px; left: auto; }
+  html[dir="rtl"] .malaib-theme-toggle.theme-toggle-solo { right: auto; left: 8px; }
+  .theme-toggle-label { display: none; }
+}
