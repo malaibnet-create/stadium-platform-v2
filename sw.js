@@ -1,11 +1,16 @@
-const cacheName = 'malaeb-net-v41-stadium-type-contrast';
+const cacheName = 'malaeb-net-v42-premium-default';
 const assets = [
   './',
   './index.html',
   './register.html',
+  './dashboard.html',
   './booking.html',
   './style.css',
   './script.js',
+  './i18n.js',
+  './qrcodejs-1.0.0.min.js',
+  './swiper-11.1.15.min.css',
+  './swiper-11.1.15.min.js',
   './logo_no_background.png'
 ];
 
