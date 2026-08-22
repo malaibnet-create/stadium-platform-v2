@@ -2748,6 +2748,7 @@ async function createStadiumFromDashboard(button) {
         const result = await adminPost('createStadium', {
             stadiumName: name,
             stadiumType: field('add_stadium_type'),
+            accountType: 'Premium',
             phone: field('add_stadium_phone'),
             pDay: field('add_stadium_pday'),
             pNight: field('add_stadium_pnight'),
@@ -2836,13 +2837,27 @@ function renderAdminQrCard() {
 }
 
 function downloadAdminQrCard(slug) {
+    const tr = window.MalaibI18n?.translate || (value => value);
     const source = document.querySelector('#adminQrCode canvas, #adminQrCode img');
     if (!source) { alert('يرجى الانتظار حتى يظهر رمز QR ثم حاول مرة أخرى.'); return; }
     const canvas = document.createElement('canvas'); canvas.width = 900; canvas.height = 1120;
     const ctx = canvas.getContext('2d'); ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, canvas.width, canvas.height); ctx.fillStyle = '#172033'; ctx.textAlign = 'center';
-    ctx.font = 'bold 42px Arial'; ctx.fillText('احجز ملعبك بسهولة', 450, 80); ctx.font = 'bold 34px Arial'; ctx.fillText('صوّر هذا الكود بهاتفك للحجز', 450, 145);
-    const finish = () => { ctx.drawImage(source, 140, 190, 620, 620); ctx.fillStyle = '#2563eb'; ctx.font = 'bold 36px Arial'; ctx.fillText('افتح كاميرا الهاتف وامسح الكود', 450, 900); ctx.fillStyle = '#64748b'; ctx.font = '24px Arial'; ctx.fillText('سيتم فتح صفحة حجز هذا الملعب', 450, 955); const link = document.createElement('a'); link.download = `malaibnet-qr-${slug}.png`; link.href = canvas.toDataURL('image/png'); link.click(); };
+    ctx.font = 'bold 42px Arial'; ctx.fillText(tr('احجز ملعبك بسهولة'), 450, 80); ctx.font = 'bold 34px Arial'; ctx.fillText(tr('صوّر هذا الكود بهاتفك للحجز'), 450, 145);
+    const finish = () => { ctx.drawImage(source, 140, 190, 620, 620); ctx.fillStyle = '#2563eb'; ctx.font = 'bold 36px Arial'; ctx.fillText(tr('افتح كاميرا الهاتف وامسح الكود'), 450, 900); ctx.fillStyle = '#64748b'; ctx.font = '24px Arial'; ctx.fillText(tr('سيتم فتح صفحة حجز هذا الملعب'), 450, 955); saveQrCanvas(canvas, `malaibnet-qr-${slug}.png`); };
     if (source.tagName.toLowerCase() === 'img' && !source.complete) source.onload = finish; else finish();
+}
+function saveQrCanvas(canvas, filename) {
+    const tr = window.MalaibI18n?.translate || (value => value);
+    let dataUrl;
+    try { dataUrl = canvas.toDataURL('image/png'); } catch (_) { alert('تعذر تجهيز الصورة. حاول مرة أخرى.'); return; }
+    const popup = window.open('', '_blank');
+    if (popup) {
+        popup.document.write(`<title>${filename}</title><body style="margin:0;text-align:center;background:#f1f5f9;font-family:Arial"><p>${tr('اضغط مطولًا على الصورة ثم اختر حفظ الصورة')}</p><img src="${dataUrl}" style="max-width:100%;height:auto"></body>`);
+        popup.document.close();
+        return;
+    }
+    const link = document.createElement('a'); link.href = dataUrl; link.download = filename; link.click();
+    alert('إذا لم يبدأ التنزيل، اسمح بالنوافذ المنبثقة ثم حاول مرة أخرى.');
 }
 
 async function confirmDeleteAccount() {
