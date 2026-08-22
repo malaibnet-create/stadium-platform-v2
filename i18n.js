@@ -130,7 +130,7 @@
     'القادم': 'Next',
     'الشهر والسنة': 'Month and year',
     'تثبيت الحجز': 'Pin booking',
-    'اليوم': 'Today',
+    'اليوم': 'Day',
     'الأحد': 'Sunday',
     'الإثنين': 'Monday',
     'الاثنين': 'Monday',
@@ -168,7 +168,6 @@
     'تواصل مع المطور': 'Contact the developer',
     'جميع الحقوق محفوظة': 'All rights reserved',
     'ثبت تطبيق "ملاعب NET" لحجز أسرع!': 'Install the Malaib NET app for faster booking!',
-    'الخطة المجانية': 'Free plan',
     'الخطة الاحترافية': 'Premium plan',
     'شهري': 'Monthly',
     'سنوي - خصم شهرين': 'Yearly - two months free',
@@ -509,7 +508,79 @@
     'إذا اختار اللاعب الدفع عند الوصول، لا يترتب على MalaibNet أي التزام مالي تجاه اللاعب أو صاحب الملعب.': 'When payment on arrival is selected, MalaibNet has no financial obligation to the player or stadium owner.',
     'إذا تم الدفع إلكترونيًا عبر PayZone، فإن أي استرداد مستحق يتم وفق إجراءات المنصة ومزود خدمة الدفع، وقد يستغرق عدة أيام عمل.': 'For online payments through PayZone, eligible refunds follow platform and payment-provider procedures and may take several business days.',
     'يجوز لصاحب الملعب إلغاء الحجز بسبب ظروف طارئة، سوء الأحوال الجوية، الصيانة، عطل فني، أو أي ظرف يمنع تقديم الخدمة.': 'A stadium owner may cancel due to emergencies, weather, maintenance, technical failure or another condition preventing the service.',
-    'يمكن للمستخدم التواصل مع إدارة MalaibNet عبر وسائل الاتصال الرسمية مع تزويدها بمعلومات الحجز اللازمة لدراسة الطلب.': 'Users can contact MalaibNet through official channels and provide the booking details needed to review a refund request.'
+    'يمكن للمستخدم التواصل مع إدارة MalaibNet عبر وسائل الاتصال الرسمية مع تزويدها بمعلومات الحجز اللازمة لدراسة الطلب.': 'Users can contact MalaibNet through official channels and provide the booking details needed to review a refund request.',
+
+    // المرحلة الثالثة: التثبيت والجدول والحجز والتذكرة والحجز الأسبوعي
+    'تثبيت الآن': 'Install now',
+    'تثبيت حجز أسبوعي': 'Set a weekly booking',
+    'اختر اليوم والساعة وعدد الأسابيع. سيتم التحقق من جميع المواعيد قبل تأكيد أي حجز.': 'Choose the day, time and number of weeks. All dates will be checked before any booking is confirmed.',
+    'عدد الأسابيع': 'Number of weeks',
+    'اختر الساعة وعدد الأسابيع لعرض السعر الإجمالي.': 'Choose a time and number of weeks to view the total price.',
+    'أتعهد بالحضور في المواعيد المحددة.': 'I agree to attend all selected dates.',
+    'تأكيد الحجوزات': 'Confirm bookings',
+    'تأكيد حجز': 'Confirm booking for',
+    'الملعب': 'Stadium',
+    'هل ترغب في حجز ساعتين متتاليتين بدلاً من ساعة واحدة؟': 'Would you like to book two consecutive hours instead of one?',
+    'نعم، أضفها للحجز': 'Yes, add the next hour',
+    'نظام الحماية:': 'Booking protection:',
+    'يتم تسجيل رقم الهاتف. في حال الحجز وعدم الحضور، سيتم': 'Your phone number is recorded. If you book and do not attend, your number will be',
+    'حظر رقمك': 'blocked',
+    'نهائياً.': 'permanently.',
+    'متاح': 'Available',
+    'منتهي': 'Expired',
+    'لا يمكن حجز أكثر من ساعتين متتاليتين.': 'You cannot book more than two consecutive hours.',
+    'يرجى إدخال الاسم ورقم الهاتف.': 'Enter your name and phone number.',
+    'ساعة واحدة': 'one hour',
+    'حجز يوم:': 'Booking date:',
+    'الساعة:': 'Time:',
+    'درهم': 'MAD',
+    'تعذر إرسال الحجوزات. يرجى المحاولة مرة أخرى.': 'Could not submit the bookings. Please try again.',
+    'الإجمالي لـ': 'Total for',
+    'أسبوع حسب مواسم الحجز:': 'weeks based on seasonal prices:',
+    'تم تثبيت': 'Successfully created',
+    'حجزًا أسبوعيًا بنجاح.': 'weekly bookings.',
+    'الرابط:': 'Link:',
+    'تذكير: تبقى 5 ساعات على موعدك في': 'Reminder: 5 hours remain until your booking at',
+    'تذكير: تبقى ساعة واحدة على موعدك في': 'Reminder: 1 hour remains until your booking at',
+    'صباحًا': 'AM',
+    'مساءً': 'PM',
+    'صباحا': 'AM',
+    'مساءا': 'PM',
+    'ص': 'AM',
+    'اختر خطة النجاح لملعبك 🚀': 'Choose the right plan for your stadium 🚀',
+    'الخطة المجانية': 'Free plan',
+    'دائماً': 'forever',
+    'استقبال الحجوزات': 'Accept bookings',
+    'عرض اسم الملعب وموقعه': 'Display the stadium name and location',
+    'عرض الأسعار وأوقات العمل': 'Display prices and opening hours',
+    'صفحة حجز أساسية': 'Basic booking page',
+    'ابتداءً من 200 د.م': 'Starting from 200 MAD',
+    'حسب عدد الملاعب': 'depending on the number of stadiums',
+    'كل مميزات الخطة المجانية': 'Everything in the Free plan',
+    'لوحة تحكم متكاملة': 'Complete dashboard',
+    'وضع شعار الملعب أو الجمعية': 'Add the stadium or association logo',
+    'خصم عند إضافة ملاعب إضافية': 'Discounts for additional stadiums',
+    'الملاعب القريبة على الخريطة': 'Nearby stadiums on the map',
+    'أولوية في الدعم الفني': 'Priority technical support',
+    'اختر الملاعب التي تريد ترقيتها': 'Choose the stadiums you want to upgrade',
+    'يمكنك تحديد ملعب واحد أو عدة ملاعب من نفس الحساب.': 'You can select one or more stadiums from the same account.',
+    'نوع الاشتراك:': 'Subscription type:',
+    'المبلغ المطلوب': 'Amount due',
+    'وسيلة الدفع:': 'Payment method:',
+    'معلومات التحويل البنكي': 'Bank transfer details',
+    'اسم البنك:': 'Bank name:',
+    'اسم البنك هنا': 'Bank name here',
+    'اسم صاحب الحساب:': 'Account holder:',
+    'اسمك هنا': 'Your name here',
+    'رقم RIB هنا': 'RIB number here',
+    'رقم الحساب:': 'Account number:',
+    'رقم الحساب هنا': 'Account number here',
+    'بعد التحويل، أرسل صورة الوصل عبر واتساب.': 'After the transfer, send a photo of the receipt through WhatsApp.',
+    'مواصلة التفعيل': 'Continue activation',
+    'حجز': 'Booking',
+    'م': 'PM',
+    'من': 'From',
+    'إلى': 'to'
   };
 
   const phraseEntries = Object.entries(arToEn)
@@ -522,11 +593,17 @@
       return [arabic, english, new RegExp(source, 'gu')];
     });
   const originalText = new WeakMap();
+  const translatedText = new WeakMap();
   const originalAttributes = new WeakMap();
+  const translatedAttributes = new WeakMap();
 
   function getLanguage() {
     const saved = localStorage.getItem(STORAGE_KEY);
-    return SUPPORTED.has(saved) ? saved : 'ar';
+    return SUPPORTED.has(saved) ? saved : 'en';
+  }
+
+  function getLocale(language = getLanguage()) {
+    return language === 'ar' ? 'ar-MA' : 'en-GB';
   }
 
   function translate(value, language = getLanguage()) {
@@ -545,25 +622,38 @@
   }
 
   function translateTextNode(node, language) {
-    if (!originalText.has(node)) originalText.set(node, node.nodeValue);
-    const source = originalText.get(node);
+    const current = node.nodeValue;
+    const lastTranslation = translatedText.get(node);
+    let source;
+    if (originalText.has(node) && current === lastTranslation) {
+      source = originalText.get(node);
+    } else {
+      source = current;
+      originalText.set(node, source);
+    }
     const nextValue = language === 'ar' ? source : translate(source, language);
-    if (node.nodeValue !== nextValue) node.nodeValue = nextValue;
+    translatedText.set(node, nextValue);
+    if (current !== nextValue) node.nodeValue = nextValue;
   }
 
   function translateElementAttributes(element, language) {
     const names = ['placeholder', 'title', 'aria-label', 'alt'];
     if (!originalAttributes.has(element)) originalAttributes.set(element, {});
+    if (!translatedAttributes.has(element)) translatedAttributes.set(element, {});
     const saved = originalAttributes.get(element);
+    const translated = translatedAttributes.get(element);
     for (const name of names) {
       if (!element.hasAttribute(name)) continue;
-      if (!(name in saved)) saved[name] = element.getAttribute(name);
+      const current = element.getAttribute(name);
+      if (!(name in saved) || current !== translated[name]) saved[name] = current;
       const nextValue = language === 'ar' ? saved[name] : translate(saved[name], language);
-      if (element.getAttribute(name) !== nextValue) element.setAttribute(name, nextValue);
+      translated[name] = nextValue;
+      if (current !== nextValue) element.setAttribute(name, nextValue);
     }
     if (element.matches('input[type="button"], input[type="submit"]')) {
-      if (!('value' in saved)) saved.value = element.value;
+      if (!('value' in saved) || element.value !== translated.value) saved.value = element.value;
       const nextValue = language === 'ar' ? saved.value : translate(saved.value, language);
+      translated.value = nextValue;
       if (element.value !== nextValue) element.value = nextValue;
     }
   }
@@ -593,7 +683,7 @@
     const wrapper = document.createElement('div');
     wrapper.id = 'malaibLanguageSwitcher';
     wrapper.setAttribute('data-no-translate', 'true');
-    wrapper.innerHTML = '<span aria-hidden="true">🌐</span><select id="malaibLanguageSelect" aria-label="Language"><option value="ar">العربية</option><option value="en">English</option></select>';
+    wrapper.innerHTML = '<span aria-hidden="true">🌐</span><select id="malaibLanguageSelect" aria-label="Language"><option value="en">English</option><option value="ar">العربية</option></select>';
     const style = document.createElement('style');
     style.textContent = '#malaibLanguageSwitcher{position:fixed;top:12px;left:12px;z-index:1000002;display:flex;align-items:center;gap:6px;background:#fff;border:1px solid #dbe3f0;border-radius:999px;padding:5px 9px;box-shadow:0 4px 14px #0f172a24;font-family:Arial,sans-serif}#malaibLanguageSwitcher select{border:0;outline:0;background:transparent;color:#173b82;font-weight:700;font-size:13px;cursor:pointer;padding:3px}html[dir="ltr"] body{direction:ltr}html[dir="rtl"] body{direction:rtl}html[dir="ltr"] [dir="rtl"],html[dir="ltr"] [style*="direction:rtl"],html[dir="ltr"] [style*="direction: rtl"]{direction:ltr!important}html[dir="ltr"] [style*="text-align:right"],html[dir="ltr"] [style*="text-align: right"],html[dir="ltr"] .owner-dashboard-form,html[dir="ltr"] .owner-form-section,html[dir="ltr"] #adminSectionContent,html[dir="ltr"] #bookingFormContent,html[dir="ltr"] #paymentOptions{text-align:left!important}html[dir="ltr"] #adminSectionContent{direction:ltr!important}html[dir="ltr"] #malaibLanguageSwitcher{left:auto;right:12px}@media(max-width:480px){#malaibLanguageSwitcher{top:8px;left:8px;padding:4px 7px}html[dir="ltr"] #malaibLanguageSwitcher{left:auto;right:8px}#malaibLanguageSwitcher select{font-size:12px}}';
     document.head.appendChild(style);
@@ -630,13 +720,14 @@
       for (const mutation of mutations) {
         for (const node of mutation.addedNodes) translateTree(node, language);
         if (mutation.type === 'characterData') translateTree(mutation.target, language);
+        if (mutation.type === 'attributes') translateElementAttributes(mutation.target, language);
       }
     });
-    observer.observe(document.body, { childList: true, subtree: true, characterData: true });
+    observer.observe(document.body, { childList: true, subtree: true, characterData: true, attributes: true, attributeFilter: ['placeholder', 'title', 'aria-label', 'alt', 'value'] });
   }
 
   applyDirection(getLanguage());
-  window.MalaibI18n = { getLanguage, translate, translateTree, setLanguage(language) {
+  window.MalaibI18n = { getLanguage, getLocale, translate, translateTree, setLanguage(language) {
     if (!SUPPORTED.has(language)) return;
     localStorage.setItem(STORAGE_KEY, language);
     location.reload();
