@@ -29,9 +29,9 @@ function formatUiHourRange(startHour, endHour) {
 }
 
 function formatUiBookingDate(value, options = { year: 'numeric', month: 'long', day: 'numeric' }) {
-    const date = value instanceof Date ? value : parseBookingDate_(value);
+    const date = value instanceof Date ? value : window.MalaibBookingTime.parseDate(value);
     return date && !Number.isNaN(date.getTime())
-        ? date.toLocaleDateString(getUiLocale(), options)
+        ? date.toLocaleDateString(getUiLocale(), { ...options, timeZone: 'UTC' })
         : String(value || '');
 }
 
@@ -174,7 +174,7 @@ async function adminPost(action, extra = {}) {
     try { result = JSON.parse(text); } catch (_) { /* Apps Script may return plain text. */ }
 
     if (!response.ok) {
-        const message = typeof result === 'object' && result?.message ? result.message : text;
+        const message = typeof result === 'object' ? (result?.error || result?.message || text) : text;
         throw new Error(message || `HTTP ${response.status}`);
     }
     if (result && typeof result === 'object' && result.result === 'error') {
@@ -283,7 +283,13 @@ if (stadiumId) {
 
 
 let selectedSlots = [];
-let currentStartDate = getMonday(new Date());
+const bookingTime = window.MalaibBookingTime;
+const bookingClock = bookingTime.createClock();
+let currentStartDate = null;
+let calendarWeekOffset = 0;
+let bookedSlotKeys = new Set();
+let bookingsLoaded = false;
+let calendarLoadFailed = false;
 
 window.stadiumData = null;
 
@@ -546,108 +552,92 @@ function renderRelatedStadiums(data) {
 }
 
 
-function initTable(dataFromFetch) {
+function initTable(dataFromFetch, skipFetch = false) {
     const tableBody = document.getElementById('tableBody');
     const headerRow = document.getElementById('headerRow');
-    const footerRow = document.getElementById('footerRow'); 
+    const footerRow = document.getElementById('footerRow');
     const dateDisplay = document.getElementById('dateDisplay');
-    
-    if (!tableBody || !headerRow) return;
-
-    // --- 1. تحديد الساعات (تعديل الأداء) ---
+    if (!tableBody || !headerRow || !dateDisplay) return;
     const data = dataFromFetch || window.stadiumData;
-    let startHour = 8; 
-    let endHour = 23;
-
-    if (data) {
-        if (data.openHour !== undefined && data.openHour !== "") {
-            startHour = parseInt(data.openHour);
-        }
-        if (data.closeHour !== undefined && data.closeHour !== "") {
-            endHour = parseInt(data.closeHour);
-        }
+    if (!data) return;
+    const hours = bookingTime.openingHours(data);
+    const status = document.getElementById('bookingCalendarMessage');
+    const retry = document.getElementById('retryBookingCalendar');
+    if (retry) retry.hidden = !calendarLoadFailed;
+    if (status) status.textContent = uiText(calendarLoadFailed
+        ? 'تعذر تحديث المواعيد. تحقق من اتصالك واضغط إعادة المحاولة.'
+        : (!bookingClock.ready() || !bookingsLoaded ? 'جاري التحقق من الوقت والمواعيد...' : 'جميع المواعيد بتوقيت المغرب.'));
+    if (!bookingClock.ready() || !hours) {
+        dateDisplay.textContent = '—';
+        tableBody.innerHTML = `<tr><td colspan="8" style="padding:20px;text-align:center">${uiText(hours ? 'جاري التحقق من الوقت والمواعيد...' : 'ساعات عمل الملعب غير صالحة. يرجى التواصل مع المسؤول.')}</td></tr>`;
+        if (hours && !skipFetch) void loadExistingBookings();
+        return;
     }
 
-    // تفريغ السطر العلوي والسفلي تمهيداً لملئهما
+    const now = bookingClock.now();
+    currentStartDate = bookingTime.firstBookableWeek(now, hours);
+    currentStartDate.setUTCDate(currentStartDate.getUTCDate() + calendarWeekOffset * 7);
+    const weekEnd = new Date(currentStartDate.getTime());
+    weekEnd.setUTCDate(weekEnd.getUTCDate() + 6);
+    dateDisplay.textContent = `${formatUiBookingDate(currentStartDate, { day: 'numeric', month: 'short', year: 'numeric' })} – ${formatUiBookingDate(weekEnd, { day: 'numeric', month: 'short', year: 'numeric' })}`;
     headerRow.innerHTML = `<th>${uiText('الساعة')}</th>`;
     if (footerRow) footerRow.innerHTML = `<th>${uiText('الساعة')}</th>`;
-    
     const daysArr = ["الاثنين", "الثلاثاء", "الأربعاء", "الخميس", "الجمعة", "السبت", "الأحد"];
-    
-    let displayDate = new Date(currentStartDate.getTime());
-    dateDisplay.innerText = displayDate.toLocaleDateString(getUiLocale(), { month: 'long', year: 'numeric' });
-
-    let currentWeekDates = [];
+    const dates = [];
     for (let i = 0; i < 7; i++) {
-        let d = new Date(currentStartDate.getTime());
-        d.setDate(d.getDate() + i); 
-        
-        let fullDate = getFormattedDate(d);
-        currentWeekDates.push({name: daysArr[i], date: fullDate, rawDate: d}); 
-        
-        const localizedDayName = d.toLocaleDateString(getUiLocale(), { weekday: 'long' });
-        let cellContent = `${localizedDayName}<br><small>${d.getDate()}</small>`;
-        
-        // إضافة اليوم والتاريخ للسطر العلوي والسفلي معاً
-        headerRow.innerHTML += `<th>${cellContent}</th>`;
-        if (footerRow) footerRow.innerHTML += `<th>${cellContent}</th>`;
+        const d = new Date(currentStartDate.getTime());
+        d.setUTCDate(d.getUTCDate() + i);
+        dates.push(getFormattedDate(d));
+        const label = d.toLocaleDateString(getUiLocale(), { weekday: 'long', timeZone: 'UTC' });
+        const dayMonth = `${String(d.getUTCDate()).padStart(2, '0')}/${String(d.getUTCMonth() + 1).padStart(2, '0')}`;
+        const cell = `<th>${label}<br><small><bdi dir="ltr">${dayMonth}</bdi></small></th>`;
+        headerRow.innerHTML += cell;
+        if (footerRow) footerRow.innerHTML += cell;
     }
-
-    const now = new Date();
-    let allRowsHtml = ''; 
-
-    // --- 2. بناء الصفوف بناءً على الساعات المحددة أعلاه ---
-   const lastHour = Math.min(endHour, 24);
-
-for (let hour = startHour; hour < lastHour; hour++) {
-        let hLabel24 = `${hour}:00`; 
-        let hLabelRange = formatUiHourRange(hour, hour + 1); 
-
-        let row = `<tr><td style="background:#f8fafc; font-weight:bold; white-space: nowrap; font-size: 0.85rem; padding: 5px; border: 1px solid #ddd;">${hLabelRange}</td>`;
-        
+    const selectedKeys = new Set(selectedSlots.map(slot => bookingTime.slotKey(slot.date, slot.hour)));
+    let rows = '';
+    for (let hour = hours.open; hour < hours.close; hour++) {
+        const hLabel24 = `${hour}:00`;
+        let row = `<tr><td style="font-weight:bold;white-space:nowrap;font-size:0.85rem;padding:5px">${formatUiHourRange(hour, hour + 1)}</td>`;
         for (let day = 0; day < 7; day++) {
-            let slotTime = new Date(currentWeekDates[day].rawDate.getTime());
-            slotTime.setHours(hour, 0, 0, 0);
-
-            if (slotTime < now) {
-                row += `<td class="slot past" 
-                            data-date="${currentWeekDates[day].date.trim()}" 
-                            data-hour="${hLabel24}" 
-                            style="background-color: #f1f5f9; color: #cbd5e1; cursor: not-allowed; pointer-events: none; font-size: 0.8rem; border: 1px solid #ddd;">${uiText('منتهي')}</td>`;
-            } else {
-                row += `<td class="slot" 
-                            style="background-color: #ffffff; cursor: pointer; border: 1px solid #ddd;"
-                            data-date="${currentWeekDates[day].date.trim()}" 
-                            data-day="${currentWeekDates[day].name}" 
-                            data-hour="${hLabel24}" 
-                            onclick="handleSlotSelection(this)">${uiText('متاح')}</td>`;
-            }
+            const key = bookingTime.slotKey(dates[day], hLabel24);
+            const instant = bookingTime.slotEpoch(dates[day], hLabel24);
+            const past = instant !== null && instant <= now;
+            const booked = bookedSlotKeys.has(key);
+            const unavailable = instant === null || !bookingsLoaded || window.stadiumStatus === 'maintenance';
+            const selectable = !past && !booked && !unavailable;
+            const state = booked ? 'booked' : (past ? 'past' : (unavailable ? 'unverified' : (selectedKeys.has(key) ? 'selected' : '')));
+            const label = booked ? 'محجوز' : (past ? 'منتهي' : (instant === null || window.stadiumStatus === 'maintenance' ? 'غير متاح' : (!bookingsLoaded ? 'جار التحقق' : 'متاح')));
+            row += `<td class="slot ${state}" data-date="${dates[day]}" data-day="${daysArr[day]}" data-hour="${hLabel24}" aria-disabled="${!selectable}" style="cursor:${selectable ? 'pointer' : 'not-allowed'};${selectable ? '' : 'pointer-events:none;'}" ${selectable ? 'onclick="handleSlotSelection(this)"' : ''}>${uiText(label)}</td>`;
         }
-        row += `</tr>`;
-        allRowsHtml += row; 
+        rows += row + '</tr>';
     }
-    
-    tableBody.innerHTML = allRowsHtml;
-    loadExistingBookings(); 
+    tableBody.innerHTML = rows;
+    selectedSlots = Array.from(tableBody.querySelectorAll('.slot.selected')).map(element => ({ date: element.dataset.date, hour: element.dataset.hour, dayName: element.dataset.day, element }));
+    if (!skipFetch) void loadExistingBookings();
 }
 
 function getFormattedDate(date) {
-    let day = String(date.getDate()).padStart(2, '0');
-    let month = String(date.getMonth() + 1).padStart(2, '0');
-    let year = date.getFullYear();
-    return `${day}/${month}/${year}`;
+    return bookingTime.formatDate(date);
 }
 
 // 4. الدوال المساعدة (يجب وجودها ليعمل الجدول)
 function getMonday(d) {
-    d = new Date(d);
-    let day = d.getDay(), diff = d.getDate() - day + (day == 0 ? -6 : 1);
-    return new Date(d.setDate(diff));
+    return bookingTime.monday(d);
 }
 
 function handleSlotSelection(element) {
+    if (!bookingsLoaded || !bookingClock.ready()) {
+        void loadExistingBookings(true);
+        return;
+    }
+    const slotInstant = bookingTime.slotEpoch(element.dataset.date, element.dataset.hour);
+    if (slotInstant === null || slotInstant <= bookingClock.now() || window.stadiumStatus === 'maintenance') {
+        initTable();
+        return;
+    }
     // 1. منع اختيار المربعات المحجوزة أو المنتهية
-    if (element.innerText === "محجوز" || element.classList.contains("booked") || element.classList.contains("past")) return; 
+    if (element.innerText === "محجوز" || element.classList.contains("booked") || element.classList.contains("past")) return;
 
     const isAlreadySelected = element.classList.contains('selected');
     const date = element.getAttribute('data-date');
@@ -815,9 +805,11 @@ async function submitFinalBooking() {
         alert(uiText("نعتذر منك، لا يمكن إتمام الحجز حالياً لأن الملعب في حالة صيانة أو إصلاح."));
         return; // هذا السطر سيمنع الكود بالأسفل من العمل
     }
+    if (document.getElementById('finalConfirmBtn').disabled) return;
+    if (!selectedSlots.length) return alert(uiText('اختر موعدًا متاحًا للحجز.'));
     const name = document.getElementById('userName').value;
     const phone = document.getElementById('userPhone').value;
-    
+
     // 1. إضافة خاصية التحقق من رقم الهاتف (أرقام فقط ومن 10 إلى 13 رقماً)
     const phoneRegex = /^[0-9]{10,13}$/;
     if (!name || !phone) return alert(uiText("يرجى إدخال الاسم ورقم الهاتف."));
@@ -836,6 +828,15 @@ async function submitFinalBooking() {
     btn.disabled = true;
 
     try {
+        await bookingClock.synchronize(bookingScriptURL, { force: true });
+        if (selectedSlots.some(slot => {
+            const epoch = bookingTime.slotEpoch(slot.date, slot.hour);
+            return epoch === null || epoch <= bookingClock.now();
+        })) {
+            alert(uiText('هذا الموعد انتهى. اختر موعدًا قادمًا.'));
+            initTable();
+            return;
+        }
         const response = await fetch(`${bookingScriptURL}?action=createBooking`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
@@ -854,7 +855,7 @@ async function submitFinalBooking() {
 
         // الخادم يتحقق من الساعات ويضيفها جميعاً دفعة واحدة، أو يرفضها جميعاً.
         if (!response.ok || !result || result.result !== "success") {
-            alert("⚠️ " + (result?.message || "تعذر إتمام الحجز. حاول مرة أخرى."));
+            alert("⚠️ " + uiText(result?.error || result?.message || "تعذر إتمام الحجز. حاول مرة أخرى."));
             initTable();
             return;
         }
@@ -874,7 +875,7 @@ async function submitFinalBooking() {
         });
 
         // --- 2. بدلاً من رسالة alert، نقوم بحساب الوقت واستدعاء التذكرة ---
-        selectedSlots.sort((a, b) => a.hour - b.hour);
+        selectedSlots.sort((a, b) => Number.parseInt(a.hour, 10) - Number.parseInt(b.hour, 10));
         const firstSlot = selectedSlots[0];
         const lastSlot = selectedSlots[selectedSlots.length - 1];
 
@@ -892,13 +893,14 @@ async function submitFinalBooking() {
         }
 
         // استدعاء دالة التذكرة (التي تتولى عرض التذكرة وخيار الواتساب)
-        showBookingTicket(currentStadiumName, firstSlot.date, timeRange, stadiumUrl, getSelectedSlotsTotal());
+        showBookingTicket(currentStadiumName, firstSlot.date, timeRange, stadiumUrl, Number.isFinite(result.total) ? result.total : getSelectedSlotsTotal());
 
         // تحديث البيانات في الخلفية
         loadExistingBookings();
 
     } catch (error) {
         console.error("Error:", error);
+        alert(uiText('تعذر تأكيد الحجز. تحقق من الجدول قبل المحاولة مجددًا.'));
         // تم إبقاء initTable لضمان تحديث الجدول في حالة وقوع خطأ تقني
         initTable();
     } finally {
@@ -968,23 +970,36 @@ function toggleRules() {
 }
 
 function changeWeek(direction) {
-    currentStartDate.setDate(currentStartDate.getDate() + (direction * 7));
+    calendarWeekOffset += direction < 0 ? -1 : 1;
+    selectedSlots = [];
     initTable();
 }
 
-let bookingsRequestInFlight = false;
+function showNextBookableWeek() {
+    calendarWeekOffset = 0;
+    selectedSlots = [];
+    initTable();
+}
 
-async function loadExistingBookings() {
-    if (bookingsRequestInFlight) return;
-    bookingsRequestInFlight = true;
+let bookingsRequestInFlight = null;
+
+async function loadExistingBookings(forceClock = false) {
+    if (!stadiumId || !window.stadiumData) return;
+    if (bookingsRequestInFlight) return bookingsRequestInFlight;
+    bookingsRequestInFlight = refreshBookingData(forceClock);
+    try { return await bookingsRequestInFlight; }
+    finally { bookingsRequestInFlight = null; }
+}
+
+async function refreshBookingData(forceClock) {
     const controller = new AbortController();
     const timeoutId = window.setTimeout(() => controller.abort(), 20000);
 
     try {
-        const response = await fetch(
-            `${bookingScriptURL}?action=getBookings&id=${encodeURIComponent(stadiumId)}&t=${Date.now()}`,
-            { cache: 'no-store', signal: controller.signal }
-        );
+        const [response] = await Promise.all([
+            fetch(`${bookingScriptURL}?action=getBookings&id=${encodeURIComponent(stadiumId)}`, { cache: 'no-store', signal: controller.signal }),
+            bookingClock.synchronize(bookingScriptURL, { force: forceClock })
+        ]);
         if (!response.ok) {
             throw new Error(`Booking request failed with status ${response.status}`);
         }
@@ -993,12 +1008,17 @@ async function loadExistingBookings() {
         if (!Array.isArray(bookings)) {
             throw new Error("Invalid bookings response");
         }
+        calendarLoadFailed = false;
+        bookingsLoaded = true;
         handleData(bookings);
     } catch (error) {
         console.error('Bookings load failed:', error);
+        calendarLoadFailed = true;
+        bookingsLoaded = false;
+        initTable(undefined, true);
     } finally {
         window.clearTimeout(timeoutId);
-        bookingsRequestInFlight = false;
+        controller.abort();
     }
     return;
     /* Legacy JSONP code retained only for reference; backend now returns JSON.
@@ -1026,22 +1046,9 @@ async function loadExistingBookings() {
 
 function handleData(bookings) {
     if (!Array.isArray(bookings)) return;
-    
-    bookings.forEach(b => {
-        // نبحث عن المربع الذي يطابق التاريخ والساعة القادمين من الشيت
-        const slot = Array.from(document.querySelectorAll('.slot')).find(el =>
-            el.dataset.date === String(b.date) && el.dataset.hour === String(b.hour)
-        );
-        
-        if (slot) {
-            slot.innerText = "محجوز";
-            slot.classList.add("booked"); // أضف كلاس للتصميم
-            slot.style.backgroundColor = "#ef4444"; // لون أحمر
-            slot.style.color = "white";
-            slot.style.pointerEvents = "none"; // منع الضغط عليه
-            slot.onclick = null; // إزالة وظيفة الضغط تماماً
-        }
-    });
+    // Reconcile the entire snapshot so a cancelled booking becomes available again.
+    bookedSlotKeys = new Set(bookings.map(b => bookingTime.slotKey(String(b.date).trim(), String(b.hour).trim())).filter(Boolean));
+    initTable(undefined, true);
 }
 
 // التشغيل
@@ -1105,6 +1112,15 @@ setInterval(() => {
     }
 }, 60000);
 
+function resumeBookingCalendar() {
+    if (document.visibilityState !== 'visible' || !window.stadiumData) return;
+    calendarWeekOffset = 0;
+    void loadExistingBookings(true);
+}
+document.addEventListener('visibilitychange', resumeBookingCalendar);
+window.addEventListener('pageshow', event => { if (event.persisted) resumeBookingCalendar(); });
+window.addEventListener('online', resumeBookingCalendar);
+
 const LOCAL_REMINDERS_KEY = "malaeb-local-reminders-v1";
 let localReminderTimerId = null;
 
@@ -1132,24 +1148,8 @@ async function requestNotificationPermission_() {
 }
 
 function parseBookingDateTime_(bookingDate, bookingHour) {
-    const dateParts = String(bookingDate).split("/").map(Number);
-    const timeParts = String(bookingHour).split(":").map(Number);
-
-    if (dateParts.length !== 3 || timeParts.length !== 2) {
-        return null;
-    }
-
-    const [day, month, year] = dateParts;
-    const [hour, minute] = timeParts;
-    const value = new Date(year, month - 1, day, hour, minute, 0, 0);
-
-    return value.getFullYear() === year &&
-        value.getMonth() === month - 1 &&
-        value.getDate() === day &&
-        value.getHours() === hour &&
-        value.getMinutes() === minute
-        ? value
-        : null;
+    const epoch = bookingTime.slotEpoch(bookingDate, bookingHour);
+    return epoch === null ? null : new Date(epoch);
 }
 
 function loadLocalReminders_() {
@@ -1168,7 +1168,7 @@ function saveLocalReminders_(reminders) {
 
 function scheduleNotification(bookingDate, bookingHour, stadiumName) {
     const playTime = parseBookingDateTime_(bookingDate, bookingHour);
-    if (!playTime || playTime <= new Date()) {
+    if (!playTime || !bookingClock.ready() || playTime.getTime() <= bookingClock.now()) {
         return;
     }
 
@@ -1192,7 +1192,8 @@ async function processLocalReminders_() {
         return;
     }
 
-    const now = Date.now();
+    const now = bookingClock.now();
+    if (!bookingClock.ready()) return;
     const reminders = loadLocalReminders_();
     const activeReminders = [];
     const registration = await navigator.serviceWorker.ready;
@@ -2981,6 +2982,8 @@ function showMissingStadiumLanding() {
 
     if (tableWrap) tableWrap.style.display = "none";
     if (weekNav) weekNav.style.display = "none";
+    const calendarStatus = document.getElementById('bookingCalendarStatus');
+    if (calendarStatus) calendarStatus.style.display = 'none';
     if (actionButtons) actionButtons.style.display = "none";
     if (footer) footer.style.display = "none";
     if (supervisorButton) supervisorButton.style.display = "none";
@@ -3144,6 +3147,11 @@ function closeSupervisorContact() {
 
 
 function openRecurringModal() {
+    if (!bookingClock.ready()) {
+        alert(uiText('جاري التحقق من الوقت والمواعيد...'));
+        void loadExistingBookings(true);
+        return;
+    }
     if (window.stadiumStatus === "maintenance") {
         alert(uiText("الملعب في حالة صيانة ولا يمكن الحجز حالياً."));
         return;
@@ -3161,7 +3169,7 @@ function openRecurringModal() {
         hourSelect.appendChild(option);
     }
 
-    document.getElementById("recurringDay").value = new Date().getDay();
+    document.getElementById("recurringDay").value = bookingTime.calendarDate(bookingClock.now()).getUTCDay();
     hourSelect.onchange = updateRecurringPriceSummary;
     document.getElementById("recurringDay").onchange = updateRecurringPriceSummary;
     const weeksInput = document.getElementById("recurringWeeks");
@@ -3176,7 +3184,7 @@ function getRecurringBookingTotal(dayIndex, hour, weeks) {
     let total = 0;
     for (let week = 0; week < weeks; week++) {
         const date = new Date(firstDate);
-        date.setDate(firstDate.getDate() + (week * 7));
+        date.setUTCDate(firstDate.getUTCDate() + (week * 7));
         total += getHourlyBookingRate(hour, getFormattedDate(date));
     }
     return total;
@@ -3207,22 +3215,21 @@ function closeRecurringModal() {
 }
 
 function getFirstRecurringDate(dayIndex, hour) {
-    const date = new Date();
-    date.setHours(0, 0, 0, 0);
-
-    let daysUntil = (dayIndex - date.getDay() + 7) % 7;
-    const currentHour = new Date().getHours();
-
-    // إذا اختار اللاعب يوم اليوم ووقتًا منتهيًا، يبدأ الحجز من الأسبوع القادم.
-    if (daysUntil === 0 && parseInt(hour) <= currentHour) {
-        daysUntil = 7;
-    }
-
-    date.setDate(date.getDate() + daysUntil);
+    const date = bookingTime.calendarDate(bookingClock.now());
+    const daysUntil = (dayIndex - date.getUTCDay() + 7) % 7;
+    date.setUTCDate(date.getUTCDate() + daysUntil);
+    const epoch = bookingTime.slotEpoch(getFormattedDate(date), hour);
+    if (epoch === null || epoch <= bookingClock.now()) date.setUTCDate(date.getUTCDate() + 7);
     return date;
 }
 
 async function submitRecurringBooking() {
+    if (document.getElementById('recurringSubmitBtn').disabled) return;
+    if (!bookingClock.ready()) {
+        alert(uiText('جاري التحقق من الوقت والمواعيد...'));
+        void loadExistingBookings(true);
+        return;
+    }
     const dayIndex = parseInt(document.getElementById("recurringDay").value);
     const hour = document.getElementById("recurringHour").value;
     const weeks = parseInt(document.getElementById("recurringWeeks").value);
@@ -3258,7 +3265,7 @@ async function submitRecurringBooking() {
 
     for (let week = 0; week < weeks; week++) {
         const date = new Date(firstDate);
-        date.setDate(firstDate.getDate() + (week * 7));
+        date.setUTCDate(firstDate.getUTCDate() + (week * 7));
 
         bookings.push({
             dayName: dayNames[dayIndex],
@@ -3272,6 +3279,7 @@ async function submitRecurringBooking() {
     button.innerText = getUiLanguage() === 'ar' ? "جاري التحقق من المواعيد..." : "Checking availability...";
 
     try {
+        await bookingClock.synchronize(bookingScriptURL, { force: true });
         const response = await fetch(`${bookingScriptURL}?action=createBooking`, {
             method: "POST",
             headers: { "Content-Type": "application/json", "Accept": "application/json" },
@@ -3285,13 +3293,13 @@ async function submitRecurringBooking() {
 
         const result = await response.json();
 
-        if (result.result !== "success") {
-            return alert("⚠️ " + uiText(result.message));
+        if (!response.ok || result.result !== "success") {
+            return alert("⚠️ " + uiText(result.error || result.message || 'تعذر إرسال الحجوزات. يرجى المحاولة مرة أخرى.'));
         }
 
         closeRecurringModal();
         initTable();
-        const total = bookings.reduce((sum, booking) => sum + getHourlyBookingRate(booking.hour, booking.date), 0);
+        const total = Number.isFinite(result.total) ? result.total : bookings.reduce((sum, booking) => sum + getHourlyBookingRate(booking.hour, booking.date), 0);
         alert(getUiLanguage() === 'ar'
             ? `✅ تم تثبيت ${bookings.length} حجزًا أسبوعيًا بنجاح.\n💰 السعر الإجمالي: ${formatBookingPrice(total)} درهم`
             : `✅ ${bookings.length} weekly bookings were confirmed successfully.\n💰 Total price: ${formatBookingPrice(total)} MAD`);
