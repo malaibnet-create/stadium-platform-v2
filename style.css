@@ -2134,3 +2134,15 @@ body.missing-stadium-page #supervisorFloatBtn {
         grid-template-columns: 1fr;
     }
 }
+/* Calendar status and full date range; shared by both themes and languages. */
+.booking-calendar-status { display:flex; flex-wrap:wrap; gap:10px; justify-content:center; align-items:center; padding:10px 14px; color:var(--theme-text, #172033); background:var(--theme-surface, #fff); border:1px solid var(--theme-border, #dbe3f0); border-radius:12px; margin:10px 0; text-align:center; font-size:.9rem; }
+.booking-calendar-status button { border:0; border-radius:8px; padding:8px 14px; background:#2563eb; color:#fff; cursor:pointer; font:inherit; }
+.booking-calendar-status button[hidden] { display:none; }
+body .week-navigation { flex-wrap:wrap; }
+body #dateDisplay { white-space:normal; line-height:1.5; height:auto; min-width:190px; }
+html[dir="ltr"] .booking-table-scroll,
+html[dir="ltr"] #bookingTable { direction:ltr !important; }
+html[dir="rtl"] .booking-table-scroll,
+html[dir="rtl"] #bookingTable { direction:rtl !important; }
+#tableBody .slot.unverified { background:#e2e8f0; color:#475569; cursor:not-allowed; }
+html[data-theme="dark"] #tableBody .slot.unverified { background:#182235 !important; color:#9fb0c7 !important; }

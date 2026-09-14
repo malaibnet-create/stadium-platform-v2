@@ -1,4 +1,4 @@
-const cacheName = 'malaeb-net-v50-light-default';
+const cacheName = 'malaeb-net-v52-calendar-fix';
 const assets = [
   './',
   './index.html',
@@ -8,6 +8,7 @@ const assets = [
   './style.css',
   './theme.css',
   './script.js',
+  './booking-time.js',
   './theme.js',
   './i18n.js',
   './qrcodejs-1.0.0.min.js',
