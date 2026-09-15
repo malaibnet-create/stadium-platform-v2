@@ -1,4 +1,4 @@
-const cacheName = 'malaeb-net-v52-calendar-fix';
+const cacheName = 'malaeb-net-v53-booking-state';
 const assets = [
   './',
   './index.html',

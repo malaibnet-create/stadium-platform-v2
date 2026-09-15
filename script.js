@@ -227,6 +227,7 @@ async function switchAdminStadium(newSlug) {
     if (!newSlug || newSlug === stadiumId) return;
 
     stadiumId = newSlug;
+    resetBookingCalendarState();
     // لا نسمح ببقاء إعدادات الملعب السابق ظاهرة أثناء تحميل الملعب الجديد.
     currentAccountStatus = "Free";
     const section = document.getElementById('adminSectionContent');
@@ -818,18 +819,25 @@ async function submitFinalBooking() {
         return alert(uiText("يرجى إدخال رقم هاتف صحيح (أرقام فقط بدون حروف أو رموز)."));
     }
 
+    // Keep submitted data independent of table redraws while the request is pending.
+    const submittedSlots = selectedSlots.map(({ dayName, date, hour }) => ({ dayName, date, hour }));
+    const submittedStadiumId = stadiumId;
+    const currentStadiumName = document.title.split('-')[0] || "ملعب";
+    const stadiumUrl = window.location.href;
+    const estimatedTotal = submittedSlots.reduce((sum, slot) => sum + getHourlyBookingRate(slot.hour, slot.date), 0);
+
     // لا نطلب صلاحية الإشعارات قبل الحجز؛ نافذة الإذن قد تعطل الطلب على الهاتف.
     const notificationsAllowed = "Notification" in window && Notification.permission === "granted";
 
     // إظهار رسالة انتظار
     const btn = document.getElementById('finalConfirmBtn');
     const originalText = btn.innerText;
-    btn.innerText = "جاري التأكد والحجز... ⏳";
+    btn.innerText = uiText("جاري التأكد والحجز... ⏳");
     btn.disabled = true;
 
     try {
         await bookingClock.synchronize(bookingScriptURL, { force: true });
-        if (selectedSlots.some(slot => {
+        if (submittedSlots.some(slot => {
             const epoch = bookingTime.slotEpoch(slot.date, slot.hour);
             return epoch === null || epoch <= bookingClock.now();
         })) {
@@ -841,14 +849,10 @@ async function submitFinalBooking() {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
             body: JSON.stringify({
-                stadiumId,
+                stadiumId: submittedStadiumId,
                 name,
                 phone,
-                bookings: selectedSlots.map(slot => ({
-                    dayName: slot.dayName,
-                    date: slot.date,
-                    hour: slot.hour
-                }))
+                bookings: submittedSlots
             })
         });
         const result = await response.json().catch(() => null);
@@ -856,52 +860,40 @@ async function submitFinalBooking() {
         // الخادم يتحقق من الساعات ويضيفها جميعاً دفعة واحدة، أو يرفضها جميعاً.
         if (!response.ok || !result || result.result !== "success") {
             alert("⚠️ " + uiText(result?.error || result?.message || "تعذر إتمام الحجز. حاول مرة أخرى."));
+            invalidateBookingSnapshot();
             initTable();
             return;
         }
 
-        // --- النجاح: تلوين الخانات في الجدول أولاً ---
-        selectedSlots.forEach(slot => {
-            if (slot.element) {
-                slot.element.classList.remove('selected');
-                slot.element.classList.add('booked');
-                slot.element.innerText = "محجوز";
-                slot.element.style.backgroundColor = "#ef4444"; 
-                slot.element.style.color = "white";
-                slot.element.style.pointerEvents = "none";
-                slot.element.onclick = null;
-
-            }
-        });
+        // Update the state used by every redraw, not only the current DOM elements.
+        recordConfirmedBookings(submittedSlots, submittedStadiumId);
 
         // --- 2. بدلاً من رسالة alert، نقوم بحساب الوقت واستدعاء التذكرة ---
-        selectedSlots.sort((a, b) => Number.parseInt(a.hour, 10) - Number.parseInt(b.hour, 10));
-        const firstSlot = selectedSlots[0];
-        const lastSlot = selectedSlots[selectedSlots.length - 1];
+        submittedSlots.sort((a, b) => Number.parseInt(a.hour, 10) - Number.parseInt(b.hour, 10));
+        const firstSlot = submittedSlots[0];
+        const lastSlot = submittedSlots[submittedSlots.length - 1];
 
         const startTime = firstSlot.hour;
         const endTime = (parseInt(lastSlot.hour) + 1) + ":00";
         const timeRange = formatUiHourRange(startTime, endTime);
 
-        const currentStadiumName = document.title.split('-')[0] || "ملعب بوعسل";
-        const stadiumUrl = window.location.href;
-
         if (notificationsAllowed) {
-            selectedSlots.forEach(slot => {
+            submittedSlots.forEach(slot => {
                 scheduleNotification(slot.date, slot.hour, currentStadiumName);
             });
         }
 
         // استدعاء دالة التذكرة (التي تتولى عرض التذكرة وخيار الواتساب)
-        showBookingTicket(currentStadiumName, firstSlot.date, timeRange, stadiumUrl, Number.isFinite(result.total) ? result.total : getSelectedSlotsTotal());
+        showBookingTicket(currentStadiumName, firstSlot.date, timeRange, stadiumUrl, Number.isFinite(result.total) ? result.total : estimatedTotal);
 
         // تحديث البيانات في الخلفية
-        loadExistingBookings();
+        void loadExistingBookings();
 
     } catch (error) {
         console.error("Error:", error);
         alert(uiText('تعذر تأكيد الحجز. تحقق من الجدول قبل المحاولة مجددًا.'));
         // تم إبقاء initTable لضمان تحديث الجدول في حالة وقوع خطأ تقني
+        invalidateBookingSnapshot();
         initTable();
     } finally {
         btn.innerText = originalText;
@@ -982,22 +974,64 @@ function showNextBookableWeek() {
 }
 
 let bookingsRequestInFlight = null;
+let bookingsRequestRevision = -1;
+let bookingsRequestStadiumId = null;
+let bookingsSnapshotRevision = 0;
+
+function invalidateBookingSnapshot() {
+    bookingsSnapshotRevision++;
+}
+
+function recordConfirmedBookings(bookings, submittedStadiumId = stadiumId) {
+    if (submittedStadiumId !== stadiumId) return;
+    invalidateBookingSnapshot();
+    const confirmedKeys = new Set(bookings.map(slot => bookingTime.slotKey(slot.date, slot.hour)).filter(Boolean));
+    confirmedKeys.forEach(key => bookedSlotKeys.add(key));
+    selectedSlots = selectedSlots.filter(slot => !confirmedKeys.has(bookingTime.slotKey(slot.date, slot.hour)));
+    initTable(undefined, true);
+}
+
+function resetBookingCalendarState() {
+    invalidateBookingSnapshot();
+    bookedSlotKeys = new Set();
+    selectedSlots = [];
+    bookingsLoaded = false;
+    calendarLoadFailed = false;
+    calendarWeekOffset = 0;
+    window.stadiumData = null;
+}
 
 async function loadExistingBookings(forceClock = false) {
     if (!stadiumId || !window.stadiumData) return;
-    if (bookingsRequestInFlight) return bookingsRequestInFlight;
-    bookingsRequestInFlight = refreshBookingData(forceClock);
-    try { return await bookingsRequestInFlight; }
-    finally { bookingsRequestInFlight = null; }
+    if (bookingsRequestInFlight) {
+        const pendingRequest = bookingsRequestInFlight;
+        if (bookingsRequestRevision === bookingsSnapshotRevision && bookingsRequestStadiumId === stadiumId) {
+            return pendingRequest;
+        }
+        // A save/cancellation occurred after this request began. Fetch a new snapshot afterward.
+        await pendingRequest;
+        return loadExistingBookings(forceClock);
+    }
+    const revision = bookingsSnapshotRevision;
+    const requestStadiumId = stadiumId;
+    const request = refreshBookingData(forceClock, revision, requestStadiumId);
+    bookingsRequestInFlight = request;
+    bookingsRequestRevision = revision;
+    bookingsRequestStadiumId = requestStadiumId;
+    try { return await request; }
+    finally {
+        if (bookingsRequestInFlight === request) bookingsRequestInFlight = null;
+    }
 }
 
-async function refreshBookingData(forceClock) {
+async function refreshBookingData(forceClock, revision, requestStadiumId) {
     const controller = new AbortController();
     const timeoutId = window.setTimeout(() => controller.abort(), 20000);
+    const isCurrentRequest = () => revision === bookingsSnapshotRevision && requestStadiumId === stadiumId;
 
     try {
         const [response] = await Promise.all([
-            fetch(`${bookingScriptURL}?action=getBookings&id=${encodeURIComponent(stadiumId)}`, { cache: 'no-store', signal: controller.signal }),
+            fetch(`${bookingScriptURL}?action=getBookings&id=${encodeURIComponent(requestStadiumId)}&_t=${Date.now()}`, { cache: 'no-store', headers: { Accept: 'application/json' }, signal: controller.signal }),
             bookingClock.synchronize(bookingScriptURL, { force: forceClock })
         ]);
         if (!response.ok) {
@@ -1008,10 +1042,12 @@ async function refreshBookingData(forceClock) {
         if (!Array.isArray(bookings)) {
             throw new Error("Invalid bookings response");
         }
+        if (!isCurrentRequest()) return;
         calendarLoadFailed = false;
         bookingsLoaded = true;
         handleData(bookings);
     } catch (error) {
+        if (!isCurrentRequest()) return;
         console.error('Bookings load failed:', error);
         calendarLoadFailed = true;
         bookingsLoaded = false;
@@ -1637,6 +1673,7 @@ async function cancelBooking(rowNumber, btn) {
         const result = await response.text();
         
         if (result.trim() === "CancelSuccess") {
+            invalidateBookingSnapshot();
             alert("✅ تم إلغاء الحجز بنجاح");
             
             // تحديث قائمة الإلغاء في لوحة التحكم
@@ -1645,7 +1682,7 @@ async function cancelBooking(rowNumber, btn) {
             // --- التعديل المطلوب: تحديث المربعات الملونة في الموقع فوراً ---
             if (typeof loadExistingBookings === "function") {
                 console.log("جاري تحديث مربعات الحجز...");
-                loadExistingBookings(); 
+                void loadExistingBookings();
             }
 
         } else if (result.trim() === "Unauthorized") {
@@ -3262,6 +3299,7 @@ async function submitRecurringBooking() {
 
     const firstDate = getFirstRecurringDate(dayIndex, hour);
     const bookings = [];
+    const submittedStadiumId = stadiumId;
 
     for (let week = 0; week < weeks; week++) {
         const date = new Date(firstDate);
@@ -3284,7 +3322,7 @@ async function submitRecurringBooking() {
             method: "POST",
             headers: { "Content-Type": "application/json", "Accept": "application/json" },
             body: JSON.stringify({
-                stadiumId: stadiumId,
+                stadiumId: submittedStadiumId,
                 name: name,
                 phone: phone,
                 bookings: bookings
@@ -3294,17 +3332,22 @@ async function submitRecurringBooking() {
         const result = await response.json();
 
         if (!response.ok || result.result !== "success") {
+            invalidateBookingSnapshot();
+            void loadExistingBookings();
             return alert("⚠️ " + uiText(result.error || result.message || 'تعذر إرسال الحجوزات. يرجى المحاولة مرة أخرى.'));
         }
 
+        recordConfirmedBookings(bookings, submittedStadiumId);
         closeRecurringModal();
-        initTable();
+        void loadExistingBookings();
         const total = Number.isFinite(result.total) ? result.total : bookings.reduce((sum, booking) => sum + getHourlyBookingRate(booking.hour, booking.date), 0);
         alert(getUiLanguage() === 'ar'
             ? `✅ تم تثبيت ${bookings.length} حجزًا أسبوعيًا بنجاح.\n💰 السعر الإجمالي: ${formatBookingPrice(total)} درهم`
             : `✅ ${bookings.length} weekly bookings were confirmed successfully.\n💰 Total price: ${formatBookingPrice(total)} MAD`);
     } catch (error) {
         console.error(error);
+        invalidateBookingSnapshot();
+        void loadExistingBookings();
         alert(uiText("تعذر إرسال الحجوزات. يرجى المحاولة مرة أخرى."));
     } finally {
         button.disabled = false;

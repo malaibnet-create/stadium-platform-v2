@@ -2144,5 +2144,7 @@ html[dir="ltr"] .booking-table-scroll,
 html[dir="ltr"] #bookingTable { direction:ltr !important; }
 html[dir="rtl"] .booking-table-scroll,
 html[dir="rtl"] #bookingTable { direction:rtl !important; }
+#tableBody .slot.booked { background:#ef4444 !important; color:#fff !important; font-weight:bold; cursor:not-allowed; }
+#tableBody .slot.past { background:#f1f5f9; color:#64748b; cursor:not-allowed; }
 #tableBody .slot.unverified { background:#e2e8f0; color:#475569; cursor:not-allowed; }
 html[data-theme="dark"] #tableBody .slot.unverified { background:#182235 !important; color:#9fb0c7 !important; }
